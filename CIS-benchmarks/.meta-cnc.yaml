@@ -1,0 +1,268 @@
+name: CIS_NGFW_benchmark
+label: CIS NGFW benchmarks
+
+description: |
+  Use CIS CSC benchmarks for system validations
+
+type: pan_validation
+labels:
+  collection:
+    - CIS
+    - Benchmark
+    - Validation
+
+variables:
+
+snippets:
+
+  # 1.1.1.1 system logging configured
+  # TODO: look at each granular piece: log types and log forwarding options
+  # TODO: may require multiple tests for full assessment
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: system_logging_entries
+        capture_list: /config/shared/log-settings/system/match-list/entry/@name
+
+  - name: system_logging_configured
+    label: 1.1.1.1 Syslog logging should be configured
+    test: system_logging_entries | length
+    fail_message: no system logging configured
+    pass_message: I see system logging configured
+    documentation_link: https://iron-skillet.readthedocs.io
+
+  # 1.1.1.2 snmpv3 traps configured
+  # TODO: look at each granular piece: log types and log forwarding options
+  # TODO: may require multiple tests for full assessment
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: snmpv3_traps
+        capture_object: /config/shared/log-settings/system/match-list/entry/@name
+
+  - name: snmpv3_traps_configured
+    label: 1.1.1.2 SNMPv3 traps should be configured
+    test: snmpv3_traps | length
+    fail_message: no snmp system logging configured
+    pass_message: system logging configured using snmp traps
+    documentation_link: https://iron-skillet.readthedocs.io
+
+  # 1.1.2 login banner set
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: login_banner
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/login-banner
+
+  - name: login_banner_set
+    label: 1.1.2 Ensure 'Login Banner' is set
+    test: login_banner | tag_present('login-banner')
+    documentation_link: https://iron-skillet.readthedocs.io
+
+  # 1.1.3 log on high dp load
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: device_setting
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+
+  - name: enable_log_high_dp_load
+    label: 1.1.3 Ensure 'Enable Log on High DP Load' is enabled
+    test: device_setting | element_value('management.enable-log-high-dp-load') == 'yes'
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html#device-setup-management-logging-and-reporting-settings
+
+  # 1.2.1 permitted ip addresses for device management
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: mgmt_permitted_ips
+        capture_list: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/permitted-ip/entry/@name
+
+  - name: permitted_ip_addresses_mgmt
+    label: 1.2.1 Ensure 'Permitted IP Addresses' is set to those necessary for device management
+    test: mgmt_permitted_ips | length
+    fail_message: no permitted IP addresses configured for the management interface
+    pass_message: permitted IP addresses configured
+    documentation_link: https://iron-skillet.readthedocs.io
+
+  # 1.2.2 permitted ip addresses for management profiles
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: profile_permitted_ips
+        capture_list: /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile/entry/permitted-ip/../@name
+
+  - name: permitted_ip_address_mgmt_profiles
+    label: 1.2.2 Ensure 'Permitted IP Addresses' is set for all management profiles where SSH, HTTPS, or SNMP is enabled
+    test: profile_permitted_ips | length
+    fail_message: should have permitted IPs
+    pass_message: permitted IPs found
+    documentation_link: https://iron-skillet.readthedocs.io
+
+  # 1.2.3 disable http and telment for mgmt interface
+  # TODO: look at defaults vs configured to capture outputs and test properly
+  # TODO: do both http and telnet as 2 captures and conditional in the test
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: mgmt_disable_http
+        capture_value: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/service/disable-http/text()
+
+  - name: http_telnet_disabled_mgmt
+    label: 1.2.3 Ensure HTTP and Telnet options are disabled for the management interface
+    test: mgmt_disable_http != 'no'
+    fail_message: http not disabled
+    pass_message: http is disabled
+    documentation_link: https://iron-skillet.readthedocs.io
+
+  # 1.2.4 disable http and telnet for mgmt profiles
+  # TODO: look at defaults vs configured to capture outputs and test properly
+  # TODO: telnet and http checks
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: http_telnet_disabled_profiles
+        capture_list: /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile/entry/http/../@name
+
+  - name: http_telnet_disabled_mgmt_profiles
+    label: 1.2.4 Ensure HTTP and Telnet options are disabled for all management profiles
+    test: http_telnet_disabled_profiles | length
+    fail_message: http not disabled
+    pass_message: http disabled
+    documentation_link: https://iron-skillet.readthedocs.io
+
+  # 1.2.5 valid cert set for UI admin intf
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: ssl_profiles
+        capture_list: /config/shared/ssl-tls-service-profile/entry/@name
+
+  - name: valid_cert_admin_intf
+    label: 1.2.5 Ensure valid certificate is set for browser-based administrator interface
+    test: ssl_profiles | length
+    documentation_link: https://iron-skillet.readthedocs.io
+
+  # object used for all password complexity validations
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: password_complexity
+        capture_object: /config/mgt-config/password-complexity
+
+  # 1.3.1 enable min password complexity
+  - name: enable_min_pasword_complexity
+    label: 1.3.1 Ensure 'Minimum Password Complexity' is enabled
+    test: password_complexity | element_value('enabled') == 'yes'
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html#device-setup-management-minimum-password-complexity
+
+  # 1.3.2 password complexity min length
+  - name: password_complexity_min_length
+    label: 1.3.2 Ensure 'Minimum Length' is greater than or equal to 12
+    test: password_complexity | element_value('minimum-length') >= '12'
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html#device-setup-management-minimum-password-complexity
+
+  # 1.3.3 password complexity min uppercase
+  - name: password_complexity_min_uppercase
+    label: 1.3.3 Ensure 'Minimum Uppercase Letters' is greater than or equal to 1
+    test: password_complexity | element_value('minimum-uppercase-letters') >= '1'
+    documentation_link: https://iron-skillet.readthedocs.io
+
+  # 1.3.4 password complexity min lowercase
+  - name: password_complexity_min_lowercase
+    label: 1.3.4 Ensure 'Minimum Lowercase Letters' is greater than or equal to 1
+    test: password_complexity | element_value('minimum-lowercase-letters') >= '1'
+    documentation_link: https://iron-skillet.readthedocs.io
+
+  # 1.3.5 password complexity min numeric
+  - name: password_complexity_min_numeric
+    label: 1.3.5 Ensure 'Minimum Numeric Letters' is greater than or equal to 1
+    test: password_complexity | element_value('minimum-numeric-letters') >= '1'
+    documentation_link: https://iron-skillet.readthedocs.io
+
+  # 1.3.6 password complexity min specials chars
+  - name: password_complexity_min_special_char
+    label: 1.3.6 Ensure 'Minimum Special Characters' is greater than or equal to 1
+    test: password_complexity | element_value('minimum-special-characters') >= '1'
+    documentation_link: https://iron-skillet.readthedocs.io
+
+  # 1.3.7 password complexity change period
+  - name: password_complexity_max_change_period
+    label: 1.3.7 Ensure 'Required Password Change Period' is less than or equal to 90 days
+    test: true
+    documentation_link: https://iron-skillet.readthedocs.io
+
+  # 1.3.8 password complexity new password differs by char
+  - name: password_complexity_new_differs
+    label: 1.3.8 Ensure 'New Password Differs By Characters' is greater than or equal to 3
+    test: password_complexity | element_value('new-password-differs-by-characters') >= '3'
+    documentation_link: https://iron-skillet.readthedocs.io
+
+  # 1.3.9 password complexity password reuse limit
+  - name: password_complexity_reuse_limit
+    label: 1.3.9 Ensure 'Prevent Password Reuse Limit' is set to 24 or more passwords
+    test: password_complexity | element_value('password-history-count') >= '24'
+    documentation_link: https://iron-skillet.readthedocs.io
+
+  # 1.3.10 password profiles do not exist
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: device_setting
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+
+  - name: no_password_profiles
+    label: 1.3.10 Ensure 'Password Profiles' do not exist
+    test: true
+    documentation_link: https://iron-skillet.readthedocs.io
+
+  # 1.4.1 admin idle timeout
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: device_setting
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+
+  - name: max_idle_timeout
+    label: 1.4.1 Ensure 'Idle timeout' is less than or equal to 10 minutes for device management
+    test: true
+    documentation_link: https://iron-skillet.readthedocs.io
+
+  # 1.4.2 admin failed attempts and lockout
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: device_setting
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+
+  - name: failed_attempts_lockout
+    label: 1.4.2 Ensure 'Failed Attempts' and 'Lockout Time' for Authentication Profile are properly configured
+    test: false
+    documentation_link: https://iron-skillet.readthedocs.io
+
+  # 1.5.1 use snmpv3 for polling
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: device_setting
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+
+  - name: snmpv3_selected
+    label: 1.5.1 Ensure 'V3' is selected for SNMP polling
+    test: true
+    documentation_link: https://iron-skillet.readthedocs.io
+
