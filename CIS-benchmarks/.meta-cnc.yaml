@@ -271,7 +271,7 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
+      - name: verify_server_identiy
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
   - name: verify_update_service_enabled
@@ -287,7 +287,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: redundant_ntp_servers
     label: 1.6.2 Ensure redundant NTP servers are configured appropriately
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -300,7 +300,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: vpn_cert_valid
     label: 1.6.3 Ensure that the Certificate Securing Remote Access VPNs is Valid
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -313,7 +313,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: ip_addr_mapped_to_user
     label: 2.1 Ensure that IP addresses are mapped to usernames
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -326,7 +326,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: wmi_probing_disabled
     label: 2.2 Ensure that WMI probing is disabled
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -339,7 +339,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: userid_internal_zones_only
     label: 2.3 Ensure that User-ID is only enabled for internal trusted interfaces
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -352,7 +352,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: userid_with_include_exclude
     label: 2.4 Ensure that 'Include/Exclude Networks' is used if User-ID is enabled
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -365,7 +365,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: userid_agent_min_permissions
     label: 2.5 Ensure that the User-ID Agent has minimal permissions if User-ID is enabled
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -378,7 +378,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: userid_no_interactive_logon
     label: 2.6 Ensure that the User-ID service account does not have interactive logon rights
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -391,7 +391,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: userid_service_account
     label: 2.7 Ensure remote access capabilities for the User-ID service account are forbidden
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -404,7 +404,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: userid_agent_no_untrust_zone
     label: 2.8 Ensure that security policies restrict User-ID Agent traffic from crossing into untrusted zones
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -417,7 +417,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: HA_peer_configured
     label: 3.1 Ensure a fully-synchronized High Availability peer is configured
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -430,7 +430,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: HA_link_path_monitoring
     label: 3.2 Ensure 'High Availability' requires Link Monitoring and/or Path Monitoring
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -443,7 +443,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: HA_passive_link_preemptive
     label: 3.3 Ensure 'Passive Link State' and 'Preemptive' are configured appropriately
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -456,7 +456,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: AV_update_schedule
     label: 4.1 Ensure 'Antivirus Update Schedule' is set to download and install updates hourly
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -469,7 +469,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: WF_file_size_max
     label: 5.1 Ensure that WildFire file size upload limits are maximized
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -482,7 +482,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: WF_all_apps_files
     label: 5.2 Ensure forwarding is enabled for all applications and file types in WildFire file blocking profiles
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -495,7 +495,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: WF_forward_decrypt_content
     label: 5.4 Ensure forwarding of decrypted content to WildFire is enabled
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -508,7 +508,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: WF_session_info_enabled
     label: 5.5 Ensure all WildFire session information settings are enabled
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -521,7 +521,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: WF_alerts_malicious_files
     label: 5.6 Ensure alerts are enabled for malicious files detected by WildFire
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -534,7 +534,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: WF_update_schedule
     label: 5.7 Ensure 'WildFire Update Schedule' is set to download and install updates every minute
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -547,7 +547,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: AV_decoders_block
     label: 6.1 Ensure that antivirus profiles are set to block on all decoders except 'imap' and 'pop3'
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -560,7 +560,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: AV_profile_in_policies
     label: 6.2 Ensure a secure antivirus profile is applied to all relevant security policies
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -573,7 +573,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: spyware_profile_block_all
     label: 6.3 Ensure an anti-spyware profile is configured to block on all spyware severity levels, categories, and threats
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -586,7 +586,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: DNS_sinkhole_configured
     label: 6.4 Ensure DNS sinkholing is configured on all anti-spyware profiles in use
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -599,7 +599,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: enable_passive_DNS_monitoring
     label: 6.5 Ensure passive DNS monitoring is set to enabled on all anti-spyware profiles in use
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -612,7 +612,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: spyware_profile_in_policies
     label: 6.6 Ensure a secure anti-spyware profile is applied to all security policies permitting traffic to the Internet
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -626,7 +626,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: vulnerability_profile_blocking
     label: |
       6.7 Ensure a Vulnerability Protection Profile is set to block attacks against critical and high vulnerabilities,
       and set to default on medium, low, and informational vulnerabilities
@@ -641,7 +641,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: vulnerability_profile_in_policies
     label: 6.8 Ensure a secure Vulnerability Protection Profile is applied to all security rules allowing traffic
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -654,7 +654,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: pandb_url_filtering
     label: 6.9 Ensure that PAN-DB URL Filtering is used
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -667,7 +667,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: url_filtering_block_or_override
     label: 6.10 Ensure that URL Filtering uses the action of “block” or “override” on the URL categories
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -680,7 +680,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: url_filtering_log_all_categories
     label: 6.11 Ensure that access to every URL is logged
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -693,7 +693,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: url_filtering_http_header_logging
     label: 6.12 Ensure all HTTP Header Logging options are enabled
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -706,7 +706,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: url_filtering_all_policies
     label: 6.13 Ensure secure URL filtering is enabled for all security policies allowing traffic to the Internet
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -719,7 +719,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: data_filtering_cc_ss_numbers
     label: 6.14 Ensure alerting after a threshold of credit card or Social Security numbers is detected is enabled
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -732,7 +732,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: data_filtering_profile_in_policies
     label: 6.15 Ensure a secure Data Filtering profile is applied to all security policies allowing traffic to or from the Internet
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -745,7 +745,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: zone_protect_syn_flood
     label: 6.16 Ensure that a Zone Protection Profile with an enabled SYN Flood Action of SYN Cookies is attached to all untrusted zones
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -758,7 +758,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: zone_protect_flood_protect
     label: 6.17 Ensure that a Zone Protection Profile with tuned Flood Protection settings enabled for all flood types is attached to all untrusted zones
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -771,7 +771,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: zone_protection_reconn_protect
     label: 6.18 Ensure that all zones have Zone Protection Profiles with all Reconnaissance Protection settings enabled, tuned, and set to appropriate actions
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -784,7 +784,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: zone_protect_crafted_pkts
     label: 6.19 Ensure all zones have Zone Protection Profiles that drop specially crafted packets
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -797,7 +797,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: user_cred_block_continue
     label: 6.20 Ensure that User Credential Submission uses the action of “block” or “continue” on the URL categories
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -810,7 +810,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: app_security_more_trusted_zone
     label: 7.1 Ensure application security policies exist when allowing traffic from an untrusted zone to a more trusted zone
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -823,7 +823,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: service_any_not_allowed_in_policy
     label: 7.2 Ensure 'Service setting of ANY' in a security policy allowing traffic does not exist
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -836,7 +836,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: security_policy_deny_threat_ips
     label: 7.3 Ensure 'Security Policy' denying any/all traffic to/from IP addresses on Trusted Threat Intelligence Sources Exists
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -849,7 +849,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: ssl_forward_proxy_policy
     label: 8.1 Ensure 'SSL Forward Proxy Policy' for traffic destined to the Internet is configured
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -862,7 +862,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: ssl_inbound_inspection
     label: 8.2 Ensure 'SSL Inbound Inspection' is required for all untrusted traffic destined for servers using SSL or TLS
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
@@ -875,7 +875,7 @@ snippets:
       - name: device_setting
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  - name: verify_update_service_enabled
+  - name: decrypt_cert_trusted
     label: 8.3 Ensure that the Certificate used for Decryption is Trusted
     test: true
     documentation_link: https://iron-skillet.readthedocs.io
