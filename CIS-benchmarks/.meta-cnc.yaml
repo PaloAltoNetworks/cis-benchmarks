@@ -33,7 +33,6 @@ snippets:
     documentation_link: https://iron-skillet.readthedocs.io
 
   # 1.1.1.2 snmpv3 traps configured
-  # TODO: look at each granular piece: log types and log forwarding options
   # TODO: may require multiple tests for full assessment
   - name: device_config_file
     cmd: parse
@@ -164,37 +163,49 @@ snippets:
   - name: enable_min_pasword_complexity
     label: 1.3.1 Ensure 'Minimum Password Complexity' is enabled
     test: password_complexity | element_value('enabled') == 'yes'
-    documentation_link: https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html#device-setup-management-minimum-password-complexity
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
+      #device-setup-management-minimum-password-complexity
 
   # 1.3.2 password complexity min length
   - name: password_complexity_min_length
     label: 1.3.2 Ensure 'Minimum Length' is greater than or equal to 12
     test: password_complexity | element_value('minimum-length') >= '12'
-    documentation_link: https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html#device-setup-management-minimum-password-complexity
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
+      #device-setup-management-minimum-password-complexity
 
   # 1.3.3 password complexity min uppercase
   - name: password_complexity_min_uppercase
     label: 1.3.3 Ensure 'Minimum Uppercase Letters' is greater than or equal to 1
     test: password_complexity | element_value('minimum-uppercase-letters') >= '1'
-    documentation_link: https://iron-skillet.readthedocs.io
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
+      #device-setup-management-minimum-password-complexity
 
   # 1.3.4 password complexity min lowercase
   - name: password_complexity_min_lowercase
     label: 1.3.4 Ensure 'Minimum Lowercase Letters' is greater than or equal to 1
     test: password_complexity | element_value('minimum-lowercase-letters') >= '1'
-    documentation_link: https://iron-skillet.readthedocs.io
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
+      #device-setup-management-minimum-password-complexity
 
   # 1.3.5 password complexity min numeric
   - name: password_complexity_min_numeric
     label: 1.3.5 Ensure 'Minimum Numeric Letters' is greater than or equal to 1
     test: password_complexity | element_value('minimum-numeric-letters') >= '1'
-    documentation_link: https://iron-skillet.readthedocs.io
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
+      #device-setup-management-minimum-password-complexity
 
   # 1.3.6 password complexity min specials chars
   - name: password_complexity_min_special_char
     label: 1.3.6 Ensure 'Minimum Special Characters' is greater than or equal to 1
     test: password_complexity | element_value('minimum-special-characters') >= '1'
-    documentation_link: https://iron-skillet.readthedocs.io
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
+      #device-setup-management-minimum-password-complexity
 
   # 1.3.7 password complexity change period
   - name: password_complexity_max_change_period
@@ -206,13 +217,17 @@ snippets:
   - name: password_complexity_new_differs
     label: 1.3.8 Ensure 'New Password Differs By Characters' is greater than or equal to 3
     test: password_complexity | element_value('new-password-differs-by-characters') >= '3'
-    documentation_link: https://iron-skillet.readthedocs.io
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
+      #device-setup-management-minimum-password-complexity
 
   # 1.3.9 password complexity password reuse limit
   - name: password_complexity_reuse_limit
     label: 1.3.9 Ensure 'Prevent Password Reuse Limit' is set to 24 or more passwords
     test: password_complexity | element_value('password-history-count') >= '24'
-    documentation_link: https://iron-skillet.readthedocs.io
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
+      #device-setup-management-minimum-password-complexity
 
   # 1.3.10 password profiles do not exist
   - name: device_config_file
@@ -232,13 +247,17 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: admin_idle_timeout
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/management/idle-timeout/text()
 
   - name: max_idle_timeout
     label: 1.4.1 Ensure 'Idle timeout' is less than or equal to 10 minutes for device management
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: admin_idle_timeout <= 10
+    fail_message: recommended to close the session after 10 minutes of idle timeout to prevent unauthorized access.
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
+      #device-setup-management-authentication-settings
 
   # 1.4.2 admin failed attempts and lockout
   - name: device_config_file
@@ -250,21 +269,31 @@ snippets:
 
   - name: failed_attempts_lockout
     label: 1.4.2 Ensure 'Failed Attempts' and 'Lockout Time' for Authentication Profile are properly configured
-    test: false
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: |
+      (
+      device_setting | element_value('management.admin-lockout.failed-attempts') | int <=5
+      and device_setting | element_value('management.admin-lockout.lockout-time') | int >= 30
+      )
+    fail_message: |
+      recommended to set minimum values for maximum number of failed loging attempts and associated lockout timer
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
+      #device-setup-management-authentication-settings
 
   # 1.5.1 use snmpv3 for polling
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: snmp_version
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/snmp-setting/access-setting/version
 
   - name: snmpv3_selected
     label: 1.5.1 Ensure 'V3' is selected for SNMP polling
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: snmp_version | tag_present('v3')
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html#device-setup-operations-snmp-setup
 
   # 1.6.1 Ensure 'Verify Update Server Identity' is enabled
   - name: device_config_file
@@ -284,13 +313,21 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: ntp_servers
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/ntp-servers
 
   - name: redundant_ntp_servers
     label: 1.6.2 Ensure redundant NTP servers are configured appropriately
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: |
+      (
+      ntp_servers | tag_present('primary-ntp-server.ntp-server-address')
+      and ntp_servers | tag_present('secondary-ntp-server.ntp-server-address')
+      )
+    fail_message: |
+      time server configuration is reccommended to ensure the firewall clock is in sync
+      with external service and logging platforms.
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html#device-setup-services-services
 
   # 1.6.3 Ensure that the Certificate Securing Remote Access VPNs is Valid
   - name: device_config_file
@@ -453,13 +490,19 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: av_update
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/update-schedule/anti-virus
 
   - name: AV_update_schedule
     label: 4.1 Ensure 'Antivirus Update Schedule' is set to download and install updates hourly
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: av_update | tag_present('recurring.hourly')
+    fail_message: |
+      recommended settings are to check for content updates as often as possible to ensure the firewall has the
+      lastest content updates. Content is only downloaded and installed when new versions are available.
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
+      #ironskillet-dynamic-updates
 
   # 5.1 Ensure that WildFire file size upload limits are maximized
   - name: device_config_file
