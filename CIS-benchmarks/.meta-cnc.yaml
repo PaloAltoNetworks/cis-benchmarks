@@ -15,21 +15,78 @@ variables:
 
 snippets:
 
-  # 1.1.1.1 system logging configured
+  # 1.1.1.1 Syslog logging should be configured
   # TODO: look at each granular piece: log types and log forwarding options
   # TODO: may require multiple tests for full assessment
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: system_logging_entries
-        capture_list: /config/shared/log-settings/system/match-list/entry/@name
+      - name: system_entry_all_logs
+        capture_list: /config/shared/log-settings/system/match-list/entry/filter[text()='All Logs']/../@name
+      - name: system_entry_send_syslog_all_logs
+        capture_list: /config/shared/log-settings/system/match-list/entry/send-syslog/member/../../@name
+        filter_items: item in system_entry_all_logs
+      - name: config_entry_all_logs
+        capture_list: /config/shared/log-settings/config/match-list/entry/filter[text()='All Logs']/../@name
+      - name: config_entry_send_syslog_all_logs
+        capture_list: /config/shared/log-settings/config/match-list/entry/send-syslog/member/../../@name
+        filter_items: item in config_entry_all_logs
+      - name: userid_entry_all_logs
+        capture_list: /config/shared/log-settings/userid/match-list/entry/filter[text()='All Logs']/../@name
+      - name: userid_entry_send_syslog_all_logs
+        capture_list: /config/shared/log-settings/userid/match-list/entry/send-syslog/member/../../@name
+        filter_items: item in userid_entry_all_logs
+      - name: hipmatch_entry_all_logs
+        capture_list: /config/shared/log-settings/hipmatch/match-list/entry/filter[text()='All Logs']/../@name
+      - name: hipmatch_entry_send_syslog_all_logs
+        capture_list: /config/shared/log-settings/hipmatch/match-list/entry/send-syslog/member/../../@name
+        filter_items: item in hipmatch_entry_all_logs
+      - name: globalprotect_entry_all_logs
+        capture_list: /config/shared/log-settings/globalprotect/match-list/entry/filter[text()='All Logs']/../@name
+      - name: globalprotect_entry_send_syslog_all_logs
+        capture_list: /config/shared/log-settings/globalprotect/match-list/entry/send-syslog/member/../../@name
+        filter_items: item in globalprotect_entry_all_logs
+      - name: iptag_entry_all_logs
+        capture_list: /config/shared/log-settings/globalprotect/match-list/entry/filter[text()='All Logs']/../@name
+      - name: iptag_entry_send_syslog_all_logs
+        capture_list: /config/shared/log-settings/globalprotect/match-list/entry/send-syslog/member/../../@name
+        filter_items: item in iptag_entry_all_logs
 
   - name: system_logging_configured
     label: 1.1.1.1 Syslog logging should be configured
-    test: system_logging_entries | length
-    fail_message: no system logging configured
-    pass_message: I see system logging configured
+    test: |
+      (
+        system_entry_send_syslog_all_logs | length
+        and config_entry_send_syslog_all_logs | length
+        and userid_entry_send_syslog_all_logs | length
+        and hipmatch_entry_send_syslog_all_logs | length
+        and globalprotect_entry_send_syslog_all_logs | length
+        and iptag_entry_send_syslog_all_logs | length
+      )
+    fail_message: |
+      Benchmark fails based on these log settings:
+      {%- if system_entry_send_syslog_all_logs | length == 0 %}
+      System
+      {%- elif config_entry_send_syslog_all_logs | length == 0 %}
+      Config
+      {%- elif userid_entry_send_syslog_all_logs | length == 0 %}
+      UserID
+      {%- elif hipmatch_entry_send_syslog_all_logs | length == 0 %}
+      HIP Match
+      {%- elif globalprotect_entry_send_syslog_all_logs | length == 0 %}
+      GlobalProtect
+      {%- elif iptag_entry_send_syslog_all_logs | length == 0 %}
+      IP Tag
+      {%- endif %}
+    pass_message: |
+      Benchmark passes based on these log settings:
+      System: {{ system_entry_send_syslog_all_logs }}
+      Config: {{ config_entry_send_syslog_all_logs }}
+      UserID: {{ config_entry_send_syslog_all_logs }}
+      HIP Match: {{ hipmatch_entry_send_syslog_all_logs }}
+      GlobalProtect: {{ globalprotect_entry_send_syslog_all_logs }}
+      IP Tag: {{ globalprotect_entry_send_syslog_all_logs }}
     documentation_link: https://iron-skillet.readthedocs.io
 
   # 1.1.1.2 snmpv3 traps configured
