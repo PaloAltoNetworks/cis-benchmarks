@@ -1,2 +1,143 @@
 # TBD - part of IronSkillet
 
+name: snmpv3_test
+label: config snmp and logging
+description: Skillet Generated from 192.168.55.168 using skillet_baseline.xml and
+    Candidate Config
+type: panos
+labels:
+    collection: Unknown
+variables: []
+snippets:
+
+-   name: log-settings-866495
+    xpath: /config/shared
+    element: |-
+        <log-settings>
+              <syslog>
+                <entry name="Sample_Syslog_Profile">
+                  <server>
+                    <entry name="Sample_Syslog">
+                      <transport>UDP</transport>
+                      <port>514</port>
+                      <format>BSD</format>
+                      <server>192.0.2.2</server>
+                      <facility>LOG_USER</facility>
+                    </entry>
+                  </server>
+                </entry>
+              </syslog>
+              <system>
+                <match-list>
+                  <entry name="System_Log_Forwarding">
+                    <filter>All Logs</filter>
+                    <send-to-panorama>no</send-to-panorama>
+                    <send-syslog>
+                      <member>Sample_Syslog_Profile</member>
+                    </send-syslog>
+                    <description>test</description>
+                  </entry>
+                </match-list>
+              </system>
+              <config>
+                <match-list>
+                  <entry name="Configuration_Log_Forwarding">
+                    <filter>All Logs</filter>
+                    <send-to-panorama>no</send-to-panorama>
+                    <send-syslog>
+                      <member>Sample_Syslog_Profile</member>
+                    </send-syslog>
+                    <description>test</description>
+                  </entry>
+                </match-list>
+              </config>
+              <userid>
+                <match-list>
+                  <entry name="User-ID_Log_Forwarding">
+                    <filter>All Logs</filter>
+                    <send-to-panorama>no</send-to-panorama>
+                    <send-syslog>
+                      <member>Sample_Syslog_Profile</member>
+                    </send-syslog>
+                    <description>test</description>
+                  </entry>
+                </match-list>
+              </userid>
+              <hipmatch>
+                <match-list>
+                  <entry name="HIP_Log_Forwarding">
+                    <filter>All Logs</filter>
+                    <send-to-panorama>no</send-to-panorama>
+                    <send-syslog>
+                      <member>Sample_Syslog_Profile</member>
+                    </send-syslog>
+                    <description>test</description>
+                  </entry>
+                  <entry name="HIP_snmp_logging">
+                    <send-snmptrap>
+                      <member>testme</member>
+                    </send-snmptrap>
+                    <filter>All Logs</filter>
+                  </entry>
+                </match-list>
+              </hipmatch>
+              <globalprotect>
+                <match-list>
+                  <entry name="GP_Log_Forwarding">
+                    <filter>All Logs</filter>
+                    <send-to-panorama>no</send-to-panorama>
+                    <description>test</description>
+                    <send-syslog>
+                      <member>Sample_Syslog_Profile</member>
+                    </send-syslog>
+                  </entry>
+                  <entry name="GP_snmp_logging">
+                    <send-snmptrap>
+                      <member>testme</member>
+                    </send-snmptrap>
+                    <filter>All Logs</filter>
+                  </entry>
+                </match-list>
+              </globalprotect>
+              <iptag>
+                <match-list>
+                  <entry name="IP-Tag_Log_Forwarding">
+                    <send-syslog>
+                      <member>Sample_Syslog_Profile</member>
+                    </send-syslog>
+                    <filter>All Logs</filter>
+                    <description>test</description>
+                  </entry>
+                </match-list>
+              </iptag>
+              <snmptrap>
+                <entry name="testme">
+                  <version>
+                    <v3>
+                      <server>
+                        <entry name="testing">
+                          <manager>192.0.2.1</manager>
+                          <authpwd>-AQ==W6ph5Mm5Pz8GgiULbPgzG37mj9g=w2hP4BspAiin+j7uXWkGKA==</authpwd>
+                          <privpwd>-AQ==W6ph5Mm5Pz8GgiULbPgzG37mj9g=w2hP4BspAiin+j7uXWkGKA==</privpwd>
+                          <user>admin</user>
+                        </entry>
+                      </server>
+                    </v3>
+                  </version>
+                </entry>
+                <entry name="v3test">
+                  <version>
+                    <v3>
+                      <server>
+                        <entry name="testv3">
+                          <manager>1.1.1.1</manager>
+                          <authpwd>-AQ==W6ph5Mm5Pz8GgiULbPgzG37mj9g=w2hP4BspAiin+j7uXWkGKA==</authpwd>
+                          <privpwd>-AQ==W6ph5Mm5Pz8GgiULbPgzG37mj9g=w2hP4BspAiin+j7uXWkGKA==</privpwd>
+                          <user>admin</user>
+                        </entry>
+                      </server>
+                    </v3>
+                  </version>
+                </entry>
+              </snmptrap>
+            </log-settings>

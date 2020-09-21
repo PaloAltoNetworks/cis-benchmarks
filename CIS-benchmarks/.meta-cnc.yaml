@@ -15,6 +15,8 @@ variables:
 
 snippets:
 
+  # TODO: determine what to use for doc links: CIS text, IronSkillet, palo docs
+
   # 1.1.1.1 Syslog logging should be configured
   # TODO: future update to include Panorama/CDL option in the checks
   - name: device_config_file
@@ -67,15 +69,20 @@ snippets:
       Benchmark fails based on these log settings:
       {%- if system_entry_send_syslog_all_logs | length == 0 %}
       System
-      {%- elif config_entry_send_syslog_all_logs | length == 0 %}
+      {%- endif %}
+      {%- if config_entry_send_syslog_all_logs | length == 0 %}
       Config
-      {%- elif userid_entry_send_syslog_all_logs | length == 0 %}
+      {%- endif %}
+      {%- if userid_entry_send_syslog_all_logs | length == 0 %}
       UserID
-      {%- elif hipmatch_entry_send_syslog_all_logs | length == 0 %}
+      {%- endif %}
+      {%- if hipmatch_entry_send_syslog_all_logs | length == 0 %}
       HIP Match
-      {%- elif globalprotect_entry_send_syslog_all_logs | length == 0 %}
+      {%- endif %}
+      {%- if globalprotect_entry_send_syslog_all_logs | length == 0 %}
       GlobalProtect
-      {%- elif iptag_entry_send_syslog_all_logs | length == 0 %}
+      {%- endif %}
+      {%- if iptag_entry_send_syslog_all_logs | length == 0 %}
       IP Tag
       {%- endif %}
     pass_message: |
@@ -89,19 +96,97 @@ snippets:
     documentation_link: https://iron-skillet.readthedocs.io
 
   # 1.1.1.2 snmpv3 traps configured
-  # TODO: may require multiple tests for full assessment
+  # TODO: working on list concatenation to include the v3 profile check
+  # TODO: this will be a new output, test criteria, and messaging if non-v3 causes the test fail
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: snmpv3_traps
-        capture_object: /config/shared/log-settings/system/match-list/entry/@name
+      - name: system_entry_all_logs
+        capture_list: /config/shared/log-settings/system/match-list/entry/filter[text()='All Logs']/../@name
+      - name: system_entry_send_snmp_all_logs
+        capture_list: /config/shared/log-settings/system/match-list/entry/send-snmptrap/member/../../@name
+        filter_items: item in system_entry_all_logs
+      - name: config_entry_all_logs
+        capture_list: /config/shared/log-settings/config/match-list/entry/filter[text()='All Logs']/../@name
+      - name: config_entry_send_snmp_all_logs
+        capture_list: /config/shared/log-settings/config/match-list/entry/send-snmptrap/member/../../@name
+        filter_items: item in config_entry_all_logs
+      - name: userid_entry_all_logs
+        capture_list: /config/shared/log-settings/userid/match-list/entry/filter[text()='All Logs']/../@name
+      - name: userid_entry_send_snmp_all_logs
+        capture_list: /config/shared/log-settings/userid/match-list/entry/send-snmptrap/member/../../@name
+        filter_items: item in userid_entry_all_logs
+      - name: hipmatch_entry_all_logs
+        capture_list: /config/shared/log-settings/hipmatch/match-list/entry/filter[text()='All Logs']/../@name
+      - name: hipmatch_entry_send_snmp_all_logs
+        capture_list: /config/shared/log-settings/hipmatch/match-list/entry/send-snmptrap/member/../../@name
+        filter_items: item in hipmatch_entry_all_logs
+      - name: globalprotect_entry_all_logs
+        capture_list: /config/shared/log-settings/globalprotect/match-list/entry/filter[text()='All Logs']/../@name
+      - name: globalprotect_entry_send_snmp_all_logs
+        capture_list: /config/shared/log-settings/globalprotect/match-list/entry/send-snmptrap/member/../../@name
+        filter_items: item in globalprotect_entry_all_logs
+      - name: iptag_entry_all_logs
+        capture_list: /config/shared/log-settings/iptag/match-list/entry/filter[text()='All Logs']/../@name
+      - name: iptag_entry_send_snmp_all_logs
+        capture_list: /config/shared/log-settings/iptag/match-list/entry/send-snmptrap/member/../../@name
+        filter_items: item in iptag_entry_all_logs
+      - name: snmpv3_trap_profiles
+        capture_list: /config/shared/log-settings/snmptrap/entry/version/v3/../../@name
+      - name: logging_snmp_profiles_without_snmp3
+        capture_expression: |
+          system_entry_send_snmp_all_logs
+          + config_entry_send_snmp_all_logs
+          + userid_entry_send_snmp_all_logs
+          + hipmatch_entry_send_snmp_all_logs
+          + globalprotect_entry_send_snmp_all_logs
+          + iptag_entry_send_snmp_all_logs
+        filter_items: item not in snmpv3_trap_profiles
 
-  - name: snmpv3_traps_configured
+  - name: snmp_system_logging_configured
     label: 1.1.1.2 SNMPv3 traps should be configured
-    test: snmpv3_traps | length
-    fail_message: no snmp system logging configured
-    pass_message: system logging configured using snmp traps
+    test: |
+      (
+        system_entry_send_snmp_all_logs | length
+        and config_entry_send_snmp_all_logs | length
+        and userid_entry_send_snmp_all_logs | length
+        and hipmatch_entry_send_snmp_all_logs | length
+        and globalprotect_entry_send_snmp_all_logs | length
+        and iptag_entry_send_snmp_all_logs | length
+        and logging_snmp_profiles_without_snmp3 | length == 0
+      )
+    fail_message: |
+      Benchmark fails based on these log settings:
+      {%- if system_entry_send_snmp_all_logs | length == 0 %}
+      System
+      {%- endif %}
+      {%- if config_entry_send_snmp_all_logs | length == 0 %}
+      Config
+      {%- endif %}
+      {%- if userid_entry_send_snmp_all_logs | length == 0 %}
+      UserID
+      {%- endif %}
+      {%- if hipmatch_entry_send_snmp_all_logs | length == 0 %}
+      HIP Match
+      {%- endif %}
+      {%- if globalprotect_entry_send_snmp_all_logs | length == 0 %}
+      GlobalProtect
+      {%- endif %}
+      {%- if iptag_entry_send_snmp_all_logs | length == 0 %}
+      IP Tag
+      {%- endif %}
+      {%- if logging_snmp_profiles_without_snmp3 | length %}
+      SNMP logging profiles not using version 3: {{ logging_snmp_profiles_without_snmp3 }}
+      {%- endif %}
+    pass_message: |
+      Benchmark passes based on these log settings:
+      System: {{ system_entry_send_snmp_all_logs }}
+      Config: {{ config_entry_send_snmp_all_logs }}
+      UserID: {{ config_entry_send_snmp_all_logs }}
+      HIP Match: {{ hipmatch_send_snmp_syslog_all_logs }}
+      GlobalProtect: {{ globalprotect_entry_send_snmp_all_logs }}
+      IP Tag: {{ iptag_entry_send_snmp_all_logs }}
     documentation_link: https://iron-skillet.readthedocs.io
 
   # 1.1.2 login banner set
@@ -161,37 +246,61 @@ snippets:
     documentation_link: https://iron-skillet.readthedocs.io
 
   # 1.2.3 disable http and telnet for mgmt interface
-  # TODO: look at defaults vs configured to capture outputs and test properly
-  # TODO: do both http and telnet as 2 captures and conditional in the test
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
       - name: mgmt_disable_http
         capture_value: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/service/disable-http/text()
+      - name: mgmt_disable_telnet
+        capture_value: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/service/disable-telnet/text()
 
   - name: http_telnet_disabled_mgmt
     label: 1.2.3 Ensure HTTP and Telnet options are disabled for the management interface
-    test: mgmt_disable_http != 'no'
-    fail_message: http not disabled
-    pass_message: http is disabled
+    test: |
+      (
+        mgmt_disable_http != 'no'
+        and mgmt_disable_telnet != 'no'
+      )
+    fail_message: |
+      {%- if mgmt_disable_http == 'no' %}
+        http management access is not disabled
+      {%- endif %}
+      {%- if mgmt_disable_telnet == 'no' %}
+        telnet management access is not disabled
+      {%- end if %}
+    pass_message: http and telnet are disable for management interface access
     documentation_link: https://iron-skillet.readthedocs.io
 
   # 1.2.4 disable http and telnet for mgmt profiles
-  # TODO: look at defaults vs configured to capture outputs and test properly
-  # TODO: telnet and http checks
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: http_telnet_disabled_profiles
-        capture_list: /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile/entry/http/../@name
+      - name: http_enabled_profiles
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile/
+          entry/http[text()='yes']/../@name
+      - name: telnet_enabled_profiles
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile/
+          entry/telnet[text()='yes']/../@name
 
   - name: http_telnet_disabled_mgmt_profiles
     label: 1.2.4 Ensure HTTP and Telnet options are disabled for all management profiles
-    test: http_telnet_disabled_profiles | length
-    fail_message: http not disabled
-    pass_message: http disabled
+    test: |
+      (
+        http_enabled_profiles | length == 0
+        and telnet_enabled_profiles | length == 0
+      )
+    fail_message: |
+      {% if http_disabled_profiles | length %}
+        http not disabled for profiles: {{ http_enabled_profiles }}
+      {% endif %}
+      {% if telnet_enabled_profiles | length %}
+        telnet not disabled for profiles: {{ telnet_enabled_profiles }}
+      {% endif %}
+    pass_message: http and telnet disabled for all management profiles
     documentation_link: https://iron-skillet.readthedocs.io
 
   # 1.2.5 valid cert set for UI admin intf
