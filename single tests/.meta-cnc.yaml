@@ -59,7 +59,7 @@ snippets:
           + hipmatch_entry_send_snmp_all_logs
           + globalprotect_entry_send_snmp_all_logs
           + iptag_entry_send_snmp_all_logs
-# filter_items: item not in snmpv3_trap_profiles
+        filter_items: item not in snmpv3_trap_profiles
 
   - name: snmp_system_logging_configured
     label: 1.1.1.2 SNMPv3 traps should be configured
