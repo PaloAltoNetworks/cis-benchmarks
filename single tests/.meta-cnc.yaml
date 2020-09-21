@@ -51,14 +51,8 @@ snippets:
         filter_items: item in iptag_entry_all_logs
       - name: snmpv3_trap_profiles
         capture_list: /config/shared/log-settings/snmptrap/entry/version/v3/../../@name
-      - name: logging_snmp_profiles_without_snmp3
-        capture_expression: |
-          system_entry_send_snmp_all_logs
-          + config_entry_send_snmp_all_logs
-          + userid_entry_send_snmp_all_logs
-          + hipmatch_entry_send_snmp_all_logs
-          + globalprotect_entry_send_snmp_all_logs
-          + iptag_entry_send_snmp_all_logs
+      - name: logging_snmp_profiles_without_snmpv3
+        capture_list: /config/shared/log-settings//match-list/entry/send-snmptrap/member/text()
         filter_items: item not in snmpv3_trap_profiles
 
   - name: snmp_system_logging_configured
@@ -71,7 +65,7 @@ snippets:
         and hipmatch_entry_send_snmp_all_logs | length
         and globalprotect_entry_send_snmp_all_logs | length
         and iptag_entry_send_snmp_all_logs | length
-        and logging_snmp_profiles_without_snmp3 | length == 0
+        and logging_snmp_profiles_without_snmpv3 | length == 0
       )
     fail_message: |
       Benchmark fails based on these log settings:
@@ -93,8 +87,8 @@ snippets:
       {%- if iptag_entry_send_snmp_all_logs | length == 0 %}
       IP Tag
       {%- endif %}
-      {%- if logging_snmp_profiles_without_snmp3 | length %}
-      SNMP logging profiles not using version 3: {{ logging_snmp_profiles_without_snmp3 }}
+      {%- if logging_snmp_profiles_without_snmpv3 | length %}
+      SNMP logging profiles not using version 3: {{ logging_snmp_profiles_without_snmpv3 }}
       {%- endif %}
     pass_message: |
       Benchmark passes based on these log settings:
