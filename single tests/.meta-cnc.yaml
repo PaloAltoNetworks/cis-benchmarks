@@ -4,7 +4,7 @@
 name: CIS_benchmark_testing
 # label used for menu selection
 label: test CIS content
-description: check CDL/EAL setup and firewall configuration to enable IoT
+description: single capture and test for CIS validation creation and test
 
 type: pan_validation
 
