@@ -16,8 +16,7 @@ variables:
 snippets:
 
   # 1.1.1.1 Syslog logging should be configured
-  # TODO: look at each granular piece: log types and log forwarding options
-  # TODO: may require multiple tests for full assessment
+  # TODO: future update to include Panorama/CDL option in the checks
   - name: device_config_file
     cmd: parse
     variable: config
@@ -48,9 +47,9 @@ snippets:
         capture_list: /config/shared/log-settings/globalprotect/match-list/entry/send-syslog/member/../../@name
         filter_items: item in globalprotect_entry_all_logs
       - name: iptag_entry_all_logs
-        capture_list: /config/shared/log-settings/globalprotect/match-list/entry/filter[text()='All Logs']/../@name
+        capture_list: /config/shared/log-settings/iptag/match-list/entry/filter[text()='All Logs']/../@name
       - name: iptag_entry_send_syslog_all_logs
-        capture_list: /config/shared/log-settings/globalprotect/match-list/entry/send-syslog/member/../../@name
+        capture_list: /config/shared/log-settings/iptag/match-list/entry/send-syslog/member/../../@name
         filter_items: item in iptag_entry_all_logs
 
   - name: system_logging_configured
@@ -86,7 +85,7 @@ snippets:
       UserID: {{ config_entry_send_syslog_all_logs }}
       HIP Match: {{ hipmatch_entry_send_syslog_all_logs }}
       GlobalProtect: {{ globalprotect_entry_send_syslog_all_logs }}
-      IP Tag: {{ globalprotect_entry_send_syslog_all_logs }}
+      IP Tag: {{ iptag_entry_send_syslog_all_logs }}
     documentation_link: https://iron-skillet.readthedocs.io
 
   # 1.1.1.2 snmpv3 traps configured
@@ -161,7 +160,7 @@ snippets:
     pass_message: permitted IPs found
     documentation_link: https://iron-skillet.readthedocs.io
 
-  # 1.2.3 disable http and telment for mgmt interface
+  # 1.2.3 disable http and telnet for mgmt interface
   # TODO: look at defaults vs configured to capture outputs and test properly
   # TODO: do both http and telnet as 2 captures and conditional in the test
   - name: device_config_file
@@ -205,8 +204,9 @@ snippets:
 
   - name: valid_cert_admin_intf
     label: 1.2.5 Ensure valid certificate is set for browser-based administrator interface
-    test: ssl_profiles | length
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # object used for all password complexity validations
   - name: device_config_file
@@ -267,8 +267,9 @@ snippets:
   # 1.3.7 password complexity change period
   - name: password_complexity_max_change_period
     label: 1.3.7 Ensure 'Required Password Change Period' is less than or equal to 90 days
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 1.3.8 password complexity new password differs by char
   - name: password_complexity_new_differs
@@ -296,8 +297,9 @@ snippets:
 
   - name: no_password_profiles
     label: 1.3.10 Ensure 'Password Profiles' do not exist
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 1.4.1 admin idle timeout
   - name: device_config_file
@@ -362,8 +364,9 @@ snippets:
 
   - name: verify_update_service_enabled
     label: 1.6.1 Ensure 'Verify Update Server Identity' is enabled
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 1.6.2 Ensure redundant NTP servers are configured appropriately
   - name: device_config_file
@@ -396,8 +399,9 @@ snippets:
 
   - name: vpn_cert_valid
     label: 1.6.3 Ensure that the Certificate Securing Remote Access VPNs is Valid
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 2.1 Ensure that IP addresses are mapped to usernames
   - name: device_config_file
@@ -409,8 +413,9 @@ snippets:
 
   - name: ip_addr_mapped_to_user
     label: 2.1 Ensure that IP addresses are mapped to usernames
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 2.2 Ensure that WMI probing is disabled
   - name: device_config_file
@@ -422,8 +427,9 @@ snippets:
 
   - name: wmi_probing_disabled
     label: 2.2 Ensure that WMI probing is disabled
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 2.3 Ensure that User-ID is only enabled for internal trusted interfaces
   - name: device_config_file
@@ -435,8 +441,9 @@ snippets:
 
   - name: userid_internal_zones_only
     label: 2.3 Ensure that User-ID is only enabled for internal trusted interfaces
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 2.4 Ensure that 'Include/Exclude Networks' is used if User-ID is enabled
   - name: device_config_file
@@ -448,8 +455,9 @@ snippets:
 
   - name: userid_with_include_exclude
     label: 2.4 Ensure that 'Include/Exclude Networks' is used if User-ID is enabled
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 2.5 Ensure that the User-ID Agent has minimal permissions if User-ID is enabled
   - name: device_config_file
@@ -461,8 +469,9 @@ snippets:
 
   - name: userid_agent_min_permissions
     label: 2.5 Ensure that the User-ID Agent has minimal permissions if User-ID is enabled
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 2.6 Ensure that the User-ID service account does not have interactive logon rights
   - name: device_config_file
@@ -474,8 +483,9 @@ snippets:
 
   - name: userid_no_interactive_logon
     label: 2.6 Ensure that the User-ID service account does not have interactive logon rights
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 2.7 Ensure remote access capabilities for the User-ID service account are forbidden
   - name: device_config_file
@@ -487,8 +497,9 @@ snippets:
 
   - name: userid_service_account
     label: 2.7 Ensure remote access capabilities for the User-ID service account are forbidden
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 2.8 Ensure that security policies restrict User-ID Agent traffic from crossing into untrusted zones
   - name: device_config_file
@@ -500,8 +511,9 @@ snippets:
 
   - name: userid_agent_no_untrust_zone
     label: 2.8 Ensure that security policies restrict User-ID Agent traffic from crossing into untrusted zones
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 3.1 Ensure a fully-synchronized High Availability peer is configured
   - name: device_config_file
@@ -513,8 +525,9 @@ snippets:
 
   - name: HA_peer_configured
     label: 3.1 Ensure a fully-synchronized High Availability peer is configured
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 3.2 Ensure 'High Availability' requires Link Monitoring and/or Path Monitoring
   - name: device_config_file
@@ -526,8 +539,9 @@ snippets:
 
   - name: HA_link_path_monitoring
     label: 3.2 Ensure 'High Availability' requires Link Monitoring and/or Path Monitoring
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 3.3 Ensure 'Passive Link State' and 'Preemptive' are configured appropriately
   - name: device_config_file
@@ -539,8 +553,9 @@ snippets:
 
   - name: HA_passive_link_preemptive
     label: 3.3 Ensure 'Passive Link State' and 'Preemptive' are configured appropriately
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 4.1 Ensure 'Antivirus Update Schedule' is set to download and install updates hourly
   - name: device_config_file
@@ -571,8 +586,9 @@ snippets:
 
   - name: WF_file_size_max
     label: 5.1 Ensure that WildFire file size upload limits are maximized
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 5.2 Ensure forwarding is enabled for all applications and file types in WildFire file blocking profiles
   - name: device_config_file
@@ -584,8 +600,9 @@ snippets:
 
   - name: WF_all_apps_files
     label: 5.2 Ensure forwarding is enabled for all applications and file types in WildFire file blocking profiles
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 5.4 Ensure forwarding of decrypted content to WildFire is enabled
   - name: device_config_file
@@ -597,8 +614,9 @@ snippets:
 
   - name: WF_forward_decrypt_content
     label: 5.4 Ensure forwarding of decrypted content to WildFire is enabled
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 5.5 Ensure all WildFire session information settings are enabled
   - name: device_config_file
@@ -610,8 +628,9 @@ snippets:
 
   - name: WF_session_info_enabled
     label: 5.5 Ensure all WildFire session information settings are enabled
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 5.6 Ensure alerts are enabled for malicious files detected by WildFire
   - name: device_config_file
@@ -623,8 +642,9 @@ snippets:
 
   - name: WF_alerts_malicious_files
     label: 5.6 Ensure alerts are enabled for malicious files detected by WildFire
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 5.7 Ensure 'WildFire Update Schedule' is set to download and install updates every minute
   - name: device_config_file
@@ -636,8 +656,9 @@ snippets:
 
   - name: WF_update_schedule
     label: 5.7 Ensure 'WildFire Update Schedule' is set to download and install updates every minute
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 6.1 Ensure that antivirus profiles are set to block on all decoders except 'imap' and 'pop3'
   - name: device_config_file
@@ -649,8 +670,9 @@ snippets:
 
   - name: AV_decoders_block
     label: 6.1 Ensure that antivirus profiles are set to block on all decoders except 'imap' and 'pop3'
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 6.2 Ensure a secure antivirus profile is applied to all relevant security policies
   - name: device_config_file
@@ -662,8 +684,9 @@ snippets:
 
   - name: AV_profile_in_policies
     label: 6.2 Ensure a secure antivirus profile is applied to all relevant security policies
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 6.3 Ensure an anti-spyware profile is configured to block on all spyware severity levels, categories, and threats
   - name: device_config_file
@@ -675,8 +698,9 @@ snippets:
 
   - name: spyware_profile_block_all
     label: 6.3 Ensure an anti-spyware profile is configured to block on all spyware severity levels, categories, and threats
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 6.4 Ensure DNS sinkholing is configured on all anti-spyware profiles in use
   - name: device_config_file
@@ -688,8 +712,9 @@ snippets:
 
   - name: DNS_sinkhole_configured
     label: 6.4 Ensure DNS sinkholing is configured on all anti-spyware profiles in use
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 6.5 Ensure passive DNS monitoring is set to enabled on all anti-spyware profiles in use
   - name: device_config_file
@@ -701,8 +726,9 @@ snippets:
 
   - name: enable_passive_DNS_monitoring
     label: 6.5 Ensure passive DNS monitoring is set to enabled on all anti-spyware profiles in use
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 6.6 Ensure a secure anti-spyware profile is applied to all security policies permitting traffic to the Internet
   - name: device_config_file
@@ -714,8 +740,9 @@ snippets:
 
   - name: spyware_profile_in_policies
     label: 6.6 Ensure a secure anti-spyware profile is applied to all security policies permitting traffic to the Internet
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 6.7 Ensure a Vulnerability Protection Profile is set to block attacks against critical and high vulnerabilities,
   # and set to default on medium, low, and informational vulnerabilities
@@ -730,8 +757,9 @@ snippets:
     label: |
       6.7 Ensure a Vulnerability Protection Profile is set to block attacks against critical and high vulnerabilities,
       and set to default on medium, low, and informational vulnerabilities
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 6.8 Ensure a secure Vulnerability Protection Profile is applied to all security rules allowing traffic
   - name: device_config_file
@@ -743,8 +771,9 @@ snippets:
 
   - name: vulnerability_profile_in_policies
     label: 6.8 Ensure a secure Vulnerability Protection Profile is applied to all security rules allowing traffic
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 6.9 Ensure that PAN-DB URL Filtering is used
   - name: device_config_file
@@ -756,8 +785,9 @@ snippets:
 
   - name: pandb_url_filtering
     label: 6.9 Ensure that PAN-DB URL Filtering is used
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 6.10 Ensure that URL Filtering uses the action of “block” or “override” on the URL categories
   - name: device_config_file
@@ -769,8 +799,9 @@ snippets:
 
   - name: url_filtering_block_or_override
     label: 6.10 Ensure that URL Filtering uses the action of “block” or “override” on the URL categories
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 6.11 Ensure that access to every URL is logged
   - name: device_config_file
@@ -782,8 +813,9 @@ snippets:
 
   - name: url_filtering_log_all_categories
     label: 6.11 Ensure that access to every URL is logged
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 6.12 Ensure all HTTP Header Logging options are enabled
   - name: device_config_file
@@ -795,8 +827,9 @@ snippets:
 
   - name: url_filtering_http_header_logging
     label: 6.12 Ensure all HTTP Header Logging options are enabled
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 6.13 Ensure secure URL filtering is enabled for all security policies allowing traffic to the Internet
   - name: device_config_file
@@ -808,8 +841,9 @@ snippets:
 
   - name: url_filtering_all_policies
     label: 6.13 Ensure secure URL filtering is enabled for all security policies allowing traffic to the Internet
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 6.14 Ensure alerting after a threshold of credit card or Social Security numbers is detected is enabled
   - name: device_config_file
@@ -821,8 +855,9 @@ snippets:
 
   - name: data_filtering_cc_ss_numbers
     label: 6.14 Ensure alerting after a threshold of credit card or Social Security numbers is detected is enabled
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 6.15 Ensure a secure Data Filtering profile is applied to all security policies allowing traffic to or from the Internet
   - name: device_config_file
@@ -834,8 +869,9 @@ snippets:
 
   - name: data_filtering_profile_in_policies
     label: 6.15 Ensure a secure Data Filtering profile is applied to all security policies allowing traffic to or from the Internet
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 6.16 Ensure that a Zone Protection Profile with an enabled SYN Flood Action of SYN Cookies is attached to all untrusted zones
   - name: device_config_file
@@ -847,8 +883,9 @@ snippets:
 
   - name: zone_protect_syn_flood
     label: 6.16 Ensure that a Zone Protection Profile with an enabled SYN Flood Action of SYN Cookies is attached to all untrusted zones
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 6.17 Ensure that a Zone Protection Profile with tuned Flood Protection settings enabled for all flood types is attached to all untrusted zones
   - name: device_config_file
@@ -860,8 +897,9 @@ snippets:
 
   - name: zone_protect_flood_protect
     label: 6.17 Ensure that a Zone Protection Profile with tuned Flood Protection settings enabled for all flood types is attached to all untrusted zones
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 6.18 Ensure that all zones have Zone Protection Profiles with all Reconnaissance Protection settings enabled, tuned, and set to appropriate actions
   - name: device_config_file
@@ -873,8 +911,9 @@ snippets:
 
   - name: zone_protection_reconn_protect
     label: 6.18 Ensure that all zones have Zone Protection Profiles with all Reconnaissance Protection settings enabled, tuned, and set to appropriate actions
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 6.19 Ensure all zones have Zone Protection Profiles that drop specially crafted packets
   - name: device_config_file
@@ -886,8 +925,9 @@ snippets:
 
   - name: zone_protect_crafted_pkts
     label: 6.19 Ensure all zones have Zone Protection Profiles that drop specially crafted packets
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 6.20 Ensure that User Credential Submission uses the action of “block” or “continue” on the URL categories
   - name: device_config_file
@@ -899,8 +939,9 @@ snippets:
 
   - name: user_cred_block_continue
     label: 6.20 Ensure that User Credential Submission uses the action of “block” or “continue” on the URL categories
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 7.1 Ensure application security policies exist when allowing traffic from an untrusted zone to a more trusted zone
   - name: device_config_file
@@ -912,8 +953,9 @@ snippets:
 
   - name: app_security_more_trusted_zone
     label: 7.1 Ensure application security policies exist when allowing traffic from an untrusted zone to a more trusted zone
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 7.2 Ensure 'Service setting of ANY' in a security policy allowing traffic does not exist
   - name: device_config_file
@@ -925,8 +967,9 @@ snippets:
 
   - name: service_any_not_allowed_in_policy
     label: 7.2 Ensure 'Service setting of ANY' in a security policy allowing traffic does not exist
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 7.3 Ensure 'Security Policy' denying any/all traffic to/from IP addresses on Trusted Threat Intelligence Sources Exists
   - name: device_config_file
@@ -938,8 +981,9 @@ snippets:
 
   - name: security_policy_deny_threat_ips
     label: 7.3 Ensure 'Security Policy' denying any/all traffic to/from IP addresses on Trusted Threat Intelligence Sources Exists
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 8.1 Ensure 'SSL Forward Proxy Policy' for traffic destined to the Internet is configured
   - name: device_config_file
@@ -951,8 +995,9 @@ snippets:
 
   - name: ssl_forward_proxy_policy
     label: 8.1 Ensure 'SSL Forward Proxy Policy' for traffic destined to the Internet is configured
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 8.2 Ensure 'SSL Inbound Inspection' is required for all untrusted traffic destined for servers using SSL or TLS
   - name: device_config_file
@@ -964,8 +1009,9 @@ snippets:
 
   - name: ssl_inbound_inspection
     label: 8.2 Ensure 'SSL Inbound Inspection' is required for all untrusted traffic destined for servers using SSL or TLS
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 8.3 Ensure that the Certificate used for Decryption is Trusted
   - name: device_config_file
@@ -977,5 +1023,6 @@ snippets:
 
   - name: decrypt_cert_trusted
     label: 8.3 Ensure that the Certificate used for Decryption is Trusted
-    test: true
-    documentation_link: https://iron-skillet.readthedocs.io
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
