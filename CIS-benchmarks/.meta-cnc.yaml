@@ -413,7 +413,7 @@ snippets:
 
   - name: max_idle_timeout
     label: 1.4.1 Ensure 'Idle timeout' is less than or equal to 10 minutes for device management
-    test: admin_idle_timeout <= 10
+    test: admin_idle_timeout <= '10'
     fail_message: recommended to close the session after 10 minutes of idle timeout to prevent unauthorized access.
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
