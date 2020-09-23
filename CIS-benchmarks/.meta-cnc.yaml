@@ -176,7 +176,7 @@ snippets:
       System: {{ system_entry_send_snmp_all_logs }}
       Config: {{ config_entry_send_snmp_all_logs }}
       UserID: {{ config_entry_send_snmp_all_logs }}
-      HIP Match: {{ hipmatch_send_snmp_syslog_all_logs }}
+      HIP Match: {{ hipmatch_send_snmp_all_logs }}
       GlobalProtect: {{ globalprotect_entry_send_snmp_all_logs }}
       IP Tag: {{ iptag_entry_send_snmp_all_logs }}
     documentation_link: https://iron-skillet.readthedocs.io
@@ -229,12 +229,25 @@ snippets:
     outputs:
       - name: profile_permitted_ips
         capture_list: /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile/entry/permitted-ip/../@name
+      - name: profile_ssh_enabled
+        capture_list: /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile/entry/ssh[text()='yes']/../@name
+      - name: profile_https_enabled
+        capture_list: /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile/entry/https[text()='yes']/../@name
+      - name: profile_snmp_enabled
+        capture_list: /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile/entry/snmp[text()='yes']/../@name
+      - name: ssh_https_snmp_enabled_profiles_no_ip_list
+        capture_expression: |
+          profile_ssh_enabled
+          + profile_https_enabled
+          + profile_snmp_enabled
+        filter_items: item not in profile_permitted_ips
+
 
   - name: permitted_ip_address_mgmt_profiles
     label: 1.2.2 Ensure 'Permitted IP Addresses' is set for all management profiles where SSH, HTTPS, or SNMP is enabled
-    test: profile_permitted_ips | length
-    fail_message: should have permitted IPs
-    pass_message: permitted IPs found
+    test: ssh_https_snmp_enabled_profiles_no_ip_list | length == 0
+    fail_message: network profiles failing this benchmark are {{ ssh_https_snmp_enabled_profiles_no_ip_list }}
+    pass_message: all ssh, https, snmp enabled profiles have permitted IP addresses configured
     documentation_link: https://iron-skillet.readthedocs.io
 
   # 1.2.3 disable http and telnet for mgmt interface
@@ -309,81 +322,172 @@ snippets:
     fail_message: test is not implemented
     documentation_link: https://www.paloaltonetworks.com
 
-  # object used for all password complexity validations
+  # 1.3.1 enable min password complexity
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: password_complexity
-        capture_object: /config/mgt-config/password-complexity
+      - name: password_complexity_enabled
+        capture_value: /config/mgt-config/password-complexity/enabled/text()
 
-  # 1.3.1 enable min password complexity
-  - name: enable_min_pasword_complexity
+  - name: test_password_complexity_enabled
     label: 1.3.1 Ensure 'Minimum Password Complexity' is enabled
-    test: password_complexity | element_value('enabled') == 'yes'
+    test: password_complexity_enabled == 'yes'
+    fail_message: Minimum Password Complexity is not enabled
+    pass_message: Minimum Password Complexity is enabled
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
       #device-setup-management-minimum-password-complexity
 
   # 1.3.2 password complexity min length
-  - name: password_complexity_min_length
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: password_min_length
+        capture_value: /config/mgt-config/password-complexity/minimum-length/text()
+
+  - name: test_password_min_length
     label: 1.3.2 Ensure 'Minimum Length' is greater than or equal to 12
-    test: password_complexity | element_value('minimum-length') >= '12'
+    test: password_min_length >= '12'
+    fail_message: Minimum length is set to {{ password_min_length }}
+    pass_message: Minimum length is set to {{ password_min_length }}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
+      #device-setup-management-minimum-password-complexity
+
+  # 1.3.2 password complexity min length
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: password_min_uppercase
+        capture_value: /config/mgt-config/password-complexity/minimum-uppercase-letters/text()
+
+  - name: test_password_min_uppercase
+    label: 1.3.3 Ensure 'Minimum Uppercase Letters' is greater than or equal to 1
+    test: password_min_uppercase >= '1'
+    fail_message: Minimum Uppercase Letters is set to {{ password_min_length }}
+    pass_message: Minimum Uppercase Letters is set to {{ password_min_length }}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
       #device-setup-management-minimum-password-complexity
 
   # 1.3.3 password complexity min uppercase
-  - name: password_complexity_min_uppercase
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: password_min_uppercase
+        capture_value: /config/mgt-config/password-complexity/minimum-uppercase-letters/text()
+
+  - name: test_password_min_uppercase
     label: 1.3.3 Ensure 'Minimum Uppercase Letters' is greater than or equal to 1
-    test: password_complexity | element_value('minimum-uppercase-letters') >= '1'
+    test: password_min_uppercase >= '1'
+    fail_message: Minimum Uppercase Letters is set to {{ password_min_uppercase }}
+    pass_message: Minimum Uppercase Letters is set to {{ password_min_uppercase }}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
       #device-setup-management-minimum-password-complexity
 
   # 1.3.4 password complexity min lowercase
-  - name: password_complexity_min_lowercase
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: password_min_lowercase
+        capture_value: /config/mgt-config/password-complexity/minimum-lowercase-letters/text()
+
+  - name: test_password_min_lowercase
     label: 1.3.4 Ensure 'Minimum Lowercase Letters' is greater than or equal to 1
-    test: password_complexity | element_value('minimum-lowercase-letters') >= '1'
+    test: password_min_lowercase >= '1'
+    fail_message: Minimum Lowercase Letters is set to {{ password_min_lowercase }}
+    pass_message: Minimum Lowercase Letters is set to {{ password_min_lowercase }}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
       #device-setup-management-minimum-password-complexity
 
   # 1.3.5 password complexity min numeric
-  - name: password_complexity_min_numeric
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: password_min_numeric
+        capture_value: /config/mgt-config/password-complexity/minimum-numeric-letters/text()
+
+  - name: test_password_min_uppercase
     label: 1.3.5 Ensure 'Minimum Numeric Letters' is greater than or equal to 1
-    test: password_complexity | element_value('minimum-numeric-letters') >= '1'
+    test: password_min_numeric >= '1'
+    fail_message: Minimum Numeric Letters is set to {{ password_min_numeric }}
+    pass_message: Minimum Numeric Letters is set to {{ password_min_numeric }}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
       #device-setup-management-minimum-password-complexity
 
   # 1.3.6 password complexity min specials chars
-  - name: password_complexity_min_special_char
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: password_min_special
+        capture_value: /config/mgt-config/password-complexity/minimum-special-characters/text()
+
+  - name: test_password_min_special
     label: 1.3.6 Ensure 'Minimum Special Characters' is greater than or equal to 1
-    test: password_complexity | element_value('minimum-special-characters') >= '1'
+    test: password_min_special >= '1'
+    fail_message: Minimum Special Characters is set to {{ password_min_special }}
+    pass_message: Minimum Special Characters is set to {{ password_min_special }}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
       #device-setup-management-minimum-password-complexity
 
   # 1.3.7 password complexity change period
-  - name: password_complexity_max_change_period
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: password_min_change_period
+        capture_value: /config/mgt-config/password-complexity/password-change/expiration-period/text()
+
+  - name: test_password_min_change_period
     label: 1.3.7 Ensure 'Required Password Change Period' is less than or equal to 90 days
-    test: false
-    fail_message: test is not implemented
-    documentation_link: https://www.paloaltonetworks.com
+    test: password_min_change_period <= '90'
+    fail_message: Required Password Change Period is set to {{ password_min_change_period }} days
+    pass_message: Required Password Change Period is set to {{ password_min_change_period }} days
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
+      #device-setup-management-minimum-password-complexity
 
   # 1.3.8 password complexity new password differs by char
-  - name: password_complexity_new_differs
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: password_differs_by_char
+        capture_value: /config/mgt-config/password-complexity/new-password-differs-by-characters/text()
+
+  - name: test_password_differs_by_char
     label: 1.3.8 Ensure 'New Password Differs By Characters' is greater than or equal to 3
-    test: password_complexity | element_value('new-password-differs-by-characters') >= '3'
+    test: password_differs_by_char >= '3'
+    fail_message: New Password Differs By Characters is set to {{ password_differs_by_char }}
+    pass_message: New Password Differs By Characters is set to {{ password_differs_by_char }}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
       #device-setup-management-minimum-password-complexity
 
   # 1.3.9 password complexity password reuse limit
-  - name: password_complexity_reuse_limit
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: password_history_count
+        capture_value: /config/mgt-config/password-complexity/password-history-count/text()
+
+  - name: test_password_history_count
     label: 1.3.9 Ensure 'Prevent Password Reuse Limit' is set to 24 or more passwords
-    test: password_complexity | element_value('password-history-count') >= '24'
+    test: password_history_count >= '24'
+    fail_message: Prevent Password Reuse Limit is set to {{ password_history_count }} passwords
+    pass_message: Prevent Password Reuse Limit is set to {{ password_history_count }} passwords
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
       #device-setup-management-minimum-password-complexity
@@ -393,13 +497,16 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: password_profiles
+        capture_list: /config/mgt-config/password-profile/entry/@name
 
-  - name: no_password_profiles
+  - name: test_password_profiles
     label: 1.3.10 Ensure 'Password Profiles' do not exist
-    test: false
-    fail_message: test is not implemented
+    test: password_profiles | length == 0
+    fail_message: |
+      Password profiles {{ password_profiles }} have been configured.
+      If they are used ensure settings are stronger than the password complexity settings
+    pass_message: benchmark requirements are met. No password profiles configured.
     documentation_link: https://www.paloaltonetworks.com
 
   # 1.4.1 admin idle timeout
@@ -414,7 +521,8 @@ snippets:
   - name: max_idle_timeout
     label: 1.4.1 Ensure 'Idle timeout' is less than or equal to 10 minutes for device management
     test: admin_idle_timeout <= '10'
-    fail_message: recommended to close the session after 10 minutes of idle timeout to prevent unauthorized access.
+    fail_message: Idle Timeout is set to {{ admin_idle_timeout }} minutes
+    pass_message: Idle Timeout is set to {{ admin_idle_timeout }} minutes
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
       #device-setup-management-authentication-settings
@@ -424,18 +532,33 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: failed_attempts
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/management/
+          admin-lockout/failed-attempts/text()
+      - name: lockout_time
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/management/
+          admin-lockout/lockout-time/text()
 
-  - name: failed_attempts_lockout
+  - name: test_failed_attempts_lockout
     label: 1.4.2 Ensure 'Failed Attempts' and 'Lockout Time' for Authentication Profile are properly configured
     test: |
       (
-      device_setting | element_value('management.admin-lockout.failed-attempts') | int <=5
-      and device_setting | element_value('management.admin-lockout.lockout-time') | int >= 30
+      failed_attempts | length
+      and failed_attempts > '0'
+      and lockout_time | length
       )
     fail_message: |
-      recommended to set minimum values for maximum number of failed loging attempts and associated lockout timer
+      {%- if failed_attempts | length == 0 or failed_attempts == 0 %}
+        Failed Attempts not configured or set to unlimited tries
+      {%- endif %}
+      {%- if lockout_time | length == 0 %}
+        Lockout Time is not configured
+      {%- endif %}
+    pass_message: |
+      Failed Attempts set to {{ failed_attempts }} and Lockout Time set to {{ lockout_time }}.
+      Check that these are set in accordance with company policy.
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
       #device-setup-management-authentication-settings
@@ -452,6 +575,8 @@ snippets:
   - name: snmpv3_selected
     label: 1.5.1 Ensure 'V3' is selected for SNMP polling
     test: snmp_version | tag_present('v3')
+    fail_message: V3 is not selected for SNMP polling
+    pass_message: V3 is selected for SNMP polling
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html#device-setup-operations-snmp-setup
 
@@ -461,12 +586,14 @@ snippets:
     variable: config
     outputs:
       - name: verify_server_identiy
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+        capture_value: |
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/server-verification/text()
 
   - name: verify_update_service_enabled
     label: 1.6.1 Ensure 'Verify Update Server Identity' is enabled
-    test: false
-    fail_message: test is not implemented
+    test: verify_server_identiy != 'no'
+    fail_message: Verify Update Server Idenity is not enabled
+    pass_message: Verify Update Server Idenity is enabled
     documentation_link: https://www.paloaltonetworks.com
 
   # 1.6.2 Ensure redundant NTP servers are configured appropriately
@@ -485,8 +612,8 @@ snippets:
       and ntp_servers | tag_present('secondary-ntp-server.ntp-server-address')
       )
     fail_message: |
-      time server configuration is reccommended to ensure the firewall clock is in sync
-      with external service and logging platforms.
+      Primary and Secondary NTP servers are not configured
+    pass_message: Redundant NTP servers are configured
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html#device-setup-services-services
 

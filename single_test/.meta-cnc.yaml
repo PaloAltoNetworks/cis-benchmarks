@@ -1,0 +1,32 @@
+# skillet preamble information used by panhandler
+# ---------------------------------------------------------------------
+# unique snippet name
+name: CIS_benchmark_testing
+# label used for menu selection
+label: test CIS content
+description: single capture and test for CIS validation creation and test
+
+type: pan_validation
+
+# grouping of like snippets for dynamic menu creation in panhandler
+labels:
+  collection:
+    - CIS
+
+snippets:
+
+  # 1.6.1 Ensure 'Verify Update Server Identity' is enabled
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: verify_server_identiy
+        capture_value: |
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/server-verification/text()
+
+  - name: verify_update_service_enabled
+    label: 1.6.1 Ensure 'Verify Update Server Identity' is enabled
+    test: verify_server_identiy != 'no'
+    fail_message: Verify Update Server Idenity is not enabled
+    pass_message: Verify Update Server Idenity is enabled
+    documentation_link: https://www.paloaltonetworks.com
