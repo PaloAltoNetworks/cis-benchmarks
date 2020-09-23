@@ -15,18 +15,32 @@ labels:
 
 snippets:
 
-  # 1.6.1 Ensure 'Verify Update Server Identity' is enabled
+  # 1.2.2 permitted ip addresses for management profiles
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: verify_server_identiy
-        capture_value: |
-          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/server-verification/text()
+      - name: profile_permitted_ips
+        capture_list: /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile/entry/permitted-ip/../@name
+      - name: profile_ssh_enabled
+        capture_list: /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile/entry/ssh[text()='yes']/../@name
+      - name: profile_https_enabled
+        capture_list: /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile/entry/https[text()='yes']/../@name
+      - name: profile_snmp_enabled
+        capture_list: /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile/entry/snmp[text()='yes']/../@name
+      - name: ssh_https_snmp_enabled_profiles_no_ip_list
+        capture_expression: |
+          profile_ssh_enabled
+          + profile_https_enabled
+          + profile_snmp_enabled
+        filter_items: item not in profile_permitted_ips
 
-  - name: verify_update_service_enabled
-    label: 1.6.1 Ensure 'Verify Update Server Identity' is enabled
-    test: verify_server_identiy != 'no'
-    fail_message: Verify Update Server Idenity is not enabled
-    pass_message: Verify Update Server Idenity is enabled
-    documentation_link: https://www.paloaltonetworks.com
+
+  - name: permitted_ip_address_mgmt_profiles
+    label: 1.2.2 Ensure 'Permitted IP Addresses' is set for all management profiles where SSH, HTTPS, or SNMP is enabled
+    test: ssh_https_snmp_enabled_profiles_no_ip_list | length == 0
+    fail_message: |
+      network profiles failing this benchmark are
+      {% for item in ssh_https_snmp_enabled_profiles_no_ip_list | unique %}{{ item }} {% endfor %}
+    pass_message: all ssh, https, snmp enabled profiles have permitted IP addresses configured
+    documentation_link: https://iron-skillet.readthedocs.io

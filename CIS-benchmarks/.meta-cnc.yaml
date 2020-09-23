@@ -246,7 +246,9 @@ snippets:
   - name: permitted_ip_address_mgmt_profiles
     label: 1.2.2 Ensure 'Permitted IP Addresses' is set for all management profiles where SSH, HTTPS, or SNMP is enabled
     test: ssh_https_snmp_enabled_profiles_no_ip_list | length == 0
-    fail_message: network profiles failing this benchmark are {{ ssh_https_snmp_enabled_profiles_no_ip_list }}
+    fail_message: |
+      network profiles failing this benchmark are
+      {% for item in ssh_https_snmp_enabled_profiles_no_ip_list | unique %}{{ item }} {% endfor %}
     pass_message: all ssh, https, snmp enabled profiles have permitted IP addresses configured
     documentation_link: https://iron-skillet.readthedocs.io
 
