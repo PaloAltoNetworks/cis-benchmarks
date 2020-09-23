@@ -356,7 +356,7 @@ snippets:
       https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
       #device-setup-management-minimum-password-complexity
 
-  # 1.3.2 password complexity min length
+  # 1.3.3 password minimum uppercase letters
   - name: device_config_file
     cmd: parse
     variable: config
@@ -369,23 +369,6 @@ snippets:
     test: password_min_uppercase >= '1'
     fail_message: Minimum Uppercase Letters is set to {{ password_min_length }}
     pass_message: Minimum Uppercase Letters is set to {{ password_min_length }}
-    documentation_link: |-
-      https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
-      #device-setup-management-minimum-password-complexity
-
-  # 1.3.3 password complexity min uppercase
-  - name: device_config_file
-    cmd: parse
-    variable: config
-    outputs:
-      - name: password_min_uppercase
-        capture_value: /config/mgt-config/password-complexity/minimum-uppercase-letters/text()
-
-  - name: test_password_min_uppercase
-    label: 1.3.3 Ensure 'Minimum Uppercase Letters' is greater than or equal to 1
-    test: password_min_uppercase >= '1'
-    fail_message: Minimum Uppercase Letters is set to {{ password_min_uppercase }}
-    pass_message: Minimum Uppercase Letters is set to {{ password_min_uppercase }}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
       #device-setup-management-minimum-password-complexity
@@ -803,6 +786,22 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
       #ironskillet-dynamic-updates
+
+  # 4.2 Ensure 'Applications and Threats Update Schedule'
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: apps_threats_updates
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+
+  - name: test_apps_threats_updates
+    label: |
+      4.2 Ensure 'Applications and Threats Update Schedule' is set to download and install updates
+      at daily or shorter intervals
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
 
   # 5.1 Ensure that WildFire file size upload limits are maximized
   - name: device_config_file
