@@ -637,13 +637,16 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: userid_probing
+        capture_value: |
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/
+          user-id-collector/setting/enable-probing/text()
 
   - name: wmi_probing_disabled
     label: 2.2 Ensure that WMI probing is disabled
-    test: false
-    fail_message: test is not implemented
+    test: userid_probing != 'yes'
+    fail_message: WMI probing is not disabled
+    pass_message: WMI probing is disabled
     documentation_link: https://www.paloaltonetworks.com
 
   # 2.3 Ensure that User-ID is only enabled for internal trusted interfaces

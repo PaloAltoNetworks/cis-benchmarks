@@ -15,32 +15,22 @@ labels:
 
 snippets:
 
-  # 1.2.2 permitted ip addresses for management profiles
+  # 4.1 Ensure 'Antivirus Update Schedule' is set to download and install updates hourly
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: profile_permitted_ips
-        capture_list: /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile/entry/permitted-ip/../@name
-      - name: profile_ssh_enabled
-        capture_list: /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile/entry/ssh[text()='yes']/../@name
-      - name: profile_https_enabled
-        capture_list: /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile/entry/https[text()='yes']/../@name
-      - name: profile_snmp_enabled
-        capture_list: /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile/entry/snmp[text()='yes']/../@name
-      - name: ssh_https_snmp_enabled_profiles_no_ip_list
-        capture_expression: |
-          profile_ssh_enabled
-          + profile_https_enabled
-          + profile_snmp_enabled
-        filter_items: item not in profile_permitted_ips
+      - name: av_update
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/update-schedule/anti-virus/recurring[1]
 
-
-  - name: permitted_ip_address_mgmt_profiles
-    label: 1.2.2 Ensure 'Permitted IP Addresses' is set for all management profiles where SSH, HTTPS, or SNMP is enabled
-    test: ssh_https_snmp_enabled_profiles_no_ip_list | length == 0
+  - name: AV_update_schedule
+    label: 4.1 Ensure 'Antivirus Update Schedule' is set to download and install updates hourly
+    test: av_update | tag_present('hourly')
     fail_message: |
-      network profiles failing this benchmark are
-      {% for item in ssh_https_snmp_enabled_profiles_no_ip_list | unique %}{{ item }} {% endfor %}
-    pass_message: all ssh, https, snmp enabled profiles have permitted IP addresses configured
-    documentation_link: https://iron-skillet.readthedocs.io
+      {{ av_update }}
+    pass_message: |
+      {{ av_update }}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
+      #ironskillet-dynamic-updates
