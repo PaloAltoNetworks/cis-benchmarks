@@ -13,24 +13,47 @@ labels:
   collection:
     - CIS
 
+variables:
+
+  - name: app_threat_intervals
+    description: interval values used for 4.2 validation
+    type_hint: hidden
+    default:
+      - daily
+      - hourly
+      - every-30-mins
+
 snippets:
 
-  # 4.1 Ensure 'Antivirus Update Schedule' is set to download and install updates hourly
+  # 4.2 Ensure 'Applications and Threats Update Schedule'
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: av_update
-        capture_list: |-
-          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/update-schedule/anti-virus/recurring[1]
+      - name: threats_update_interval
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/
+          update-schedule/threats/recurring/*[1]
+      - name: threats_update_action
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/
+          update-schedule/threats/recurring//action/text()
 
-  - name: AV_update_schedule
-    label: 4.1 Ensure 'Antivirus Update Schedule' is set to download and install updates hourly
-    test: av_update | tag_present('hourly')
+  - name: test_apps_threats_updates
+    label: |
+      4.2 Ensure 'Applications and Threats Update Schedule' is set to download and install updates
+      at daily or shorter intervals
+    test: |
+      (
+        threats_update_interval in app_threat_intervals
+        and threats_update_action == 'download-and-install'
+      )
     fail_message: |
-      {{ av_update }}
+     Applications and Threats Update Schedule is set to {{ threats_update_interval }}
+     with action {{ threats_update_action }}
     pass_message: |
-      {{ av_update }}
+      Applications and Threats Update Schedule is set to {{ threats_update_interval }}
+      with action {{ threats_update_action }}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
       #ironskillet-dynamic-updates

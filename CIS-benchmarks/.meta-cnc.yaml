@@ -13,6 +13,14 @@ labels:
 
 variables:
 
+  - name: app_threat_intervals
+    description: interval values used for 4.2 apps threats update interval test
+    type_hint: hidden
+    default:
+      - daily
+      - hourly
+      - every-30-mins
+
 snippets:
 
   # TODO: determine what to use for doc links: CIS text, IronSkillet, palo docs
@@ -780,16 +788,26 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: av_update
-        capture_object: |-
-          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/update-schedule/anti-virus
+      - name: av_update_interval
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/
+          update-schedule/anti-virus/recurring/*[1]
+      - name: av_update_action
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/
+          update-schedule/anti-virus/recurring/hourly/action/text()
 
   - name: AV_update_schedule
     label: 4.1 Ensure 'Antivirus Update Schedule' is set to download and install updates hourly
-    test: av_update | tag_present('recurring.hourly')
+    test: |
+      (
+        av_update_interval == 'hourly'
+        and av_update_action == 'download-and-install'
+      )
     fail_message: |
-      recommended settings are to check for content updates as often as possible to ensure the firewall has the
-      lastest content updates. Content is only downloaded and installed when new versions are available.
+      Antivirus Update Schedule is set to {{ av_update_interval }} with action {{ av_update_action }}
+    pass_message: |
+      Antivirus Update Schedule is set to {{ av_update_interval }} with action {{ av_update_action }}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
       #ironskillet-dynamic-updates
@@ -799,16 +817,33 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: apps_threats_updates
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: threats_update_interval
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/
+          update-schedule/threats/recurring/*[1]
+      - name: threats_update_action
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/
+          update-schedule/threats/recurring//action/text()
 
   - name: test_apps_threats_updates
     label: |
       4.2 Ensure 'Applications and Threats Update Schedule' is set to download and install updates
       at daily or shorter intervals
-    test: false
-    fail_message: test is not implemented
-    documentation_link: https://www.paloaltonetworks.com
+    test: |
+      (
+        threats_update_interval in app_threat_intervals
+        and threats_update_action == 'download-and-install'
+      )
+    fail_message: |
+     Applications and Threats Update Schedule is set to {{ threats_update_interval }}
+     with action {{ threats_update_action }}
+    pass_message: |
+      Applications and Threats Update Schedule is set to {{ threats_update_interval }}
+      with action {{ threats_update_action }}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html
+      #ironskillet-dynamic-updates
 
   # 5.1 Ensure that WildFire file size upload limits are maximized
   - name: device_config_file
