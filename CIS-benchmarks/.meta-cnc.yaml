@@ -21,6 +21,21 @@ variables:
       - hourly
       - every-30-mins
 
+  - name: wf_file_size_limits
+    description: wildfire recommended file size limits
+    type_hint: hidden
+    default:
+      - pe: 16
+        apk: 30
+        pdf: 3072
+        ms-office: 16384
+        jar: 5
+        flash: 5
+        MacOSX: 10
+        archive: 50
+        linux: 50
+        script: 2000
+
 snippets:
 
   # TODO: determine what to use for doc links: CIS text, IronSkillet, palo docs
@@ -846,18 +861,101 @@ snippets:
       #ironskillet-dynamic-updates
 
   # 5.1 Ensure that WildFire file size upload limits are maximized
-  - name: device_config_file
+  - name: wf_granular_parse
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: wf_limits_pe
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
+          entry[@name='pe']/size-limit/text()
+      - name: wf_limits_apk
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
+          entry[@name='apk']/size-limit/text()
+      - name: wf_limits_pdf
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
+          entry[@name='pdf']/size-limit/text()
+      - name: wf_limits_msoffice
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
+          entry[@name='ms-office']/size-limit/text()
+      - name: wf_limits_jar
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
+          entry[@name='jar']/size-limit/text()
+      - name: wf_limits_flash
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
+          entry[@name='flash']/size-limit/text()
+      - name: wf_limits_MacOSX
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
+          entry[@name='MacOSX']/size-limit/text()
+      - name: wf_limits_archive
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
+          entry[@name='archive']/size-limit/text()
+      - name: wf_limits_linux
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
+          entry[@name='linux']/size-limit/text()
+      - name: wf_limits_script
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
+          entry[@name='script']/size-limit/text()
 
-  - name: WF_file_size_max
+  # check all file types and sizes match BPA
+  - name:  wf_limit_pe_test
     label: 5.1 Ensure that WildFire file size upload limits are maximized
-    test: false
-    fail_message: test is not implemented
-    documentation_link: https://www.paloaltonetworks.com
+    test: |-
+      (
+        wf_limits_pe | int >= wf_file_size_limits[0].pe | int
+        and wf_limits_apk | int >= wf_file_size_limits[0].apk | int
+        and wf_limits_pdf | int >= wf_file_size_limits[0].pdf | int
+        and wf_limits_msoffice | int >= wf_file_size_limits[0]['ms-office'] | int
+        and wf_limits_jar | int >= wf_file_size_limits[0].jar | int
+        and wf_limits_flash | int >= wf_file_size_limits[0].flash | int
+        and wf_limits_MacOSX | int >= wf_file_size_limits[0].MacOSX | int
+        and wf_limits_archive | int >= wf_file_size_limits[0].archive | int
+        and wf_limits_linux | int >= wf_file_size_limits[0].linux | int
+        and wf_limits_script | int >= wf_file_size_limits[0].script | int
+      )
+    fail_message: |
+      {%- if wf_limits_pe | int < wf_file_size_limits[0].pe | int %}
+      pe file size should be configured as {{ wf_file_size_limits[0].pe }}
+      {%- endif %}
+      {%- if wf_limits_apk | int < wf_file_size_limits[0].apk | int %}
+      apk file size should be configured as {{ wf_file_size_limits[0].apk }}
+      {%- endif %}
+      {%- if wf_limits_pdf | int < wf_file_size_limits[0].pdf | int %}
+      pdf file size should be configured as {{ wf_file_size_limits[0].pdf }}
+      {%- endif %}
+      {%- if wf_limits_msoffice | int < wf_file_size_limits[0]['ms-office'] | int %}
+      ms-office file size should be configured as {{ wf_file_size_limits[0]['msoffice'] }}
+      {%- endif %}
+      {%- if wf_limits_jar | int < wf_file_size_limits[0].jar | int %}
+      jar file size should be configured as {{ wf_file_size_limits[0].jar }}
+      {%- endif %}
+      {%- if wf_limits_flash | int < wf_file_size_limits[0].flash | int %}
+      flash file size should be configured as {{ wf_file_size_limits[0].flash }}
+      {%- endif %}
+      {%- if wf_limits_MacOSX | int < wf_file_size_limits[0].MacOSX | int %}
+      MacOSX file size should be configured as {{ wf_file_size_limits[0].MacOSX }}
+      {%- endif %}
+      {%- if wf_limits_archive | int < wf_file_size_limits[0].archive | int %}
+      archive file size should be configured as {{ wf_file_size_limits[0].archive }}
+      {%- endif %}
+      {%- if wf_limits_linux | int < wf_file_size_limits[0].linux | int %}
+      linux file size should be configured as {{ wf_file_size_limits[0].linux }}
+      {%- endif %}
+      {%- if wf_limits_script | int < wf_file_size_limits[0].script | int %}
+      script file size should be configured as {{ wf_file_size_limits[0].script }}
+      {%- endif %}
+    pass_message: |
+      All Wildfire file types are set to max size
+    documentation_link: www.paloaltonetworks.com
 
   # 5.2 Ensure forwarding is enabled for all applications and file types in WildFire file blocking profiles
   - name: device_config_file
@@ -869,6 +967,20 @@ snippets:
 
   - name: WF_all_apps_files
     label: 5.2 Ensure forwarding is enabled for all applications and file types in WildFire file blocking profiles
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
+
+  # 5.3 Ensure a WildFire Analysis profile is enabled for all security policies
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: device_setting
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+
+  - name: WF_forward_decrypt_content
+    label: 5.3 Ensure a WildFire Analysis profile is enabled for all security policies
     test: false
     fail_message: test is not implemented
     documentation_link: https://www.paloaltonetworks.com

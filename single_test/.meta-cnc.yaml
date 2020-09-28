@@ -15,90 +15,19 @@ labels:
 
 variables:
 
-  - name: wf_file_size_limits
-    description: wildfire recommended file size limits
-    type_hint: hidden
-    default:
-      - key: pe
-        value: 16
-      - key: apk
-        value: 30
-      - key: pdf
-        value: 3072
-      - key: ms-office
-        value: 16384
-      - key: jar
-        value: 5
-      - key: flash
-        value: 5
-      - key: MacOSX
-        value: 10
-      - key: archive
-        value: 50
-      - key: linux
-        value: 50
-      - key: script
-        value: 2000
 
 snippets:
 
-  - name: wf_granular_parse
+  # 5.3 Ensure a WildFire Analysis profile is enabled for all security policies
+  - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: wf_limit_pe
-        capture_value: |-
-          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
-          entry[@name='pe']/size-limit/text()
-      - name: wf_limit_apk
-        capture_value: |
-          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
-          entry[@name='apk']/size-limit/text()
-      - name: wf_limit_pdf
-        capture_value: |-
-          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
-          entry[@name='pdf']/size-limit/text()
-      - name: wf_limit_msoffice
-        capture_value: |-
-          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
-          entry[@name='ms-office']/size-limit/text()
-      - name: wf_limit_jar
-        capture_value: |-
-          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
-          entry[@name='jar']/size-limit/text()
-      - name: wf_limit_flash
-        capture_value: |-
-          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
-          entry[@name='flash']/size-limit/text()
-      - name: wf_limit_MacOSX
-        capture_value: |-
-          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
-          entry[@name='MacOSX']/size-limit/text()
-      - name: wf_limit_archive
-        capture_value: |-
-          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
-          entry[@name='archive']/size-limit/text()
-      - name: wf_limit_linux
-        capture_value: |-
-          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
-          entry[@name='linux']/size-limit/text()
-      - name: wf_limit_script
-        capture_value: |-
-          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
-          entry[@name='script']/size-limit/text()
+      - name: security_rule_names
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
-  # check all file types and sizes match BPA
-  - name:  wf_limit_pe_test
-    label: Wildfire pe file size limit set to 16
-    test: |
-      (
-        wf_limit_pe >= '16'
-        and wf_limit_apk >= '30'
-        and wf_limit_pdf == '3072'
-        and wf_limit_msoffice == '16384'
-      )
-    fail_message: |
-      {{ wf_file_size_limits['pe'] }}
-    pass_message: |
-      {{ wf_file_size_limits }}
-    documentation_link: www.paloaltonetworks.com
+  - name: WF_forward_decrypt_content
+    label: 5.3 Ensure a WildFire Analysis profile is enabled for all security policies
+    test: false
+    fail_message: test is not implemented
+    documentation_link: https://www.paloaltonetworks.com
