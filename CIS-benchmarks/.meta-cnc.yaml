@@ -1015,7 +1015,8 @@ snippets:
   - name: WF_forward_decrypt_content
     label: 5.3 Ensure a WildFire Analysis profile is enabled for all security policies
     test: |-
-      ( security_rules_profilegroup_no_wf | length == 0
+      (
+        security_rules_profilegroup_no_wf | length == 0
         and security_rules_without_wf_profile | length == 0
       )
     fail_message: |-
