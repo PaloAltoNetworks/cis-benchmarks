@@ -1029,13 +1029,15 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: allow_forward_decrypted_content
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/setting/
+          ssl-decrypt/allow-forward-decrypted-content/text()
 
   - name: WF_forward_decrypt_content
     label: 5.4 Ensure forwarding of decrypted content to WildFire is enabled
-    test: false
-    fail_message: test is not implemented
+    test: allow_forward_decrypted_content == 'yes'
+    fail_message: Forwarding of decrypted content is not enabled
     documentation_link: https://www.paloaltonetworks.com
 
   # 5.5 Ensure all WildFire session information settings are enabled
@@ -1043,13 +1045,21 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: wf_session_disabled_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/
+          wildfire/session-info-select/*[text()='yes']
 
   - name: WF_session_info_enabled
     label: 5.5 Ensure all WildFire session information settings are enabled
-    test: false
-    fail_message: test is not implemented
+    test: wf_session_disabled_object | length == 0
+    fail_message: |-
+      Session information settings not enabled:
+      {%- for item in wf_session_disabled_object %}
+        {%- for key in item %}
+          {{ key }}
+        {%- endfor %}
+      {% endfor %}
     documentation_link: https://www.paloaltonetworks.com
 
   # 5.6 Ensure alerts are enabled for malicious files detected by WildFire
