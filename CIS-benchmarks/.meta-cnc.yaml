@@ -1012,7 +1012,7 @@ snippets:
           /rules/entry/profile-setting/profiles/../../@name
         filter_items: item not in security_rules_with_wf_profile
 
-  - name: WF_forward_decrypt_content
+  - name: policies_with_wf_profile
     label: 5.3 Ensure a WildFire Analysis profile is enabled for all security policies
     test: |-
       (
