@@ -23,11 +23,51 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: security_rule_names
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      # filter down to get a list of security rules with a profile group not using WF analysis
+      - name: security_rules
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry
+
+      - name: profile_groups_with_wf_analysis
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profile-group/entry/
+          wildfire-analysis/member/../../@name
+
+      - name: security_rules_with_profilegroup
+        capture_expression: security_rules
+        filter_items: |-
+          item | tag_present('profile-setting.group')
+
+      - name: security_rules_profilegroup_no_wf_object
+        capture_expression: security_rules_with_profilegroup
+        filter_items: |-
+          item | element_value('profile-setting.group.member') not in profile_groups_with_wf_analysis
+
+      - name: security_rules_profilegroup_no_wf
+        capture_expression: security_rules_profilegroup_no_wf_object | map(attribute="entry.@name") | list
+
+      # capture security rules using profiles yet without a WF profile
+      - name: security_rules_with_wf_profile
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry/profile-setting/profiles/wildfire-analysis/member/../../../../@name
+
+      - name: security_rules_without_wf_profile
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry/profile-setting/profiles/../../@name
+        filter_items: item not in security_rules_with_wf_profile
+
 
   - name: WF_forward_decrypt_content
     label: 5.3 Ensure a WildFire Analysis profile is enabled for all security policies
-    test: false
-    fail_message: test is not implemented
+    test: |-
+      ( security_rules_profilegroup_no_wf | length == 0
+        and security_rules_without_wf_profile | length == 0
+      )
+    fail_message: |-
+      security rules violating this benchmark:
+      {{ security_rules_profilegroup_no_wf }}
+      {{ security_rules_without_wf_profile }}
     documentation_link: https://www.paloaltonetworks.com
