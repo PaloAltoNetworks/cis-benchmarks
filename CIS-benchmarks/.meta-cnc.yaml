@@ -300,7 +300,7 @@ snippets:
       {%- endif %}
       {%- if mgmt_disable_telnet == 'no' %}
         telnet management access is not disabled
-      {%- end if %}
+      {%- endif %}
     pass_message: http and telnet are disable for management interface access
     documentation_link: https://iron-skillet.readthedocs.io
 
@@ -1060,7 +1060,7 @@ snippets:
         {%- for key in item %}
           {{ key }}
         {%- endfor %}
-      {% endfor %}
+      {%- endfor %}
     documentation_link: https://www.paloaltonetworks.com
 
   # 5.6 Ensure alerts are enabled for malicious files detected by WildFire
