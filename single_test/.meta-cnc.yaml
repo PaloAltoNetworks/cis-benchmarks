@@ -26,13 +26,10 @@ snippets:
       - name: log_forwarding_profiles_vsys
         capture_list: |-
           /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/
-          log-settings/profiles/entry
+          log-settings/profiles/entry/@name
       - name: log_forwarding_profiles_wf
         capture_expression: log_forwarding_profiles_vsys
-        filter_items: |-
-          (
-            item | tag_present('match-list.entry.log-types')
-          )
+        filter_items: item != 'default'
 
 
   - name: WF_alerts_malicious_files

@@ -271,9 +271,9 @@ snippets:
     test: ssh_https_snmp_enabled_profiles_no_ip_list | length == 0
     fail_message: |
       network profiles failing this benchmark are
-      {% for item in ssh_https_snmp_enabled_profiles_no_ip_list | unique %}
+      {%- for item in ssh_https_snmp_enabled_profiles_no_ip_list | unique %}
       {{ item }}
-      {% endfor %}
+      {%- endfor %}
     pass_message: all ssh, https, snmp enabled profiles have permitted IP addresses configured
     documentation_link: https://iron-skillet.readthedocs.io
 
@@ -326,12 +326,12 @@ snippets:
         and telnet_enabled_profiles | length == 0
       )
     fail_message: |
-      {% if http_disabled_profiles | length %}
+      {%- if http_disabled_profiles | length %}
         http not disabled for profiles: {{ http_enabled_profiles }}
-      {% endif %}
-      {% if telnet_enabled_profiles | length %}
+      {%- endif %}
+      {%- if telnet_enabled_profiles | length %}
         telnet not disabled for profiles: {{ telnet_enabled_profiles }}
-      {% endif %}
+      {%- endif %}
     pass_message: http and telnet disabled for all management profiles
     documentation_link: https://iron-skillet.readthedocs.io
 
@@ -425,7 +425,7 @@ snippets:
       - name: password_min_numeric
         capture_value: /config/mgt-config/password-complexity/minimum-numeric-letters/text()
 
-  - name: test_password_min_uppercase
+  - name: test_password_min_numeric
     label: 1.3.5 Ensure 'Minimum Numeric Letters' is greater than or equal to 1
     test: password_min_numeric >= '1'
     fail_message: Minimum Numeric Letters is set to {{ password_min_numeric }}
