@@ -815,8 +815,7 @@ snippets:
           )
         )
       )
-    fail_message: 'Either link groups or path monitoring must be configured with a failure condition of "any", and monitored links or destination IP addresses'
-
+    fail_message: Either link groups or path monitoring must be configured with a failure condition of "any", and monitored links or destination IP addresses
     documentation_link: https://docs.paloaltonetworks.com/pan-os/9-1/pan-os-admin/high-availability/set-up-activepassive-ha/configure-activepassive-ha.html
 
   # 3.3 Ensure 'Passive Link State' and 'Preemptive' are configured appropriately
@@ -824,14 +823,20 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: ha_passive_link_state
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/mode/active-passive/passive-link-state[text() = 'auto']
+      - name: ha_preemptive
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/election-option/preemptive[text() = 'yes']
 
   - name: HA_passive_link_preemptive
     label: 3.3 Ensure 'Passive Link State' and 'Preemptive' are configured appropriately
-    test: false
-    fail_message: test is not implemented
-    documentation_link: https://www.paloaltonetworks.com
+    test: |
+      (
+        ha_passive_link_state
+        and not ha_preemptive
+      )
+    fail_message: Passive link state must be set to auto and preemption must be disabled
+    documentation_link: https://docs.paloaltonetworks.com/pan-os/9-1/pan-os-admin/high-availability/set-up-activepassive-ha/configure-activepassive-ha.html
 
   # 4.1 Ensure 'Antivirus Update Schedule' is set to download and install updates hourly
   - name: device_config_file
