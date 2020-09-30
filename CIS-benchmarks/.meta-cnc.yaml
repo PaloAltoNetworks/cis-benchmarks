@@ -775,14 +775,52 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      # Link monitoring configuration
+      - name: ha_link_monitoring_disabled
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/link-monitoring/enabled[text() = 'no']
+      - name: ha_link_other_failure
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/link-monitoring/failure-condition[text() != 'any']
+      - name: ha_link_groups_any_failure
+        capture_list: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/link-monitoring/link-group/entry[failure-condition = 'any' and not(enabled = 'no') and count(interface/member)]
+      - name: ha_link_groups_other_failure
+        capture_list: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/link-monitoring/link-group/entry[failure-condition != 'any']
+      # Path monitoring configuration
+      - name: ha_path_monitoring_disabled
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/path-monitoring/enabled[text() = 'no']
+      - name: ha_path_other_failure
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/path-monitoring/failure-condition[text() != 'any']
+      - name: ha_path_group_vr
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/path-monitoring/path-group/virtual-router/entry[enabled != 'no' and failure-condition != 'all' and count(destination-ip)]
+      - name: ha_path_group_vw
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/path-monitoring/path-group/virtual-wire/entry[enabled != 'no' and failure-condition != 'all' and count(destination-ip)]
+      - name: ha_path_group_vlan
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/path-monitoring/path-group/vlan/entry[enabled != 'no' and failure-condition != 'all' and count(destination-ip)]
 
   - name: HA_link_path_monitoring
     label: 3.2 Ensure 'High Availability' requires Link Monitoring and/or Path Monitoring
-    test: false
-    fail_message: test is not implemented
-    documentation_link: https://www.paloaltonetworks.com
+    test: |
+      (
+        (
+          not ha_link_monitoring_disabled
+          and not ha_link_other_failure
+          and ha_link_groups_any_failure | length > 0
+          and ha_link_groups_other_failure | length == 0
+        )
+        or
+        (
+          not ha_path_monitoring_disabled
+          and not ha_path_other_failure
+          and
+          (
+            ha_path_group_vr
+            or ha_path_group_vw
+            or ha_path_group_vlan
+          )
+        )
+      )
+    fail_message: 'Either link groups or path monitoring must be configured with a failure condition of "any", and monitored links or destination IP addresses'
+
+    documentation_link: https://docs.paloaltonetworks.com/pan-os/9-1/pan-os-admin/high-availability/set-up-activepassive-ha/configure-activepassive-ha.html
 
   # 3.3 Ensure 'Passive Link State' and 'Preemptive' are configured appropriately
   - name: device_config_file
