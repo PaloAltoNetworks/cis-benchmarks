@@ -777,22 +777,38 @@ snippets:
     outputs:
       # Link monitoring configuration
       - name: ha_link_monitoring_disabled
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/link-monitoring/enabled[text() = 'no']
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/link-monitoring/
+          enabled[text() = 'no']
       - name: ha_link_other_failure
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/link-monitoring/failure-condition[text() != 'any']
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/link-monitoring/
+          failure-condition[text() != 'any']
       - name: ha_link_group
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/link-monitoring/link-group/entry[not(failure-condition = 'all') and not(enabled = 'no') and count(interface/member)]
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/link-monitoring/link-group/
+          entry[not(failure-condition = 'all') and not(enabled = 'no') and count(interface/member)]
       # Path monitoring configuration
       - name: ha_path_monitoring_disabled
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/path-monitoring/enabled[text() = 'no']
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/path-monitoring/
+          enabled[text() = 'no']
       - name: ha_path_other_failure
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/path-monitoring/failure-condition[text() != 'any']
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/path-monitoring/
+          failure-condition[text() != 'any']
       - name: ha_path_group_vr
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/path-monitoring/path-group/virtual-router/entry[not(enabled = 'no') and not(failure-condition = 'all') and count(destination-ip)]
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/path-monitoring/path-group/virtual-router/
+          entry[not(enabled = 'no') and not(failure-condition = 'all') and count(destination-ip)]
       - name: ha_path_group_vw
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/path-monitoring/path-group/virtual-wire/entry[not(enabled = 'no') and not(failure-condition = 'all') and count(destination-ip)]
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/path-monitoring/path-group/virtual-wire/
+          entry[not(enabled = 'no') and not(failure-condition = 'all') and count(destination-ip)]
       - name: ha_path_group_vlan
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/path-monitoring/path-group/vlan/entry[not(enabled = 'no') and not(failure-condition = 'all') and count(destination-ip)]
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/path-monitoring/path-group/vlan/
+          entry[not(enabled = 'no') and not(failure-condition = 'all') and count(destination-ip)]
 
   - name: HA_link_path_monitoring
     label: 3.2 Ensure 'High Availability' requires Link Monitoring and/or Path Monitoring
