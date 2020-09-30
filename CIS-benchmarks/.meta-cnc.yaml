@@ -761,14 +761,14 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: high_availability_ha2
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/interface/ha2
 
   - name: HA_peer_configured
     label: 3.1 Ensure a fully-synchronized High Availability peer is configured
-    test: false
-    fail_message: test is not implemented
-    documentation_link: https://www.paloaltonetworks.com
+    test: high_availability_ha2 | tag_present('port')
+    fail_message: HA2 does not have a configured port
+    documentation_link: https://docs.paloaltonetworks.com/pan-os/9-1/pan-os-admin/high-availability/set-up-activepassive-ha/configure-activepassive-ha.html
 
   # 3.2 Ensure 'High Availability' requires Link Monitoring and/or Path Monitoring
   - name: device_config_file
