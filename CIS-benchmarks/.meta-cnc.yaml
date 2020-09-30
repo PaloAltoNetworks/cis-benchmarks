@@ -761,42 +761,98 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: high_availability_ha2
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/interface/ha2
 
   - name: HA_peer_configured
     label: 3.1 Ensure a fully-synchronized High Availability peer is configured
-    test: false
-    fail_message: test is not implemented
-    documentation_link: https://www.paloaltonetworks.com
+    test: high_availability_ha2 | tag_present('port')
+    fail_message: HA2 does not have a configured port
+    documentation_link: https://docs.paloaltonetworks.com/pan-os/9-1/pan-os-admin/high-availability/set-up-activepassive-ha/configure-activepassive-ha.html
 
   # 3.2 Ensure 'High Availability' requires Link Monitoring and/or Path Monitoring
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      # Link monitoring configuration
+      - name: ha_link_monitoring_disabled
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/link-monitoring/
+          enabled[text() = 'no']
+      - name: ha_link_other_failure
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/link-monitoring/
+          failure-condition[text() != 'any']
+      - name: ha_link_group
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/link-monitoring/link-group/
+          entry[not(failure-condition = 'all') and not(enabled = 'no') and count(interface/member)]
+      # Path monitoring configuration
+      - name: ha_path_monitoring_disabled
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/path-monitoring/
+          enabled[text() = 'no']
+      - name: ha_path_other_failure
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/path-monitoring/
+          failure-condition[text() != 'any']
+      - name: ha_path_group_vr
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/path-monitoring/path-group/virtual-router/
+          entry[not(enabled = 'no') and not(failure-condition = 'all') and count(destination-ip)]
+      - name: ha_path_group_vw
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/path-monitoring/path-group/virtual-wire/
+          entry[not(enabled = 'no') and not(failure-condition = 'all') and count(destination-ip)]
+      - name: ha_path_group_vlan
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/path-monitoring/path-group/vlan/
+          entry[not(enabled = 'no') and not(failure-condition = 'all') and count(destination-ip)]
 
   - name: HA_link_path_monitoring
     label: 3.2 Ensure 'High Availability' requires Link Monitoring and/or Path Monitoring
-    test: false
-    fail_message: test is not implemented
-    documentation_link: https://www.paloaltonetworks.com
+    test: |
+      (
+        (
+          not ha_link_monitoring_disabled
+          and not ha_link_other_failure
+          and ha_link_group
+        )
+        or
+        (
+          not ha_path_monitoring_disabled
+          and not ha_path_other_failure
+          and
+          (
+            ha_path_group_vr
+            or ha_path_group_vw
+            or ha_path_group_vlan
+          )
+        )
+      )
+    fail_message: Either link groups or path monitoring must be configured with a failure condition of "any", and monitored links or destination IP addresses
+    documentation_link: https://docs.paloaltonetworks.com/pan-os/9-1/pan-os-admin/high-availability/set-up-activepassive-ha/configure-activepassive-ha.html
 
   # 3.3 Ensure 'Passive Link State' and 'Preemptive' are configured appropriately
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: ha_passive_link_state
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/mode/active-passive/passive-link-state[text() = 'auto']
+      - name: ha_preemptive
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/election-option/preemptive[text() = 'yes']
 
   - name: HA_passive_link_preemptive
     label: 3.3 Ensure 'Passive Link State' and 'Preemptive' are configured appropriately
-    test: false
-    fail_message: test is not implemented
-    documentation_link: https://www.paloaltonetworks.com
+    test: |
+      (
+        ha_passive_link_state
+        and not ha_preemptive
+      )
+    fail_message: Passive link state must be set to auto and preemption must be disabled
+    documentation_link: https://docs.paloaltonetworks.com/pan-os/9-1/pan-os-admin/high-availability/set-up-activepassive-ha/configure-activepassive-ha.html
 
   # 4.1 Ensure 'Antivirus Update Schedule' is set to download and install updates hourly
   - name: device_config_file
