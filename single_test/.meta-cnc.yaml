@@ -18,22 +18,20 @@ variables:
 
 snippets:
 
-  # 5.6 Ensure alerts are enabled for malicious files detected by WildFire
+  # 5.7 Ensure 'WildFire Update Schedule' is set to download and install updates every minute
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: log_forwarding_profiles_vsys
-        capture_list: |-
-          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/
-          log-settings/profiles/entry/@name
-      - name: log_forwarding_profiles_wf
-        capture_expression: log_forwarding_profiles_vsys
-        filter_items: item != 'default'
+      - name: wf_update_schedule_recurring
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/update-schedule/
+          wildfire[count(recurring) and (count(recurring/real-time) or count(recurring/every-min))]
 
-
-  - name: WF_alerts_malicious_files
-    label: 5.6 Ensure alerts are enabled for malicious files detected by WildFire
-    test: false
-    fail_message: test is not implemented
+  - name: WF_update_schedule
+    label: 5.7 Ensure 'WildFire Update Schedule' is set to download and install updates every minute
+    test: wf_update_schedule_recurring
+    fail_message: Wildfire Update Schedule not configured for one-minute or real-time updates
     documentation_link: https://www.paloaltonetworks.com
+
+
