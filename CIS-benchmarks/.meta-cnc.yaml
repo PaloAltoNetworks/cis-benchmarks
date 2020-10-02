@@ -1032,53 +1032,36 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      # filter down to get a list of security rules with a profile group not using WF analysis
-      - name: security_rules
-        capture_list: |-
-          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
-          /rules/entry
-
-      - name: profile_groups_with_wf_analysis
-        capture_list: |-
-          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profile-group/entry/
-          wildfire-analysis/member/../../@name
-
-      - name: security_rules_with_profilegroup
-        capture_expression: security_rules
-        filter_items: |-
-          item | tag_present('profile-setting.group')
-
-      - name: security_rules_profilegroup_no_wf_object
-        capture_expression: security_rules_with_profilegroup
-        filter_items: |-
-          item | element_value('profile-setting.group.member') not in profile_groups_with_wf_analysis
-
-      - name: security_rules_profilegroup_no_wf
-        capture_expression: security_rules_profilegroup_no_wf_object | map(attribute="entry.@name") | list
-
-      # capture security rules using profiles yet without a WF profile
-      - name: security_rules_with_wf_profile
-        capture_list: |-
-          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
-          /rules/entry/profile-setting/profiles/wildfire-analysis/member/../../../../@name
-
+      # capture for security rules using named profiles instead of a profile group
       - name: security_rules_without_wf_profile
         capture_list: |-
           /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
-          /rules/entry/profile-setting/profiles/../../@name
-        filter_items: item not in security_rules_with_wf_profile
+          /rules/entry/profile-setting/profiles[count(wildfire-analysis)=0]/../../@name
+      # capture for security rules using profile groups
+      - name: profile_groups_without_wf
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profile-group/
+          entry[count(wildfire-analysis)=0]/@name
+      - name: security_rules_with_group_without_wf_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry
+        filter_items: item | element_value('profile-setting.group.member') in profile_groups_without_wf
+      - name: security_rules_with_group_without_wf_names
+        capture_expression: security_rules_with_group_without_wf_object | map(attribute="entry.@name") | list
 
-  - name: policies_with_wf_profile
+  - name: WF_profile_in_policies
     label: 5.3 Ensure a WildFire Analysis profile is enabled for all security policies
     test: |-
       (
-        security_rules_profilegroup_no_wf | length == 0
-        and security_rules_without_wf_profile | length == 0
-      )
+        security_rules_without_wf_profile | length == 0
+        or security_rules_with_group_without_wf_names | length == 0
     fail_message: |-
-      security rules violating this benchmark:
-      {{ security_rules_profilegroup_no_wf }}
+      security policies without Wildfire profile:
+      Using explicit profile:
       {{ security_rules_without_wf_profile }}
+      Using profile group without a Wildfire profile
+      {{ security_rules_with_group_without_wf_names }}
     documentation_link: https://www.paloaltonetworks.com
 
   # 5.4 Ensure forwarding of decrypted content to WildFire is enabled
@@ -1157,13 +1140,17 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: av_profile_block_all_decoders
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/virus/entry
+          /decoder/entry[not(action='reset-both') and not(wildfire-action='reset-both')]/../../@name
 
-  - name: AV_decoders_block
+  - name: av_profile_block_all_decoders_test
     label: 6.1 Ensure that antivirus profiles are set to block on all decoders except 'imap' and 'pop3'
-    test: false
-    fail_message: test is not implemented
+    test: av_profile_block_all_decoders | length == 0
+    fail_message: |-
+      AV profiles failing benchmark test:
+      {{ av_profile_block_all_decoders }}
     documentation_link: https://www.paloaltonetworks.com
 
   # 6.2 Ensure a secure antivirus profile is applied to all relevant security policies
@@ -1171,13 +1158,36 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      # capture for security rules using named profiles instead of a profile group
+      - name: security_rules_without_virus_profile
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry[action='allow' and count(profile-setting/profiles)>0 and count(virus)=0]/@name
+      # capture for security rules using profile groups
+      - name: profile_groups_without_virus
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profile-group/
+          entry[count(virus)=0]/@name
+      - name: security_rules_with_group_without_virus_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry[action='allow']
+        filter_items: item | element_value('profile-setting.group.member') in profile_groups_without_virus
+      - name: security_rules_with_group_without_virus_names
+        capture_expression: security_rules_with_group_without_virus_object | map(attribute="entry.@name") | list
 
   - name: AV_profile_in_policies
     label: 6.2 Ensure a secure antivirus profile is applied to all relevant security policies
-    test: false
-    fail_message: test is not implemented
+    test: |-
+      (
+        security_rules_without_virus_profile | length == 0
+        or security_rules_with_group_without_virus_names | length == 0
+    fail_message: |-
+      security policies without an Antivirus profile:
+      Using explicit profile:
+      {{ security_rules_without_virus_profile }}
+      Using profile group without a virus profile
+      {{ security_rules_with_group_without_virus_names }}
     documentation_link: https://www.paloaltonetworks.com
 
   # 6.3 Ensure an anti-spyware profile is configured to block on all spyware severity levels, categories, and threats
@@ -1227,13 +1237,36 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      # capture for security rules using named profiles instead of a profile group
+      - name: security_rules_without_spyware_profile
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry[action='allow' and count(profile-setting/profiles)>0 and count(spyware)=0]/@name
+      # capture for security rules using profile groups
+      - name: profile_groups_without_spyware
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profile-group/
+          entry[count(spyware)=0]/@name
+      - name: security_rules_with_group_without_spyware_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry[action='allow']
+        filter_items: item | element_value('profile-setting.group.member') in profile_groups_without_spyware
+      - name: security_rules_with_group_without_spyware_names
+        capture_expression: security_rules_with_group_without_spyware_object | map(attribute="entry.@name") | list
 
   - name: spyware_profile_in_policies
     label: 6.6 Ensure a secure anti-spyware profile is applied to all security policies permitting traffic to the Internet
-    test: false
-    fail_message: test is not implemented
+    test: |-
+      (
+        security_rules_without_spyware_profile | length == 0
+        or security_rules_with_group_without_spyware_names | length == 0
+    fail_message: |-
+      security policies without Anti-Spyware profile:
+      Using explicit profile:
+      {{ security_rules_without_spyware_profile }}
+      Using profile group without a Anti-Spyware profile
+      {{ security_rules_with_group_without_spyware_names }}
     documentation_link: https://www.paloaltonetworks.com
 
   # 6.7 Ensure a Vulnerability Protection Profile is set to block attacks against critical and high vulnerabilities,
@@ -1258,13 +1291,36 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      # capture for security rules using named profiles instead of a profile group
+      - name: security_rules_without_vulnerability_profile
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry[action='allow' and count(profile-setting/profiles)>0 and count(vulnerability)=0]/@name
+      # capture for security rules using profile groups
+      - name: profile_groups_without_vulnerability
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profile-group/
+          entry[count(vulnerability)=0]/@name
+      - name: security_rules_with_group_without_vulnerability_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry[action='allow']
+        filter_items: item | element_value('profile-setting.group.member') in profile_groups_without_vulnerability
+      - name: security_rules_with_group_without_vulnerability_names
+        capture_expression: security_rules_with_group_without_vulnerability_object | map(attribute="entry.@name") | list
 
   - name: vulnerability_profile_in_policies
     label: 6.8 Ensure a secure Vulnerability Protection Profile is applied to all security rules allowing traffic
-    test: false
-    fail_message: test is not implemented
+    test: |-
+      (
+        security_rules_without_vulnerability_profile | length == 0
+        or security_rules_with_group_without_vulnerability_names | length == 0
+    fail_message: |-
+      security policies without Vulnerability profile:
+      Using explicit profile:
+      {{ security_rules_without_vulnerability_profile }}
+      Using profile group without a Vulnerability profile
+      {{ security_rules_with_group_without_vulnerability_names }}
     documentation_link: https://www.paloaltonetworks.com
 
   # 6.9 Ensure that PAN-DB URL Filtering is used
@@ -1328,13 +1384,36 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      # capture for security rules using named profiles instead of a profile group
+      - name: security_rules_without_urlfiltering_profile
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry[action='allow' and count(profile-setting/profiles)>0 and count(url-filtering)=0]/@name
+      # capture for security rules using profile groups
+      - name: profile_groups_without_urlfiltering
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profile-group/
+          entry[count(url-filtering)=0]/@name
+      - name: security_rules_with_group_without_urlfiltering_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry[action='allow']
+        filter_items: item | element_value('profile-setting.group.member') in profile_groups_without_urlfiltering
+      - name: security_rules_with_group_without_urlfiltering_names
+        capture_expression: security_rules_with_group_without_urlfiltering_object | map(attribute="entry.@name") | list
 
-  - name: url_filtering_all_policies
+  - name: urlfiltering_profile_in_policies
     label: 6.13 Ensure secure URL filtering is enabled for all security policies allowing traffic to the Internet
-    test: false
-    fail_message: test is not implemented
+    test: |-
+      (
+        security_rules_without_urlfiltering_profile | length == 0
+        or security_rules_with_group_without_urlfiltering_names | length == 0
+    fail_message: |-
+      security policies without URL Filtering profile:
+      Using explicit profile:
+      {{ security_rules_without_urlfiltering_profile }}
+      Using profile group without a URL Filtering profile
+      {{ security_rules_with_group_without_urlfiltering_names }}
     documentation_link: https://www.paloaltonetworks.com
 
   # 6.14 Ensure alerting after a threshold of credit card or Social Security numbers is detected is enabled
@@ -1356,13 +1435,36 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      # capture for security rules using named profiles instead of a profile group
+      - name: security_rules_without_datafiltering_profile
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry[action='allow' and count(profile-setting/profiles)>0 and count(data-filtering)=0]/@name
+      # capture for security rules using profile groups
+      - name: profile_groups_without_datafiltering
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profile-group/
+          entry[count(data-filtering)=0]/@name
+      - name: security_rules_with_group_without_datafiltering_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry[action='allow']
+        filter_items: item | element_value('profile-setting.group.member') in profile_groups_without_datafiltering
+      - name: security_rules_with_group_without_datafiltering_names
+        capture_expression: security_rules_with_group_without_datafiltering_object | map(attribute="entry.@name") | list
 
-  - name: data_filtering_profile_in_policies
+  - name: datafiltering_profile_in_policies
     label: 6.15 Ensure a secure Data Filtering profile is applied to all security policies allowing traffic to or from the Internet
-    test: false
-    fail_message: test is not implemented
+    test: |-
+      (
+        security_rules_without_datafiltering_profile | length == 0
+        or security_rules_with_group_without_datafiltering_names | length == 0
+    fail_message: |-
+      security policies without Data Filtering profile:
+      Using explicit profile:
+      {{ security_rules_without_datafiltering_profile }}
+      Using profile group without a Data Filtering profile
+      {{ security_rules_with_group_without_datafiltering_names }}
     documentation_link: https://www.paloaltonetworks.com
 
   # 6.16 Ensure that a Zone Protection Profile with an enabled SYN Flood Action of SYN Cookies is attached to all untrusted zones

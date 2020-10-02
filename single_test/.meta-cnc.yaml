@@ -18,20 +18,39 @@ variables:
 
 snippets:
 
-  # 5.7 Ensure 'WildFire Update Schedule' is set to download and install updates every minute
+  # 6.15 Ensure a secure Data Filtering profile is applied to all security policies allowing traffic to or from the Internet
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: wf_update_schedule_recurring
-        capture_object: |-
-          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/update-schedule/
-          wildfire[count(recurring) and (count(recurring/real-time) or count(recurring/every-min))]
+      # capture for security rules using named profiles instead of a profile group
+      - name: security_rules_without_datafiltering_profile
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry[action='allow' and count(profile-setting/profiles)>0 and count(data-filtering)=0]/@name
+      # capture for security rules using profile groups
+      - name: profile_groups_without_datafiltering
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profile-group/
+          entry[count(data-filtering)=0]/@name
+      - name: security_rules_with_group_without_datafiltering_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry[action='allow']
+        filter_items: item | element_value('profile-setting.group.member') in profile_groups_without_datafiltering
+      - name: security_rules_with_group_without_datafiltering_names
+        capture_expression: security_rules_with_group_without_datafiltering_object | map(attribute="entry.@name") | list
 
-  - name: WF_update_schedule
-    label: 5.7 Ensure 'WildFire Update Schedule' is set to download and install updates every minute
-    test: wf_update_schedule_recurring
-    fail_message: Wildfire Update Schedule not configured for one-minute or real-time updates
+  - name: datafiltering_profile_in_policies
+    label: 6.15 Ensure a secure Data Filtering profile is applied to all security policies allowing traffic to or from the Internet
+    test: |-
+      (
+        security_rules_without_datafiltering_profile | length == 0
+        or security_rules_with_group_without_datafiltering_names | length == 0
+    fail_message: |-
+      security policies without Data Filtering profile:
+      Using explicit profile:
+      {{ security_rules_without_datafiltering_profile }}
+      Using profile group without a Data Filtering profile
+      {{ security_rules_with_group_without_datafiltering_names }}
     documentation_link: https://www.paloaltonetworks.com
-
-
