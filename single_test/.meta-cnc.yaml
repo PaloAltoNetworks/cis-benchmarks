@@ -26,9 +26,8 @@ snippets:
     cmd_str: request license info
     output_type: xml
     outputs:
-          # let's capture a variable called 'connected_server_ip'
       - name: logging_service_URL
-        capture_value: ./entry/description[text()="PAN-DB URL Filtering"]/../expired/text()
+        capture_value: ./entry/feature[text()="PAN-DB URL Filtering"]/../expired/text()
 
   - name: pandb_url_filtering
     label: 6.9 Ensure that PAN-DB URL Filtering is used

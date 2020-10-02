@@ -1362,17 +1362,20 @@ snippets:
     documentation_link: https://www.paloaltonetworks.com
 
   # 6.9 Ensure that PAN-DB URL Filtering is used
-  - name: device_config_file
-    cmd: parse
-    variable: config
+  # this is an operational command requiring API access to the device
+  - name: get_license_info
+    cmd: cli
+    # This cli command will return xml
+    cmd_str: request license info
+    output_type: xml
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: logging_service_URL
+        capture_value: ./entry/feature[text()="PAN-DB URL Filtering"]/../expired/text()
 
   - name: pandb_url_filtering
     label: 6.9 Ensure that PAN-DB URL Filtering is used
-    test: false
-    fail_message: test is not implemented
+    test: logging_service_URL == 'no'
+    fail_message: PAN-DB license is not used or inactive
     documentation_link: https://www.paloaltonetworks.com
 
   # 6.10 Ensure that URL Filtering uses the action of “block” or “override” on the URL categories
