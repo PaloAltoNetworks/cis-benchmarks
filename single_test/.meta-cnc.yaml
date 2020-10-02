@@ -18,22 +18,21 @@ variables:
 
 snippets:
 
-  # 6.5 Ensure passive DNS monitoring is set to enabled on all anti-spyware profiles in use
-  # this moved to a telemetry configuration option in 9.x
-  # passive DNS and telemetry configuration will change in PAN-OS 10.0
-  - name: device_config_file
-    cmd: parse
-    variable: config
+  # 6.9 Ensure that PAN-DB URL Filtering is used
+  # this is an operational command requiring API access to the device
+  - name: get_license_info
+    cmd: cli
+    # This cli command will return xml
+    cmd_str: request license info
+    output_type: xml
     outputs:
-      - name: telemetry_passive_dns_monitoring
-        capture_value: |-
-          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/update-schedule/statistics-service/
-          passive-dns-monitoring/text()
+          # let's capture a variable called 'connected_server_ip'
+      - name: logging_service_URL
+        capture_value: ./entry/description[text()="PAN-DB URL Filtering"]/../expired/text()
 
-
-  - name: enable_passive_DNS_monitoring
-    label: 6.5 Ensure passive DNS monitoring is set to enabled on all anti-spyware profiles in use
-    test: telemetry_passive_dns_monitoring != 'no'
-    fail_message: Passive DNS monitoring is not currently enabled
+  - name: pandb_url_filtering
+    label: 6.9 Ensure that PAN-DB URL Filtering is used
+    test: logging_service_URL == 'no'
+    fail_message: PAN-DB license is not used or inactive
     documentation_link: https://www.paloaltonetworks.com
 
