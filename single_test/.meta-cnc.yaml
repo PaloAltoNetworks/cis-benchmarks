@@ -18,40 +18,22 @@ variables:
 
 snippets:
 
-  # 6.15 Ensure a secure Data Filtering profile is applied to all security policies allowing traffic to or from the Internet
+  # 6.5 Ensure passive DNS monitoring is set to enabled on all anti-spyware profiles in use
+  # this moved to a telemetry configuration option in 9.x
+  # passive DNS and telemetry configuration will change in PAN-OS 10.0
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      # capture for security rules using named profiles instead of a profile group
-      - name: security_rules_without_datafiltering_profile
-        capture_list: |-
-          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
-          /rules/entry[action='allow' and count(profile-setting/profiles)>0 and count(data-filtering)=0]/@name
-      # capture for security rules using profile groups
-      - name: profile_groups_without_datafiltering
-        capture_list: |-
-          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profile-group/
-          entry[count(data-filtering)=0]/@name
-      - name: security_rules_with_group_without_datafiltering_object
-        capture_list: |-
-          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
-          /rules/entry[action='allow']
-        filter_items: item | element_value('profile-setting.group.member') in profile_groups_without_datafiltering
-      - name: security_rules_with_group_without_datafiltering_names
-        capture_expression: security_rules_with_group_without_datafiltering_object | map(attribute="entry.@name") | list
+      - name: telemetry_passive_dns_monitoring
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/update-schedule/statistics-service/
+          passive-dns-monitoring/text()
 
-  - name: datafiltering_profile_in_policies
-    label: 6.15 Ensure a secure Data Filtering profile is applied to all security policies allowing traffic to or from the Internet
-    test: |-
-      (
-        security_rules_without_datafiltering_profile | length == 0
-        and security_rules_with_group_without_datafiltering_names | length == 0
-      )
-    fail_message: |-
-      security policies without Data Filtering profile:
-      Using explicit profile:
-      {{ security_rules_without_datafiltering_profile }}
-      Using profile group without a Data Filtering profile
-      {{ security_rules_with_group_without_datafiltering_names }}
+
+  - name: enable_passive_DNS_monitoring
+    label: 6.5 Ensure passive DNS monitoring is set to enabled on all anti-spyware profiles in use
+    test: telemetry_passive_dns_monitoring != 'no'
+    fail_message: Passive DNS monitoring is not currently enabled
     documentation_link: https://www.paloaltonetworks.com
+

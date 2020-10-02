@@ -1197,41 +1197,93 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: spyware_profile_block_all_category_threat_severity_one_rule
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/spyware/
+          entry[
+          rules/entry/threat-name='any'
+          and (count(rules/entry/action/allow)=0 and count(rules/entry/action/alert)=0 and count(rules/entry/action/default)=0)
+          and rules/entry/severity/member='any'
+          ]/@name
+      - name: spyware_profile_block_all_category_threat_severity_many_rules
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/spyware/
+          entry[
+          rules/entry/threat-name='any'
+          and (count(rules/entry/action/allow)=0 and count(rules/entry/action/alert)=0 and count(rules/entry/action/default)=0)
+          and rules/entry/severity/member='informational' and rules/entry/severity/member='low'
+          and rules/entry/severity/member='medium' and rules/entry/severity/member='high'
+          and rules/entry/severity/member='critical'
+          ]/@name
 
   - name: spyware_profile_block_all
     label: 6.3 Ensure an anti-spyware profile is configured to block on all spyware severity levels, categories, and threats
-    test: false
-    fail_message: test is not implemented
+    test: |-
+      (
+        spyware_profile_block_all_category_threat_severity_one_rule | length
+        or spyware_profile_block_all_category_threat_severity_many_rules | length
+      )
+    fail_message: |-
+      No Anti-Spyware profiles meet the benchmark criteria
     documentation_link: https://www.paloaltonetworks.com
 
   # 6.4 Ensure DNS sinkholing is configured on all anti-spyware profiles in use
+  # PAN-OS 9.0 version - does not include the 10.0 DNS categories element
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      # output pre 10.0 before categories available
+      - name: spyware_profiles_without_sinkhole_no_category
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/spyware/
+          entry[count(botnet-domains/lists/entry/action/sinkhole)=0]/@name
+      # 10.0 and later support leveraging categories
+      # sinkhole known malicious categories:
+      - name: spyware_profiles_without_sinkhole_category
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/spyware/
+          entry/botnet-domains/dns-security-categories/entry[
+          (@name='pan-dns-sec-malware' or @name='pan-dns-sec-cc')
+          and action!='sinkhole']/../../../@name
 
   - name: DNS_sinkhole_configured
     label: 6.4 Ensure DNS sinkholing is configured on all anti-spyware profiles in use
-    test: false
-    fail_message: test is not implemented
+    test: |-
+      (
+        spyware_profiles_without_sinkhole_no_category | length == 0
+        and spyware_profiles_without_sinkhole_category | length == 0
+      )
+    fail_message: |-
+      The following Anti-Spyware are not correctly configured with DNS sinkholing:
+      {%- if spyware_profiles_without_sinkhole_no_category | length %}
+       Non-category DNS policies:
+       {{ spyware_profiles_without_sinkhole_no_category }}
+      {%- endif %}
+      {%- if spyware_profiles_without_sinkhole_category | length %}
+       Category-based DNS policies:
+       {{ spyware_profiles_without_sinkhole_category }}
+      {%- endif %}
+
     documentation_link: https://www.paloaltonetworks.com
 
   # 6.5 Ensure passive DNS monitoring is set to enabled on all anti-spyware profiles in use
+  # this moved to a telemetry configuration option in 9.x
+  # passive DNS and telemetry configuration will change in PAN-OS 10.0
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: telemetry_passive_dns_monitoring
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/update-schedule/statistics-service/
+          passive-dns-monitoring/text()
+
 
   - name: enable_passive_DNS_monitoring
     label: 6.5 Ensure passive DNS monitoring is set to enabled on all anti-spyware profiles in use
-    test: false
-    fail_message: test is not implemented
+    test: telemetry_passive_dns_monitoring != 'no'
+    fail_message: Passive DNS monitoring is not currently enabled
     documentation_link: https://www.paloaltonetworks.com
 
   # 6.6 Ensure a secure anti-spyware profile is applied to all security policies permitting traffic to the Internet
