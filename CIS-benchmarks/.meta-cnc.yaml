@@ -701,45 +701,27 @@ snippets:
     documentation_link: https://www.paloaltonetworks.com
 
   # 2.5 Ensure that the User-ID Agent has minimal permissions if User-ID is enabled
-  - name: device_config_file
-    cmd: parse
-    variable: config
-    outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
-
   - name: userid_agent_min_permissions
     label: 2.5 Ensure that the User-ID Agent has minimal permissions if User-ID is enabled
     test: false
-    fail_message: test is not implemented
+    severity: warning
+    fail_message: test cannot be implemented for PAN-OS. External system configuration elements
     documentation_link: https://www.paloaltonetworks.com
 
   # 2.6 Ensure that the User-ID service account does not have interactive logon rights
-  - name: device_config_file
-    cmd: parse
-    variable: config
-    outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
-
   - name: userid_no_interactive_logon
     label: 2.6 Ensure that the User-ID service account does not have interactive logon rights
     test: false
-    fail_message: test is not implemented
+    severity: warning
+    fail_message: test cannot be implemented for PAN-OS. External system configuration elements
     documentation_link: https://www.paloaltonetworks.com
 
   # 2.7 Ensure remote access capabilities for the User-ID service account are forbidden
-  - name: device_config_file
-    cmd: parse
-    variable: config
-    outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
-
   - name: userid_service_account
     label: 2.7 Ensure remote access capabilities for the User-ID service account are forbidden
     test: false
-    fail_message: test is not implemented
+    severity: warning
+    fail_message: test cannot be implemented for PAN-OS. External system configuration elements
     documentation_link: https://www.paloaltonetworks.com
 
   # 2.8 Ensure that security policies restrict User-ID Agent traffic from crossing into untrusted zones
