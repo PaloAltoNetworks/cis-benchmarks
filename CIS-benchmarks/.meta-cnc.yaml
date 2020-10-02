@@ -1055,7 +1055,8 @@ snippets:
     test: |-
       (
         security_rules_without_wf_profile | length == 0
-        or security_rules_with_group_without_wf_names | length == 0
+        and security_rules_with_group_without_wf_names | length == 0
+      )
     fail_message: |-
       security policies without Wildfire profile:
       Using explicit profile:
@@ -1181,7 +1182,8 @@ snippets:
     test: |-
       (
         security_rules_without_virus_profile | length == 0
-        or security_rules_with_group_without_virus_names | length == 0
+        and security_rules_with_group_without_virus_names | length == 0
+      )
     fail_message: |-
       security policies without an Antivirus profile:
       Using explicit profile:
@@ -1260,7 +1262,8 @@ snippets:
     test: |-
       (
         security_rules_without_spyware_profile | length == 0
-        or security_rules_with_group_without_spyware_names | length == 0
+        and security_rules_with_group_without_spyware_names | length == 0
+      )
     fail_message: |-
       security policies without Anti-Spyware profile:
       Using explicit profile:
@@ -1314,7 +1317,8 @@ snippets:
     test: |-
       (
         security_rules_without_vulnerability_profile | length == 0
-        or security_rules_with_group_without_vulnerability_names | length == 0
+        and security_rules_with_group_without_vulnerability_names | length == 0
+      )
     fail_message: |-
       security policies without Vulnerability profile:
       Using explicit profile:
@@ -1407,7 +1411,8 @@ snippets:
     test: |-
       (
         security_rules_without_urlfiltering_profile | length == 0
-        or security_rules_with_group_without_urlfiltering_names | length == 0
+        and security_rules_with_group_without_urlfiltering_names | length == 0
+      )
     fail_message: |-
       security policies without URL Filtering profile:
       Using explicit profile:
@@ -1458,7 +1463,8 @@ snippets:
     test: |-
       (
         security_rules_without_datafiltering_profile | length == 0
-        or security_rules_with_group_without_datafiltering_names | length == 0
+        and security_rules_with_group_without_datafiltering_names | length == 0
+      )
     fail_message: |-
       security policies without Data Filtering profile:
       Using explicit profile:

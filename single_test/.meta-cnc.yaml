@@ -46,7 +46,8 @@ snippets:
     test: |-
       (
         security_rules_without_datafiltering_profile | length == 0
-        or security_rules_with_group_without_datafiltering_names | length == 0
+        and security_rules_with_group_without_datafiltering_names | length == 0
+      )
     fail_message: |-
       security policies without Data Filtering profile:
       Using explicit profile:
