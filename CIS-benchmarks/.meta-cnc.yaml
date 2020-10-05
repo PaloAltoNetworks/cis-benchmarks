@@ -1643,11 +1643,50 @@ snippets:
     fail_message: Feature license "Threat Prevention" missing or expired
     documentation_link: https://docs.paloaltonetworks.com/threat-prevention
 
-  # - name: security_policy_deny_threat_ips
-  #   label: 7.3 Ensure 'Security Policy' denying any/all traffic to/from IP addresses on Trusted Threat Intelligence Sources Exists
-  #   test: false
-  #   fail_message: test is not implemented
-  #   documentation_link: https://www.paloaltonetworks.com
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: threat_prevention_inbound_policy
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry/rulebase/security/rules/entry
+          [
+          position() < 3
+          and action="deny"
+          and from/member="any"
+          and to/member="any"
+          and destination/member="any"
+          and source/member="panw-known-ip-list"
+          and application/member="any"
+          and service/member="any"
+          and not(disabled="yes")
+          ]
+      - name: threat_prevention_outbound_policy
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry/rulebase/security/rules/entry
+          [
+          position() < 3
+          and action="deny"
+          and from/member="any"
+          and to/member="any"
+          and destination/member="panw-known-ip-list"
+          and source/member="any"
+          and application/member="any"
+          and service/member="any"
+          and not(disabled="yes")
+          ]
+
+  - name: security_policy_deny_threat_ips
+    label: 7.3 Ensure 'Security Policy' denying any/all traffic to/from IP addresses on Trusted Threat Intelligence Sources Exists
+    test: |-
+      (
+        threat_prevention_inbound_policy
+        and threat_prevention_outbound_policy
+      )
+    fail_message: |-
+      {% if not threat_prevention_inbound_policy %}Known malicious IP's must be blocked inbound at top of security policy for any applications on any services on any zones.{% endif %}
+      {% if not threat_prevention_outbound_policy %}Known malicious IP's must be blocked outbound at top of security policy for any applications on any services on any zones.{% endif %}
+    documentation_link: https://docs.paloaltonetworks.com/pan-os/9-0/pan-os-admin/policy/use-an-external-dynamic-list-in-policy/built-in-edls.html
 
   # 8.1 Ensure 'SSL Forward Proxy Policy' for traffic destined to the Internet is configured
   - name: device_config_file
