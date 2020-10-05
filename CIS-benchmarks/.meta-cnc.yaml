@@ -1606,8 +1606,8 @@ snippets:
         and not port_specific_policies
       )
     fail_message: |-
-      {% if any_any_policies_names %} The following policies permit all applications on all ports: {% for pol in any_any_policies_names %}"{{ pol }}" {% endfor %}{% endif %}
-      {% if port_specific_policies_names %} The following policies only filter based on port: {% for pol in port_specific_policies_names %}"{{ pol }}" {% endfor %}{% endif %}
+      {% if any_any_policies_names %} The following policies permit all applications on all ports, {% for pol in any_any_policies_names %}"{{ pol }}" {% endfor %}{% endif %}
+      {% if port_specific_policies_names %} The following policies only filter based on port, {% for pol in port_specific_policies_names %}"{{ pol }}" {% endfor %}{% endif %}
     documentation_link: https://docs.paloaltonetworks.com/pan-os/9-0/pan-os-admin/policy/security-policy
 
   # 7.2 Ensure 'Service setting of ANY' in a security policy allowing traffic does not exist
@@ -1615,14 +1615,19 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: service_any_policies
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry/rulebase/security/rules/entry
+          [service/member="any" and action="allow" and not(disabled="yes")]
+
+      - name: service_any_policies_names
+        capture_expression: service_any_policies | map(attribute="entry.@name") | list
 
   - name: service_any_not_allowed_in_policy
     label: 7.2 Ensure 'Service setting of ANY' in a security policy allowing traffic does not exist
-    test: false
-    fail_message: test is not implemented
-    documentation_link: https://www.paloaltonetworks.com
+    test: not service_any_policies
+    fail_message: The following policies have a service of 'any' configured, {% for pol in service_any_policies_names %}"{{ pol }}" {% endfor %}
+    documentation_link: https://docs.paloaltonetworks.com/pan-os/9-0/pan-os-admin/policy/security-policy
 
   # 7.3 Ensure 'Security Policy' denying any/all traffic to/from IP addresses on Trusted Threat Intelligence Sources Exists
   - name: device_config_file
