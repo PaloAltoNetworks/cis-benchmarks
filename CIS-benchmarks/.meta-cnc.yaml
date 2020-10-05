@@ -1585,14 +1585,30 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: any_any_policies
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry/rulebase/security/rules/entry
+          [application/member="any" and service/member="application-default" and action="allow" and not (disabled="yes")]
+      - name: port_specific_policies 
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry/rulebase/security/rules/entry
+          [application/member="any" and not(service/member="application-default") and action="allow" and not(disabled="yes")]
+      - name: any_any_policies_names
+        capture_expression: any_any_policies | map(attribute="entry.@name") | list
+      - name: port_specific_policies_names
+        capture_expression: port_specific_policies | map(attribute="entry.@name") | list
 
   - name: app_security_more_trusted_zone
     label: 7.1 Ensure application security policies exist when allowing traffic from an untrusted zone to a more trusted zone
-    test: false
-    fail_message: test is not implemented
-    documentation_link: https://www.paloaltonetworks.com
+    test: |-
+      (
+        not any_any_policies
+        and not port_specific_policies
+      )
+    fail_message: |-
+      {% if any_any_policies_names %} The following policies permit all applications on all ports: {% for pol in any_any_policies_names %}"{{ pol }}" {% endfor %}{% endif %}
+      {% if port_specific_policies_names %} The following policies only filter based on port: {% for pol in port_specific_policies_names %}"{{ pol }}" {% endfor %}{% endif %}
+    documentation_link: https://docs.paloaltonetworks.com/pan-os/9-0/pan-os-admin/policy/security-policy
 
   # 7.2 Ensure 'Service setting of ANY' in a security policy allowing traffic does not exist
   - name: device_config_file
