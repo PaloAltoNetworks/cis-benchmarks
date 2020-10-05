@@ -1619,7 +1619,6 @@ snippets:
         capture_list: |-
           /config/devices/entry[@name='localhost.localdomain']/vsys/entry/rulebase/security/rules/entry
           [service/member="any" and action="allow" and not(disabled="yes")]
-
       - name: service_any_policies_names
         capture_expression: service_any_policies | map(attribute="entry.@name") | list
 
@@ -1630,18 +1629,25 @@ snippets:
     documentation_link: https://docs.paloaltonetworks.com/pan-os/9-0/pan-os-admin/policy/security-policy
 
   # 7.3 Ensure 'Security Policy' denying any/all traffic to/from IP addresses on Trusted Threat Intelligence Sources Exists
-  - name: device_config_file
-    cmd: parse
-    variable: config
+  - name: get_license_info
+    cmd: cli
+    cmd_str: request license info
+    output_type: xml
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: threat_prevention
+        capture_value: ./entry[feature="Threat Prevention" and not(expired="yes")]
 
-  - name: security_policy_deny_threat_ips
-    label: 7.3 Ensure 'Security Policy' denying any/all traffic to/from IP addresses on Trusted Threat Intelligence Sources Exists
-    test: false
-    fail_message: test is not implemented
-    documentation_link: https://www.paloaltonetworks.com
+  - name: security_policy_deny_threat_ips_license
+    label: 7.3 Ensure active Threat Prevention license
+    test: threat_prevention
+    fail_message: Feature license "Threat Prevention" missing or expired
+    documentation_link: https://docs.paloaltonetworks.com/threat-prevention
+
+  # - name: security_policy_deny_threat_ips
+  #   label: 7.3 Ensure 'Security Policy' denying any/all traffic to/from IP addresses on Trusted Threat Intelligence Sources Exists
+  #   test: false
+  #   fail_message: test is not implemented
+  #   documentation_link: https://www.paloaltonetworks.com
 
   # 8.1 Ensure 'SSL Forward Proxy Policy' for traffic destined to the Internet is configured
   - name: device_config_file
