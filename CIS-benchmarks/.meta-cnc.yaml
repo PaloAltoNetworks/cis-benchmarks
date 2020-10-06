@@ -314,7 +314,9 @@ snippets:
   - name: enable_log_high_dp_load
     label: 1.1.3 Ensure 'Enable Log on High DP Load' is enabled
     test: device_setting | element_value('management.enable-log-high-dp-load') == 'yes'
-    documentation_link: https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html#device-setup-management-logging-and-reporting-settings
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_dev/viz_guide_panos.html#
+      device-setup-management-logging-and-reporting-settings
 
   # 1.2.1 permitted ip addresses for device management
   - name: device_config_file
@@ -337,20 +339,27 @@ snippets:
     variable: config
     outputs:
       - name: profile_permitted_ips
-        capture_list: /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile/entry/permitted-ip/../@name
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile
+          /entry/permitted-ip/../@name
       - name: profile_ssh_enabled
-        capture_list: /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile/entry/ssh[text()='yes']/../@name
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile
+          /entry/ssh[text()='yes']/../@name
       - name: profile_https_enabled
-        capture_list: /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile/entry/https[text()='yes']/../@name
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile
+          /entry/https[text()='yes']/../@name
       - name: profile_snmp_enabled
-        capture_list: /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile/entry/snmp[text()='yes']/../@name
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile
+          /entry/snmp[text()='yes']/../@name
       - name: ssh_https_snmp_enabled_profiles_no_ip_list
         capture_expression: |
           profile_ssh_enabled
           + profile_https_enabled
           + profile_snmp_enabled
         filter_items: item not in profile_permitted_ips
-
 
   - name: permitted_ip_address_mgmt_profiles
     label: 1.2.2 Ensure 'Permitted IP Addresses' is set for all management profiles where SSH, HTTPS, or SNMP is enabled
@@ -369,9 +378,11 @@ snippets:
     variable: config
     outputs:
       - name: mgmt_disable_http
-        capture_value: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/service/disable-http/text()
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/service/disable-http/text()
       - name: mgmt_disable_telnet
-        capture_value: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/service/disable-telnet/text()
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/service/disable-telnet/text()
 
   - name: http_telnet_disabled_mgmt
     label: 1.2.3 Ensure HTTP and Telnet options are disabled for the management interface
@@ -899,8 +910,12 @@ snippets:
           )
         )
       )
-    fail_message: Either link groups or path monitoring must be configured with a failure condition of "any", and monitored links or destination IP addresses
-    documentation_link: https://docs.paloaltonetworks.com/pan-os/9-1/pan-os-admin/high-availability/set-up-activepassive-ha/configure-activepassive-ha.html
+    fail_message: |-
+      Either link groups or path monitoring must be configured with a failure condition of "any",
+      and monitored links or destination IP addresses
+    documentation_link: |-
+      https://docs.paloaltonetworks.com/pan-os/9-1/pan-os-admin/high-availability/
+      set-up-activepassive-ha/configure-activepassive-ha.html
 
   # 3.3 Ensure 'Passive Link State' and 'Preemptive' are configured appropriately
   - name: device_config_file
@@ -908,9 +923,13 @@ snippets:
     variable: config
     outputs:
       - name: ha_passive_link_state
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/mode/active-passive/passive-link-state[text() = 'auto']
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/mode
+          /active-passive/passive-link-state[text() = 'auto']
       - name: ha_preemptive
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/election-option/preemptive[text() = 'yes']
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/
+          election-option/preemptive[text() = 'yes']
 
   - name: HA_passive_link_preemptive
     label: 3.3 Ensure 'Passive Link State' and 'Preemptive' are configured appropriately
@@ -920,7 +939,9 @@ snippets:
         and not ha_preemptive
       )
     fail_message: Passive link state must be set to auto and preemption must be disabled
-    documentation_link: https://docs.paloaltonetworks.com/pan-os/9-1/pan-os-admin/high-availability/set-up-activepassive-ha/configure-activepassive-ha.html
+    documentation_link: |-
+      https://docs.paloaltonetworks.com/pan-os/9-1/pan-os-admin/high-availability/
+      set-up-activepassive-ha/configure-activepassive-ha.html
 
   # 4.1 Ensure 'Antivirus Update Schedule' is set to download and install updates hourly
   - name: device_config_file
@@ -1592,7 +1613,8 @@ snippets:
     fail_message: test is not implemented
     documentation_link: https://www.paloaltonetworks.com
 
-  # 6.18 Ensure that all zones have Zone Protection Profiles with all Reconnaissance Protection settings enabled, tuned, and set to appropriate actions
+  # 6.18 Ensure that all zones have Zone Protection Profiles with all Reconnaissance Protection settings enabled,
+  # tuned, and set to appropriate actions
   - name: device_config_file
     cmd: parse
     variable: config
@@ -1601,7 +1623,9 @@ snippets:
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
 
   - name: zone_protection_reconn_protect
-    label: 6.18 Ensure that all zones have Zone Protection Profiles with all Reconnaissance Protection settings enabled, tuned, and set to appropriate actions
+    label: |-
+      6.18 Ensure that all zones have Zone Protection Profiles with all Reconnaissance Protection settings enabled,
+      tuned, and set to appropriate actions
     test: false
     fail_message: test is not implemented
     documentation_link: https://www.paloaltonetworks.com
