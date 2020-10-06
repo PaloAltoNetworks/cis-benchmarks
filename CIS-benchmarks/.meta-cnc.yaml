@@ -21,6 +21,81 @@ variables:
       - hourly
       - every-30-mins
 
+  - name: url_filtering_categories
+    description: current release of url categories
+    type_hint: hidden
+    default:
+      - abortion
+      - abused-drugs
+      - adult
+      - alcohol-and-tobacco
+      - auctions
+      - business-and-economy
+      - command-and-control
+      - computer-and-internet-info
+      - content-delivery-networks
+      - copyright-infringement
+      - dating
+      - dynamic-dns
+      - educational-institutions
+      - entertainment-and-arts
+      - extremism
+      - financial-services
+      - gambling
+      - games
+      - government
+      - hacking
+      - health-and-medicine
+      - high-risk
+      - home-and-garden
+      - hunting-and-fishing
+      - insufficient-content
+      - internet-communications-and-telephony
+      - internet-portals
+      - job-search
+      - legal
+      - low-risk
+      - malware
+      - medium-risk
+      - military
+      - motor-vehicles
+      - music
+      - newly-registered-domain
+      - news
+      - not-resolved
+      - nudity
+      - online-storage-and-backup
+      - parked
+      - peer-to-peer
+      - personal-sites-and-blogs
+      - philosophy-and-political-advocacy
+      - phishing
+      - private-ip-addresses
+      - proxy-avoidance-and-anonymizers
+      - questionable
+      - real-estate
+      - recreation-and-hobbies
+      - reference-and-research
+      - religion
+      - search-engines
+      - sex-education
+      - shareware-and-freeware
+      - shopping
+      - social-networking
+      - society
+      - sports
+      - stock-advice-and-tools
+      - streaming-media
+      - swimsuits-and-intimate-apparel
+      - training-and-tools
+      - translation
+      - travel
+      - unknown
+      - weapons
+      - web-advertisements
+      - web-based-email
+      - web-hosting
+
   - name: wf_file_size_limits
     description: wildfire recommended file size limits
     type_hint: hidden
@@ -1571,13 +1646,43 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: url_filtering_profiles
+        capture_list: /config/devices/entry[@name='localhost.localdomain']/vsys/entry/profiles/url-filtering/entry
+      - name: url_filtering_profiles_expanded
+        capture_variable: |-
+          {%- set url_filter_output = {} %}
+          {%- for profile in url_filtering_profiles %}
+
+            {# Create a list of dicts that specify profile validity #}
+            {%- set _ = url_filter_output.update({profile['entry']['@name']: {'valid': True}}) %}
+
+            {# If a category is not accounted for, profile is invalid #}
+            {%- for category in url_filtering_categories %}
+              {%-
+                if category not in profile['entry']['credential-enforcement']['continue']['member']
+                and category not in profile['entry']['credential-enforcement']['block']['member']
+              %}
+                {%- set _ = url_filter_output[profile['entry']['@name']].update({'valid': False}) %}
+              {%- endif %}
+            {%- endfor %}
+
+            {# Test per category parameters #}
+            {%-
+              if 'allow' in profile['entry']['credential-enforcement']
+              or 'alert' in profile['entry']['credential-enforcement']
+            %}
+                {%- set _ = url_filter_output[profile['entry']['@name']].update({'valid': False}) %}
+            {%- endif %}
+
+          {%- endfor %}
+
+          {# Determine if all profiles are valid #}
+          {{ url_filter_output | to_json }}
 
   - name: user_cred_block_continue
     label: 6.20 Ensure that User Credential Submission uses the action of “block” or “continue” on the URL categories
     test: false
-    fail_message: test is not implemented
+    fail_message: output {{ url_filtering_profiles_expanded | from_json }}
     documentation_link: https://www.paloaltonetworks.com
 
   # 7.1 Ensure application security policies exist when allowing traffic from an untrusted zone to a more trusted zone
