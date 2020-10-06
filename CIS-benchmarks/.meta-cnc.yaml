@@ -1030,55 +1030,32 @@ snippets:
           /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
           entry[@name='script']/size-limit/text()
 
-  # check all file types and sizes match BPA
+  # 5.1 Ensure that WildFire file size upload limits are maximized
+  - name: wf_size_testing
+    cmd: parse
+    variable: config
+    outputs:
+      - name: wf_file_size_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/
+          file-size-limit/entry
+      - name: wf_filetypes_wo_max_size
+        capture_variable: |-
+          {%- set bad_filetypes = [] %}
+          {%- for item in wf_file_size_object %}
+            {%- set filetype = item['entry']['@name'] %}
+            {%- if item['entry']['size-limit'] | int < wf_file_size_limits[0][filetype] | int %}
+              {%- set _ = bad_filetypes.append(filetype) %}
+            {%- endif %}
+          {%- endfor %}
+          {{ bad_filetypes | to_json }}
+
   - name:  wf_limit_pe_test
     label: 5.1 Ensure that WildFire file size upload limits are maximized
-    test: |-
-      (
-        wf_limits_pe | int >= wf_file_size_limits[0].pe | int
-        and wf_limits_apk | int >= wf_file_size_limits[0].apk | int
-        and wf_limits_pdf | int >= wf_file_size_limits[0].pdf | int
-        and wf_limits_msoffice | int >= wf_file_size_limits[0]['ms-office'] | int
-        and wf_limits_jar | int >= wf_file_size_limits[0].jar | int
-        and wf_limits_flash | int >= wf_file_size_limits[0].flash | int
-        and wf_limits_MacOSX | int >= wf_file_size_limits[0].MacOSX | int
-        and wf_limits_archive | int >= wf_file_size_limits[0].archive | int
-        and wf_limits_linux | int >= wf_file_size_limits[0].linux | int
-        and wf_limits_script | int >= wf_file_size_limits[0].script | int
-      )
-    fail_message: |
-      {%- if wf_limits_pe | int < wf_file_size_limits[0].pe | int %}
-      pe file size should be configured as {{ wf_file_size_limits[0].pe }}
-      {%- endif %}
-      {%- if wf_limits_apk | int < wf_file_size_limits[0].apk | int %}
-      apk file size should be configured as {{ wf_file_size_limits[0].apk }}
-      {%- endif %}
-      {%- if wf_limits_pdf | int < wf_file_size_limits[0].pdf | int %}
-      pdf file size should be configured as {{ wf_file_size_limits[0].pdf }}
-      {%- endif %}
-      {%- if wf_limits_msoffice | int < wf_file_size_limits[0]['ms-office'] | int %}
-      ms-office file size should be configured as {{ wf_file_size_limits[0]['msoffice'] }}
-      {%- endif %}
-      {%- if wf_limits_jar | int < wf_file_size_limits[0].jar | int %}
-      jar file size should be configured as {{ wf_file_size_limits[0].jar }}
-      {%- endif %}
-      {%- if wf_limits_flash | int < wf_file_size_limits[0].flash | int %}
-      flash file size should be configured as {{ wf_file_size_limits[0].flash }}
-      {%- endif %}
-      {%- if wf_limits_MacOSX | int < wf_file_size_limits[0].MacOSX | int %}
-      MacOSX file size should be configured as {{ wf_file_size_limits[0].MacOSX }}
-      {%- endif %}
-      {%- if wf_limits_archive | int < wf_file_size_limits[0].archive | int %}
-      archive file size should be configured as {{ wf_file_size_limits[0].archive }}
-      {%- endif %}
-      {%- if wf_limits_linux | int < wf_file_size_limits[0].linux | int %}
-      linux file size should be configured as {{ wf_file_size_limits[0].linux }}
-      {%- endif %}
-      {%- if wf_limits_script | int < wf_file_size_limits[0].script | int %}
-      script file size should be configured as {{ wf_file_size_limits[0].script }}
-      {%- endif %}
-    pass_message: |
-      All Wildfire file types are set to max size
+    test: wf_filetypes_wo_max_size | from_json | length == 0
+    fail_message: |-
+      filetypes not configured to meet max size requirements:
+      {{ wf_filetypes_wo_max_size }}
     documentation_link: www.paloaltonetworks.com
 
   # 5.2 Ensure forwarding is enabled for all applications and file types in WildFire file blocking profiles

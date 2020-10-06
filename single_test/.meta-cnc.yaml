@@ -15,31 +15,51 @@ labels:
 
 variables:
 
+  - name: wf_file_size_limits
+    description: wildfire recommended file size limits
+    type_hint: hidden
+    default:
+      - pe: 16
+        apk: 30
+        pdf: 3072
+        ms-office: 16384
+        jar: 5
+        flash: 5
+        MacOSX: 10
+        archive: 50
+        linux: 50
+        script: 2000
 
 snippets:
 
-  # 6.12 Ensure all HTTP Header Logging options are enabled
-  - name: device_config_file
+  # 5.1 Ensure that WildFire file size upload limits are maximized
+  - name: wf_size_testing
     cmd: parse
     variable: config
     outputs:
-      - name: url_profiles_with_header_logging
+      - name: wf_file_size_object
         capture_list: |-
-          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/url-filtering/
-          entry[log-http-hdr-user-agent='yes' and log-http-hdr-referer='yes'
-          and log-http-hdr-xff='yes']/@name
-      - name: url_profiles_without_header_logging
-        capture_list: |-
-          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/url-filtering/
-          entry/@name
-        filter_items: item not in url_profiles_with_header_logging
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/
+          file-size-limit/entry
+      - name: wf_filetypes_wo_max_size
+        capture_variable: |-
+          {%- set bad_filetypes = [] %}
+          {%- for item in wf_file_size_object %}
+            {%- set filetype = item['entry']['@name'] %}
+            {%- if item['entry']['size-limit'] | int < wf_file_size_limits[0][filetype] | int %}
+              {%- set _ = bad_filetypes.append(filetype) %}
+            {%- endif %}
+          {%- endfor %}
+          {{ bad_filetypes | to_json }}
 
 
-  - name: url_filtering_http_header_logging
-    label: 6.12 Ensure all HTTP Header Logging options are enabled
-    test: url_profiles_without_header_logging | length == 0
+  # check all file types and sizes match BPA
+  - name:  wf_limit_pe_test
+    label: 5.1 Ensure that WildFire file size upload limits are maximized
+    test: wf_filetypes_wo_max_size | from_json | length == 0
     fail_message: |-
-      Profiles without heading logging options enabled:
-      {{ url_profiles_without_header_logging }}
-    documentation_link: https://www.paloaltonetworks.com
+      filetypes not configured to meet max size requirements:
+      {{ wf_filetypes_wo_max_size }}
+    documentation_link: www.paloaltonetworks.com
+
 
