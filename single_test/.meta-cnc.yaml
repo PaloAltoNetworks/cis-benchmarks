@@ -15,51 +15,62 @@ labels:
 
 variables:
 
-  - name: wf_file_size_limits
-    description: wildfire recommended file size limits
+  - name: log_types
+    description: device log types for log forwarding
     type_hint: hidden
+    # globalprotect to be added in 10.0
     default:
-      - pe: 16
-        apk: 30
-        pdf: 3072
-        ms-office: 16384
-        jar: 5
-        flash: 5
-        MacOSX: 10
-        archive: 50
-        linux: 50
-        script: 2000
+      - system
+      - config
+      - userid
+      - hipmatch
+      - iptag
 
 snippets:
 
-  # 5.1 Ensure that WildFire file size upload limits are maximized
-  - name: wf_size_testing
+  # 1.1.1.2 SNMPv3 traps should be configured
+  # TODO: future update to include Panorama/CDL option in the checks
+  - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: wf_file_size_object
-        capture_list: |-
-          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/
-          file-size-limit/entry
-      - name: wf_filetypes_wo_max_size
+      - name: shared_log_settings
+        capture_object: /config/shared/log-settings
+      - name: logtypes_without_snmp
         capture_variable: |-
-          {%- set bad_filetypes = [] %}
-          {%- for item in wf_file_size_object %}
-            {%- set filetype = item['entry']['@name'] %}
-            {%- if item['entry']['size-limit'] | int < wf_file_size_limits[0][filetype] | int %}
-              {%- set _ = bad_filetypes.append(filetype) %}
+          {%- set good_log_types = [] %}
+          {%- set bad_log_types = [] %}
+          {%- for logtype in shared_log_settings['log-settings'] %}
+            {%- if logtype in log_types %}
+              {%- for item in shared_log_settings['log-settings'][logtype]['match-list'] %}
+                {%- if shared_log_settings['log-settings'][logtype]['match-list'][item][1] %}
+                  {%- for entry in shared_log_settings['log-settings'][logtype]['match-list'][item] %}
+                    {%- if entry['filter'] == 'All Logs' and entry['send-snmptrap'] %}
+                      {%- set _ = good_log_types.append(logtype) %}
+                    {%- endif %}
+                  {%- endfor %}
+                {%- else %}
+                  {%- set itemElement = shared_log_settings['log-settings'][logtype]['match-list'][item] %}
+                  {%- if itemElement['filter'] == 'All Logs' and itemElement['send-snmptrap'] %}
+                    {%- set _ = good_log_types.append(logtype) %}
+                  {%- endif %}
+                {%- endif %}
+              {%- endfor %}
             {%- endif %}
           {%- endfor %}
-          {{ bad_filetypes | to_json }}
+          {%- for logtype in log_types %}
+            {%- if logtype not in good_log_types %}
+              {%- set _ = bad_log_types.append(logtype) %}
+            {%- endif %}
+          {%- endfor %}
+          {{ bad_log_types | to_json }}
 
-
-  # check all file types and sizes match BPA
-  - name:  wf_limit_pe_test
-    label: 5.1 Ensure that WildFire file size upload limits are maximized
-    test: wf_filetypes_wo_max_size | from_json | length == 0
+  - name: system_logging_configured_snmp
+    label: 1.1.1.2 SNMPv3 traps should be configured
+    test: logtypes_without_snmp | from_json | length == 0
     fail_message: |-
-      filetypes not configured to meet max size requirements:
-      {{ wf_filetypes_wo_max_size }}
-    documentation_link: www.paloaltonetworks.com
+      log types violating benchmark requirement:
+      {{ logtypes_without_snmp }}
+    documentation_link: https://iron-skillet.readthedocs.io
 
 

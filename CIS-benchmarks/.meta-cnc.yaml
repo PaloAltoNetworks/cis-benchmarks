@@ -13,6 +13,17 @@ labels:
 
 variables:
 
+  - name: log_types
+    description: device log types for log forwarding
+    type_hint: hidden
+    # globalprotect to be added in 10.0
+    default:
+      - system
+      - config
+      - userid
+      - hipmatch
+      - iptag
+
   - name: app_threat_intervals
     description: interval values used for 4.2 apps threats update interval test
     type_hint: hidden
@@ -132,162 +143,88 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: system_entry_all_logs
-        capture_list: /config/shared/log-settings/system/match-list/entry/filter[text()='All Logs']/../@name
-      - name: system_entry_send_syslog_all_logs
-        capture_list: /config/shared/log-settings/system/match-list/entry/send-syslog/member/../../@name
-        filter_items: item in system_entry_all_logs
-      - name: config_entry_all_logs
-        capture_list: /config/shared/log-settings/config/match-list/entry/filter[text()='All Logs']/../@name
-      - name: config_entry_send_syslog_all_logs
-        capture_list: /config/shared/log-settings/config/match-list/entry/send-syslog/member/../../@name
-        filter_items: item in config_entry_all_logs
-      - name: userid_entry_all_logs
-        capture_list: /config/shared/log-settings/userid/match-list/entry/filter[text()='All Logs']/../@name
-      - name: userid_entry_send_syslog_all_logs
-        capture_list: /config/shared/log-settings/userid/match-list/entry/send-syslog/member/../../@name
-        filter_items: item in userid_entry_all_logs
-      - name: hipmatch_entry_all_logs
-        capture_list: /config/shared/log-settings/hipmatch/match-list/entry/filter[text()='All Logs']/../@name
-      - name: hipmatch_entry_send_syslog_all_logs
-        capture_list: /config/shared/log-settings/hipmatch/match-list/entry/send-syslog/member/../../@name
-        filter_items: item in hipmatch_entry_all_logs
-      - name: globalprotect_entry_all_logs
-        capture_list: /config/shared/log-settings/globalprotect/match-list/entry/filter[text()='All Logs']/../@name
-      - name: globalprotect_entry_send_syslog_all_logs
-        capture_list: /config/shared/log-settings/globalprotect/match-list/entry/send-syslog/member/../../@name
-        filter_items: item in globalprotect_entry_all_logs
-      - name: iptag_entry_all_logs
-        capture_list: /config/shared/log-settings/iptag/match-list/entry/filter[text()='All Logs']/../@name
-      - name: iptag_entry_send_syslog_all_logs
-        capture_list: /config/shared/log-settings/iptag/match-list/entry/send-syslog/member/../../@name
-        filter_items: item in iptag_entry_all_logs
+      - name: shared_log_settings
+        capture_object: /config/shared/log-settings
+      - name: logtypes_without_syslog
+        capture_variable: |-
+          {%- set good_log_types = [] %}
+          {%- set bad_log_types = [] %}
+          {%- for logtype in shared_log_settings['log-settings'] %}
+            {%- if logtype in log_types %}
+              {%- for item in shared_log_settings['log-settings'][logtype]['match-list'] %}
+                {%- if shared_log_settings['log-settings'][logtype]['match-list'][item][1] %}
+                  {%- for entry in shared_log_settings['log-settings'][logtype]['match-list'][item] %}
+                    {%- if entry['filter'] == 'All Logs' and entry['send-syslog'] %}
+                      {%- set _ = good_log_types.append(logtype) %}
+                    {%- endif %}
+                  {%- endfor %}
+                {%- else %}
+                  {%- set itemElement = shared_log_settings['log-settings'][logtype]['match-list'][item] %}
+                  {%- if itemElement['filter'] == 'All Logs' and itemElement['send-syslog'] %}
+                    {%- set _ = good_log_types.append(logtype) %}
+                  {%- endif %}
+                {%- endif %}
+              {%- endfor %}
+            {%- endif %}
+          {%- endfor %}
+          {%- for logtype in log_types %}
+            {%- if logtype not in good_log_types %}
+              {%- set _ = bad_log_types.append(logtype) %}
+            {%- endif %}
+          {%- endfor %}
+          {{ bad_log_types | to_json }}
 
   - name: system_logging_configured
     label: 1.1.1.1 Syslog logging should be configured
-    test: |
-      (
-        system_entry_send_syslog_all_logs | length
-        and config_entry_send_syslog_all_logs | length
-        and userid_entry_send_syslog_all_logs | length
-        and hipmatch_entry_send_syslog_all_logs | length
-        and globalprotect_entry_send_syslog_all_logs | length
-        and iptag_entry_send_syslog_all_logs | length
-      )
-    fail_message: |
-      Benchmark fails based on these log settings:
-      {%- if system_entry_send_syslog_all_logs | length == 0 %}
-      System
-      {%- endif %}
-      {%- if config_entry_send_syslog_all_logs | length == 0 %}
-      Config
-      {%- endif %}
-      {%- if userid_entry_send_syslog_all_logs | length == 0 %}
-      UserID
-      {%- endif %}
-      {%- if hipmatch_entry_send_syslog_all_logs | length == 0 %}
-      HIP Match
-      {%- endif %}
-      {%- if globalprotect_entry_send_syslog_all_logs | length == 0 %}
-      GlobalProtect
-      {%- endif %}
-      {%- if iptag_entry_send_syslog_all_logs | length == 0 %}
-      IP Tag
-      {%- endif %}
-    pass_message: |
-      Benchmark passes based on these log settings:
-      System: {{ system_entry_send_syslog_all_logs }}
-      Config: {{ config_entry_send_syslog_all_logs }}
-      UserID: {{ config_entry_send_syslog_all_logs }}
-      HIP Match: {{ hipmatch_entry_send_syslog_all_logs }}
-      GlobalProtect: {{ globalprotect_entry_send_syslog_all_logs }}
-      IP Tag: {{ iptag_entry_send_syslog_all_logs }}
+    test: logtypes_without_syslog | from_json | length == 0
+    fail_message: |-
+      log types violating benchmark requirement:
+      {{ logtypes_without_syslog }}
     documentation_link: https://iron-skillet.readthedocs.io
 
-  # 1.1.1.2 snmpv3 traps configured
+  # 1.1.1.2 SNMPv3 traps should be configured
+  # TODO: future update to include Panorama/CDL option in the checks
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: system_entry_all_logs
-        capture_list: /config/shared/log-settings/system/match-list/entry/filter[text()='All Logs']/../@name
-      - name: system_entry_send_snmp_all_logs
-        capture_list: /config/shared/log-settings/system/match-list/entry/send-snmptrap/member/../../@name
-        filter_items: item in system_entry_all_logs
-      - name: config_entry_all_logs
-        capture_list: /config/shared/log-settings/config/match-list/entry/filter[text()='All Logs']/../@name
-      - name: config_entry_send_snmp_all_logs
-        capture_list: /config/shared/log-settings/config/match-list/entry/send-snmptrap/member/../../@name
-        filter_items: item in config_entry_all_logs
-      - name: userid_entry_all_logs
-        capture_list: /config/shared/log-settings/userid/match-list/entry/filter[text()='All Logs']/../@name
-      - name: userid_entry_send_snmp_all_logs
-        capture_list: /config/shared/log-settings/userid/match-list/entry/send-snmptrap/member/../../@name
-        filter_items: item in userid_entry_all_logs
-      - name: hipmatch_entry_all_logs
-        capture_list: /config/shared/log-settings/hipmatch/match-list/entry/filter[text()='All Logs']/../@name
-      - name: hipmatch_entry_send_snmp_all_logs
-        capture_list: /config/shared/log-settings/hipmatch/match-list/entry/send-snmptrap/member/../../@name
-        filter_items: item in hipmatch_entry_all_logs
-      - name: globalprotect_entry_all_logs
-        capture_list: /config/shared/log-settings/globalprotect/match-list/entry/filter[text()='All Logs']/../@name
-      - name: globalprotect_entry_send_snmp_all_logs
-        capture_list: /config/shared/log-settings/globalprotect/match-list/entry/send-snmptrap/member/../../@name
-        filter_items: item in globalprotect_entry_all_logs
-      - name: iptag_entry_all_logs
-        capture_list: /config/shared/log-settings/iptag/match-list/entry/filter[text()='All Logs']/../@name
-      - name: iptag_entry_send_snmp_all_logs
-        capture_list: /config/shared/log-settings/iptag/match-list/entry/send-snmptrap/member/../../@name
-        filter_items: item in iptag_entry_all_logs
-      - name: snmpv3_trap_profiles
-        capture_list: /config/shared/log-settings/snmptrap/entry/version/v3/../../@name
-      - name: logging_snmp_profiles_without_snmpv3
-        capture_list: /config/shared/log-settings//match-list/entry/send-snmptrap/member/text()
-        filter_items: item not in snmpv3_trap_profiles
+      - name: shared_log_settings
+        capture_object: /config/shared/log-settings
+      - name: logtypes_without_snmp
+        capture_variable: |-
+          {%- set good_log_types = [] %}
+          {%- set bad_log_types = [] %}
+          {%- for logtype in shared_log_settings['log-settings'] %}
+            {%- if logtype in log_types %}
+              {%- for item in shared_log_settings['log-settings'][logtype]['match-list'] %}
+                {%- if shared_log_settings['log-settings'][logtype]['match-list'][item][1] %}
+                  {%- for entry in shared_log_settings['log-settings'][logtype]['match-list'][item] %}
+                    {%- if entry['filter'] == 'All Logs' and entry['send-snmptrap'] %}
+                      {%- set _ = good_log_types.append(logtype) %}
+                    {%- endif %}
+                  {%- endfor %}
+                {%- else %}
+                  {%- set itemElement = shared_log_settings['log-settings'][logtype]['match-list'][item] %}
+                  {%- if itemElement['filter'] == 'All Logs' and itemElement['send-snmptrap'] %}
+                    {%- set _ = good_log_types.append(logtype) %}
+                  {%- endif %}
+                {%- endif %}
+              {%- endfor %}
+            {%- endif %}
+          {%- endfor %}
+          {%- for logtype in log_types %}
+            {%- if logtype not in good_log_types %}
+              {%- set _ = bad_log_types.append(logtype) %}
+            {%- endif %}
+          {%- endfor %}
+          {{ bad_log_types | to_json }}
 
-  - name: snmp_system_logging_configured
+  - name: system_logging_configured_snmp
     label: 1.1.1.2 SNMPv3 traps should be configured
-    test: |
-      (
-        system_entry_send_snmp_all_logs | length
-        and config_entry_send_snmp_all_logs | length
-        and userid_entry_send_snmp_all_logs | length
-        and hipmatch_entry_send_snmp_all_logs | length
-        and globalprotect_entry_send_snmp_all_logs | length
-        and iptag_entry_send_snmp_all_logs | length
-        and logging_snmp_profiles_without_snmpv3 | length == 0
-      )
-    fail_message: |
-      Benchmark fails based on these log settings:
-      {%- if system_entry_send_snmp_all_logs | length == 0 %}
-      System
-      {%- endif %}
-      {%- if config_entry_send_snmp_all_logs | length == 0 %}
-      Config
-      {%- endif %}
-      {%- if userid_entry_send_snmp_all_logs | length == 0 %}
-      UserID
-      {%- endif %}
-      {%- if hipmatch_entry_send_snmp_all_logs | length == 0 %}
-      HIP Match
-      {%- endif %}
-      {%- if globalprotect_entry_send_snmp_all_logs | length == 0 %}
-      GlobalProtect
-      {%- endif %}
-      {%- if iptag_entry_send_snmp_all_logs | length == 0 %}
-      IP Tag
-      {%- endif %}
-      {%- if logging_snmp_profiles_without_snmpv3 | length %}
-      SNMP logging profiles not using version 3: {{ logging_snmp_profiles_without_snmpv3 }}
-      {%- endif %}
-    pass_message: |
-      Benchmark passes based on these log settings:
-      System: {{ system_entry_send_snmp_all_logs }}
-      Config: {{ config_entry_send_snmp_all_logs }}
-      UserID: {{ config_entry_send_snmp_all_logs }}
-      HIP Match: {{ hipmatch_send_snmp_all_logs }}
-      GlobalProtect: {{ globalprotect_entry_send_snmp_all_logs }}
-      IP Tag: {{ iptag_entry_send_snmp_all_logs }}
+    test: logtypes_without_snmp | from_json | length == 0
+    fail_message: |-
+      log types violating benchmark requirement:
+      {{ logtypes_without_snmp }}
     documentation_link: https://iron-skillet.readthedocs.io
 
   # 1.1.2 login banner set
