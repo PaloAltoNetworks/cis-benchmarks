@@ -1523,13 +1523,24 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: url_profiles_with_header_logging
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/url-filtering/
+          entry[log-http-hdr-user-agent='yes' and log-http-hdr-referer='yes'
+          and log-http-hdr-xff='yes']/@name
+      - name: url_profiles_without_header_logging
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/url-filtering/
+          entry/@name
+        filter_items: item not in url_profiles_with_header_logging
+
 
   - name: url_filtering_http_header_logging
     label: 6.12 Ensure all HTTP Header Logging options are enabled
-    test: false
-    fail_message: test is not implemented
+    test: url_profiles_without_header_logging | length == 0
+    fail_message: |-
+      Profiles without heading logging options enabled:
+      {{ url_profiles_without_header_logging }}
     documentation_link: https://www.paloaltonetworks.com
 
   # 6.13 Ensure secure URL filtering is enabled for all security policies allowing traffic to the Internet
