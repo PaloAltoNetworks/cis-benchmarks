@@ -15,23 +15,132 @@ labels:
 
 variables:
 
+  - name: url_filtering_categories
+    description: current release of url categories
+    type_hint: hidden
+    default:
+      - abortion
+      - abused-drugs
+      - adult
+      - alcohol-and-tobacco
+      - auctions
+      - business-and-economy
+      - command-and-control
+      - computer-and-internet-info
+      - content-delivery-networks
+      - copyright-infringement
+      - cryptocurrency
+      - dating
+      - dynamic-dns
+      - educational-institutions
+      - entertainment-and-arts
+      - extremism
+      - financial-services
+      - gambling
+      - games
+      - government
+      - grayware
+      - hacking
+      - health-and-medicine
+      - high-risk
+      - home-and-garden
+      - hunting-and-fishing
+      - insufficient-content
+      - internet-communications-and-telephony
+      - internet-portals
+      - job-search
+      - legal
+      - low-risk
+      - malware
+      - medium-risk
+      - military
+      - motor-vehicles
+      - music
+      - newly-registered-domain
+      - news
+      - not-resolved
+      - nudity
+      - online-storage-and-backup
+      - parked
+      - peer-to-peer
+      - personal-sites-and-blogs
+      - philosophy-and-political-advocacy
+      - phishing
+      - private-ip-addresses
+      - proxy-avoidance-and-anonymizers
+      - questionable
+      - real-estate
+      - recreation-and-hobbies
+      - reference-and-research
+      - religion
+      - search-engines
+      - sex-education
+      - shareware-and-freeware
+      - shopping
+      - social-networking
+      - society
+      - sports
+      - stock-advice-and-tools
+      - streaming-media
+      - swimsuits-and-intimate-apparel
+      - training-and-tools
+      - translation
+      - travel
+      - unknown
+      - weapons
+      - web-advertisements
+      - web-based-email
+      - web-hosting
+
+  - name: url_profile_actions
+    description: list of url profile actions
+    type_hint: hidden
+    default:
+      - block
+      - alert
+      - continue
+      - override
 
 snippets:
 
-  # 6.9 Ensure that PAN-DB URL Filtering is used
-  # this is an operational command requiring API access to the device
-  - name: get_license_info
-    cmd: cli
-    # This cli command will return xml
-    cmd_str: request license info
-    output_type: xml
+  # 6.11 Ensure that access to every URL is logged
+  - name: device_config_file
+    cmd: parse
+    variable: config
     outputs:
-      - name: logging_service_URL
-        capture_value: ./entry/feature[text()="PAN-DB URL Filtering"]/../expired/text()
+      - name: url_profiles_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/url-filtering/entry
+      - name: url_profile_categories_and_allow_actions
+        capture_variable: |-
+          {%- set bad_profile_categories = dict() %}
+          {%- for item in url_profiles_object %}
+            {%- set configured_categories = [] %}
+            {%- set missing_categories = [] %}
+            {%- for action in url_profile_actions %}
+              {%- if item['entry'][action] %}
+                {%- for category in item['entry'][action]['member'] %}
+                  {%- set _ = configured_categories.append(category) %}
+                {%- endfor %}
+              {%- endif %}
+            {%- endfor %}
+            {%- for category in url_filtering_categories %}
+              {%- if category not in configured_categories %}
+              {%- set _ = missing_categories.append(category) %}
+              {%- endif %}
+            {%- endfor %}
+            {%- if missing_categories | length %}
+              {%- set _ = bad_profile_categories.update({ item['entry']['@name']: missing_categories }) %}
+            {%- endif %}
+          {%- endfor %}
+          {{ bad_profile_categories }}
 
-  - name: pandb_url_filtering
-    label: 6.9 Ensure that PAN-DB URL Filtering is used
-    test: logging_service_URL == 'no'
-    fail_message: PAN-DB license is not used or inactive
+  - name: url_filtering_log_all_categories
+    label: 6.11 Ensure that access to every URL is logged
+    test: url_profile_categories_and_allow_actions | length > 2
+    fail_message: |-
+      Profiles and respective categories causing benchmark to fail
+      {{ url_profile_categories_and_allow_actions }}
+
     documentation_link: https://www.paloaltonetworks.com
 

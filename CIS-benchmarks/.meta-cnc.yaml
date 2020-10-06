@@ -1397,13 +1397,40 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: url_profiles_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/url-filtering/entry
+      - name: url_profile_categories_and_allow_actions
+        capture_variable: |-
+          {%- set bad_profile_categories = dict() %}
+          {%- for item in url_profiles_object %}
+            {%- set configured_categories = [] %}
+            {%- set missing_categories = [] %}
+            {%- for action in url_profile_actions %}
+              {%- if item['entry'][action] %}
+                {%- for category in item['entry'][action]['member'] %}
+                  {%- set _ = configured_categories.append(category) %}
+                {%- endfor %}
+              {%- endif %}
+            {%- endfor %}
+            {%- for category in url_filtering_categories %}
+              {%- if category not in configured_categories %}
+              {%- set _ = missing_categories.append(category) %}
+              {%- endif %}
+            {%- endfor %}
+            {%- if missing_categories | length %}
+              {%- set _ = bad_profile_categories.update({ item['entry']['@name']: missing_categories }) %}
+            {%- endif %}
+          {%- endfor %}
+          {{ bad_profile_categories }}
 
   - name: url_filtering_log_all_categories
     label: 6.11 Ensure that access to every URL is logged
-    test: false
-    fail_message: test is not implemented
+    test: url_profile_categories_and_allow_actions | length > 2
+    fail_message: |-
+      Profiles and respective categories causing benchmark to fail
+      {{ url_profile_categories_and_allow_actions }}
+
     documentation_link: https://www.paloaltonetworks.com
 
   # 6.12 Ensure all HTTP Header Logging options are enabled
