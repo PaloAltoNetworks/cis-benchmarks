@@ -133,14 +133,13 @@ snippets:
               {%- set _ = bad_profile_categories.update({ item['entry']['@name']: missing_categories }) %}
             {%- endif %}
           {%- endfor %}
-          {{ bad_profile_categories }}
+          {{ bad_profile_categories | to_json }}
 
   - name: url_filtering_log_all_categories
     label: 6.11 Ensure that access to every URL is logged
-    test: url_profile_categories_and_allow_actions | length > 2
+    test: url_profile_categories_and_allow_actions | from_json | length == 0
     fail_message: |-
       Profiles and respective categories causing benchmark to fail
       {{ url_profile_categories_and_allow_actions }}
-
     documentation_link: https://www.paloaltonetworks.com
 
