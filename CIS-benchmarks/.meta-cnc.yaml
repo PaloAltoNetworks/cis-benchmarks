@@ -985,52 +985,6 @@ snippets:
       #ironskillet-dynamic-updates
 
   # 5.1 Ensure that WildFire file size upload limits are maximized
-  - name: wf_granular_parse
-    cmd: parse
-    variable: config
-    outputs:
-      - name: wf_limits_pe
-        capture_value: |-
-          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
-          entry[@name='pe']/size-limit/text()
-      - name: wf_limits_apk
-        capture_value: |-
-          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
-          entry[@name='apk']/size-limit/text()
-      - name: wf_limits_pdf
-        capture_value: |-
-          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
-          entry[@name='pdf']/size-limit/text()
-      - name: wf_limits_msoffice
-        capture_value: |-
-          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
-          entry[@name='ms-office']/size-limit/text()
-      - name: wf_limits_jar
-        capture_value: |-
-          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
-          entry[@name='jar']/size-limit/text()
-      - name: wf_limits_flash
-        capture_value: |-
-          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
-          entry[@name='flash']/size-limit/text()
-      - name: wf_limits_MacOSX
-        capture_value: |-
-          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
-          entry[@name='MacOSX']/size-limit/text()
-      - name: wf_limits_archive
-        capture_value: |-
-          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
-          entry[@name='archive']/size-limit/text()
-      - name: wf_limits_linux
-        capture_value: |-
-          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
-          entry[@name='linux']/size-limit/text()
-      - name: wf_limits_script
-        capture_value: |-
-          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/
-          entry[@name='script']/size-limit/text()
-
-  # 5.1 Ensure that WildFire file size upload limits are maximized
   - name: wf_size_testing
     cmd: parse
     variable: config
