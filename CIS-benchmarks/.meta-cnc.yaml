@@ -21,81 +21,6 @@ variables:
       - hourly
       - every-30-mins
 
-  - name: url_filtering_categories
-    description: current release of url categories
-    type_hint: hidden
-    default:
-      - abortion
-      - abused-drugs
-      - adult
-      - alcohol-and-tobacco
-      - auctions
-      - business-and-economy
-      - command-and-control
-      - computer-and-internet-info
-      - content-delivery-networks
-      - copyright-infringement
-      - dating
-      - dynamic-dns
-      - educational-institutions
-      - entertainment-and-arts
-      - extremism
-      - financial-services
-      - gambling
-      - games
-      - government
-      - hacking
-      - health-and-medicine
-      - high-risk
-      - home-and-garden
-      - hunting-and-fishing
-      - insufficient-content
-      - internet-communications-and-telephony
-      - internet-portals
-      - job-search
-      - legal
-      - low-risk
-      - malware
-      - medium-risk
-      - military
-      - motor-vehicles
-      - music
-      - newly-registered-domain
-      - news
-      - not-resolved
-      - nudity
-      - online-storage-and-backup
-      - parked
-      - peer-to-peer
-      - personal-sites-and-blogs
-      - philosophy-and-political-advocacy
-      - phishing
-      - private-ip-addresses
-      - proxy-avoidance-and-anonymizers
-      - questionable
-      - real-estate
-      - recreation-and-hobbies
-      - reference-and-research
-      - religion
-      - search-engines
-      - sex-education
-      - shareware-and-freeware
-      - shopping
-      - social-networking
-      - society
-      - sports
-      - stock-advice-and-tools
-      - streaming-media
-      - swimsuits-and-intimate-apparel
-      - training-and-tools
-      - translation
-      - travel
-      - unknown
-      - weapons
-      - web-advertisements
-      - web-based-email
-      - web-hosting
-
   - name: wf_file_size_limits
     description: wildfire recommended file size limits
     type_hint: hidden
@@ -1648,14 +1573,14 @@ snippets:
     outputs:
       - name: url_filtering_profiles
         capture_list: /config/devices/entry[@name='localhost.localdomain']/vsys/entry/profiles/url-filtering/entry
-      - name: url_filter_test
-        capture_variable: |-
-          {%- set url_filter_output = {'valid': True, 'profiles': {}} %}
+      - name: url_filter_credential_submission
+        capture_json: |-
+          {%- set output = {'valid': True, 'profiles': {}} %}
           {%- for profile in url_filtering_profiles %}
 
             {# Create a list of dicts that specify profile validity #}
             {%- set profile_name = profile['entry']['@name'] %}
-            {%- set _ = url_filter_output['profiles'].update({profile_name: {'valid': True}}) %}
+            {%- set _ = output['profiles'].update({profile_name: {'valid': True}}) %}
 
             {# If a category is not accounted for, profile is invalid #}
             {%- for category in url_filtering_categories %}
@@ -1663,8 +1588,8 @@ snippets:
                 if category not in profile['entry']['credential-enforcement']['continue']['member']
                 and category not in profile['entry']['credential-enforcement']['block']['member']
               %}
-                {%- set _ = url_filter_output['profiles'][profile_name].update({'valid': False}) %}
-                {%- set _ = url_filter_output.update({'valid': False}) %}
+                {%- set _ = output['profiles'][profile_name].update({'valid': False}) %}
+                {%- set _ = output.update({'valid': False}) %}
               {%- endif %}
             {%- endfor %}
 
@@ -1673,17 +1598,19 @@ snippets:
               if 'allow' in profile['entry']['credential-enforcement']
               or 'alert' in profile['entry']['credential-enforcement']
             %}
-                {%- set _ = url_filter_output['profiles'][profile_name].update({'valid': False}) %}
-                {%- set _ = url_filter_output.update({'valid': False}) %}
+                {%- set _ = output['profiles'][profile_name].update({'valid': False}) %}
+                {%- set _ = output.update({'valid': False}) %}
             {%- endif %}
 
           {%- endfor %}
-          {{ url_filter_output }}
+          {{ output | to_json }}
 
   - name: user_cred_block_continue
     label: 6.20 Ensure that User Credential Submission uses the action of “block” or “continue” on the URL categories
-    test: fail
-    fail_message: output {{ url_filter_test | trim }}
+    test: url_filter_credential_submission.valid
+    fail_message: |-
+      Profiles with invalid User Credential Submission action:
+      {%- for profile in url_filter_credential_submission.profiles %}{% if not url_filter_credential_submission.profiles[profile].valid %} {{ profile }}{% endif %}{% endfor %}
     documentation_link: https://www.paloaltonetworks.com
 
   # 7.1 Ensure application security policies exist when allowing traffic from an untrusted zone to a more trusted zone
