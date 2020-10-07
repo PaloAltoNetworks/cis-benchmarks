@@ -1567,6 +1567,15 @@ snippets:
     documentation_link: https://www.paloaltonetworks.com
 
   # 6.20 Ensure that User Credential Submission uses the action of “block” or “continue” on the URL categories
+
+  - name: get_predefined_url_categories
+    cmd: op
+    cmd_str: <show><predefined><xpath>/predefined/pan-url-categories</xpath></predefined></show>
+    output_type: xml
+    outputs:
+      - name: predefined_url_categories
+        capture_list: /pan-url-categories/entry/@name
+
   - name: device_config_file
     cmd: parse
     variable: config
@@ -1583,7 +1592,7 @@ snippets:
             {%- set _ = output['profiles'].update({profile_name: {'valid': True}}) %}
 
             {# If a category is not accounted for, profile is invalid #}
-            {%- for category in url_filtering_categories %}
+            {%- for category in predefined_url_categories %}
               {%-
                 if category not in profile['entry']['credential-enforcement']['continue']['member']
                 and category not in profile['entry']['credential-enforcement']['block']['member']
