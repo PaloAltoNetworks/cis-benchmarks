@@ -764,7 +764,7 @@ snippets:
   # 2.5 Ensure that the User-ID Agent has minimal permissions if User-ID is enabled
   - name: userid_agent_min_permissions
     label: 2.5 Ensure that the User-ID Agent has minimal permissions if User-ID is enabled
-    test: pass
+    test: true
     severity: warning
     pass_message: test cannot be implemented for PAN-OS. External system configuration elements
     documentation_link: |-
