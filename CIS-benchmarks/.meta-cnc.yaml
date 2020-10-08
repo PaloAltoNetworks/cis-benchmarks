@@ -764,9 +764,9 @@ snippets:
   # 2.5 Ensure that the User-ID Agent has minimal permissions if User-ID is enabled
   - name: userid_agent_min_permissions
     label: 2.5 Ensure that the User-ID Agent has minimal permissions if User-ID is enabled
-    test: false
+    test: pass
     severity: warning
-    fail_message: test cannot be implemented for PAN-OS. External system configuration elements
+    pass_message: test cannot be implemented for PAN-OS. External system configuration elements
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-the-user-id-agent-has-minimal-permissions-if-user-id-is-enabled
@@ -774,9 +774,9 @@ snippets:
   # 2.6 Ensure that the User-ID service account does not have interactive logon rights
   - name: userid_no_interactive_logon
     label: 2.6 Ensure that the User-ID service account does not have interactive logon rights
-    test: false
+    test: true
     severity: warning
-    fail_message: test cannot be implemented for PAN-OS. External system configuration elements
+    pass_message: test cannot be implemented for PAN-OS. External system configuration elements
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-the-user-id-service-account-does-not-have-interactive-logon-rights
@@ -784,9 +784,9 @@ snippets:
   # 2.7 Ensure remote access capabilities for the User-ID service account are forbidden
   - name: userid_service_account
     label: 2.7 Ensure remote access capabilities for the User-ID service account are forbidden
-    test: false
+    test: true
     severity: warning
-    fail_message: test cannot be implemented for PAN-OS. External system configuration elements
+    pass_message: test cannot be implemented for PAN-OS. External system configuration elements
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-remote-access-capabilities-for-the-user-id-service-account-are-forbidden
