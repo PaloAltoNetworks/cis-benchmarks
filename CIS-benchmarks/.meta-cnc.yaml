@@ -694,6 +694,7 @@ snippets:
       ensure-that-the-certificate-securing-remote-access-vpns-is-valid
 
   # 2.1 Ensure that IP addresses are mapped to usernames
+  # TODO: actual userID config will vary; enough to check zone usage? Audit also requires log investigation
   - name: device_config_file
     cmd: parse
     variable: config
@@ -727,6 +728,7 @@ snippets:
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-that-wmi-probing-is-disabled
 
   # 2.3 Ensure that User-ID is only enabled for internal trusted interfaces
+  # TODO: require user input to select trust zones - common for a few tests
   - name: device_config_file
     cmd: parse
     variable: config
@@ -743,6 +745,7 @@ snippets:
       ensure-that-user-id-is-only-enabled-for-internal-trusted-interfaces
 
   # 2.4 Ensure that 'Include/Exclude Networks' is used if User-ID is enabled
+  # TODO: only relevant if userID is enabled; ask or check?
   - name: device_config_file
     cmd: parse
     variable: config
@@ -789,6 +792,7 @@ snippets:
       ensure-remote-access-capabilities-for-the-user-id-service-account-are-forbidden
 
   # 2.8 Ensure that security policies restrict User-ID Agent traffic from crossing into untrusted zones
+  # TODO: service route investigation with a set of checks; seems doable
   - name: device_config_file
     cmd: parse
     variable: config
@@ -1008,6 +1012,7 @@ snippets:
       ensure-that-wildfire-file-size-upload-limits-are-maximized
 
   # 5.2 Ensure forwarding is enabled for all applications and file types in WildFire file blocking profiles
+  # TODO: will assume this is the WF analysis profile and check rules for all apps and all file types
   - name: device_config_file
     cmd: parse
     variable: config
@@ -1345,6 +1350,7 @@ snippets:
 
   # 6.7 Ensure a Vulnerability Protection Profile is set to block attacks against critical and high vulnerabilities,
   # and set to default on medium, low, and informational vulnerabilities
+  # TODO: complex rule set due to all combinations of rules; will require enhanced coding logic
   - name: device_config_file
     cmd: parse
     variable: config
@@ -1422,6 +1428,7 @@ snippets:
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-that-pan-db-url-filtering-is-used
 
   # 6.10 Ensure that URL Filtering uses the action of “block” or “override” on the URL categories
+  # TODO: requires user selection for 'categories of interest'
   - name: device_config_file
     cmd: parse
     variable: config
@@ -1545,6 +1552,7 @@ snippets:
       ensure-secure-url-filtering-is-enabled-for-all-security-policies-allowing-traffic-to-the-internet
 
   # 6.14 Ensure alerting after a threshold of credit card or Social Security numbers is detected is enabled
+  # TODO: requires user specific input for data patterns; just test that a data pattern profile is configured?
   - name: device_config_file
     cmd: parse
     variable: config
@@ -1602,6 +1610,7 @@ snippets:
       traffic-to-or-from-the-internet
 
   # 6.16 Ensure that a Zone Protection Profile with an enabled SYN Flood Action of SYN Cookies is attached to all untrusted zones
+  # TODO: platform-volumetric specific; can look for any configuration and would be a notice to the user for manual check
   - name: device_config_file
     cmd: parse
     variable: config
@@ -1619,6 +1628,7 @@ snippets:
       all-untrusted-zones
 
   # 6.17 Ensure that a Zone Protection Profile with tuned Flood Protection settings enabled for all flood types is attached to all untrusted zones
+  # TODO: can check for config knobs yet requires user tuning to set values based on thresholds
   - name: device_config_file
     cmd: parse
     variable: config
@@ -1637,6 +1647,7 @@ snippets:
 
   # 6.18 Ensure that all zones have Zone Protection Profiles with all Reconnaissance Protection settings enabled,
   # tuned, and set to appropriate actions
+  # TODO: have to check that zones have protect profiles + settings for reconn enabled
   - name: device_config_file
     cmd: parse
     variable: config
@@ -1656,6 +1667,7 @@ snippets:
       enabled-tuned-and-set-to-appropriate-actions
 
   # 6.19 Ensure all zones have Zone Protection Profiles that drop specially crafted packets
+  # TODO: check zone protect settings per the benchmark
   - name: device_config_file
     cmd: parse
     variable: config
@@ -1802,6 +1814,7 @@ snippets:
       ensure-security-policy-denying-any-all-traffic-to-from-ip-addresses-on-trusted-threat-intelligence-sources-exists
 
   # 8.1 Ensure 'SSL Forward Proxy Policy' for traffic destined to the Internet is configured
+  # TODO: need user input of internet zones to check as destination in decrypt policies
   - name: device_config_file
     cmd: parse
     variable: config
@@ -1818,6 +1831,7 @@ snippets:
       ensure-ssl-forward-proxy-policy-for-traffic-destined-to-the-internet-is-configured
 
   # 8.2 Ensure 'SSL Inbound Inspection' is required for all untrusted traffic destined for servers using SSL or TLS
+  # TODO: requires user input of zones hosting servers
   - name: device_config_file
     cmd: parse
     variable: config
