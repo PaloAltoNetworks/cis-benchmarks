@@ -1397,8 +1397,9 @@ snippets:
       {{ security_rules_without_vulnerability_profile }}
       Using profile group without a Vulnerability profile
       {{ security_rules_with_group_without_vulnerability_names }}
-    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
-    ensure-a-secure-vulnerability-protection-profile-is-applied-to-all-security-rules-allowing-traffic
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-a-secure-vulnerability-protection-profile-is-applied-to-all-security-rules-allowing-traffic
 
   # 6.9 Ensure that PAN-DB URL Filtering is used
   # this is an operational command requiring API access to the device
