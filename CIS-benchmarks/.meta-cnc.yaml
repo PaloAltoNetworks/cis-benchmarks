@@ -389,8 +389,9 @@ snippets:
 
   - name: valid_cert_admin_intf
     label: 1.2.5 Ensure valid certificate is set for browser-based administrator interface
-    test: false
-    fail_message: test is not implemented
+    test: true
+    severity: warning
+    fail_message: Not part of initial release. Roadmap item to investigate certificate assessment.
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-valid-certificate-is-set-for-browser-based-administrator-interface
@@ -685,8 +686,9 @@ snippets:
 
   - name: vpn_cert_valid
     label: 1.6.3 Ensure that the Certificate Securing Remote Access VPNs is Valid
-    test: false
-    fail_message: test is not implemented
+    test: true
+    severity: warning
+    fail_message: Not part of initial release. Roadmap item to investigate certificate assessment.
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-the-certificate-securing-remote-access-vpns-is-valid
@@ -1841,8 +1843,9 @@ snippets:
 
   - name: decrypt_cert_trusted
     label: 8.3 Ensure that the Certificate used for Decryption is Trusted
-    test: false
-    fail_message: test is not implemented
+    test: true
+    severity: warning
+    fail_message: Not part of initial release. Roadmap item to investigate certificate assessment.
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-the-certificate-used-for-decryption-is-trusted
