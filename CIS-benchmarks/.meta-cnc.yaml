@@ -760,10 +760,11 @@ snippets:
     severity:
       - scored: false
       - level: 1,2
-      - implementated: false
+      - implemented: false
 
   # 2.1 Ensure that IP addresses are mapped to usernames
   # TODO: actual userID config will vary; enough to check zone usage? Audit also requires log investigation
+  # TODO: show zones with userID and any config agents as output + action required
   - name: device_config_file
     cmd: parse
     variable: config
@@ -780,7 +781,8 @@ snippets:
     severity:
       - scored: true
       - level: 2
-      - implementated: false
+      - implemented: false
+      - action_required: true
 
   # 2.2 Ensure that WMI probing is disabled
   - name: device_config_file
@@ -822,28 +824,29 @@ snippets:
     severity:
       - scored: true
       - level: 1
-      - implementated: false
+      - implemented: false
 
   # 2.4 Ensure that 'Include/Exclude Networks' is used if User-ID is enabled
-  # TODO: only relevant if userID is enabled; ask or check?
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: userID_include_exclude_networks_entries
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/
+          user-id-collector/include-exclude-network/entry/@name
 
   - name: userid_with_include_exclude
     label: 2.4 Ensure that 'Include/Exclude Networks' is used if User-ID is enabled
-    test: false
-    fail_message: test is not implemented
+    test: userID_include_exclude_networks_entries | length
+    fail_message: Include/Exclude Networks configuration for userID not found
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-include-exclude-networks-is-used-if-user-id-is-enabled
     severity:
       - scored: true
       - level: 1
-      - implementated: false
+
 
   # 2.5 Ensure that the User-ID Agent has minimal permissions if User-ID is enabled
   - name: userid_agent_min_permissions
@@ -856,7 +859,7 @@ snippets:
     severity:
       - scored: true
       - level: 1
-      - implementated: false
+      - implemented: false
 
   # 2.6 Ensure that the User-ID service account does not have interactive logon rights
   - name: userid_no_interactive_logon
@@ -869,7 +872,7 @@ snippets:
     severity:
       - scored: true
       - level: 1
-      - implementated: false
+      - implemented: false
 
   # 2.7 Ensure remote access capabilities for the User-ID service account are forbidden
   - name: userid_service_account
@@ -882,10 +885,9 @@ snippets:
     severity:
       - scored: false
       - level: 1
-      - implementated: false
+      - implemented: false
 
   # 2.8 Ensure that security policies restrict User-ID Agent traffic from crossing into untrusted zones
-  # TODO: service route investigation with a set of checks; seems doable
   - name: device_config_file
     cmd: parse
     variable: config
@@ -895,15 +897,15 @@ snippets:
 
   - name: userid_agent_no_untrust_zone
     label: 2.8 Ensure that security policies restrict User-ID Agent traffic from crossing into untrusted zones
-    test: false
-    fail_message: test is not implemented
+    test: true
+    pass_message: Not part of initial release. Roadmap item to investigate
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-security-policies-restrict-user-id-agent-traffic-from-crossing-into-untrusted-zones
     severity:
       - scored: true
       - level: 1
-      - implementated: false
+      - implemented: false
 
   # 3.1 Ensure a fully-synchronized High Availability peer is configured
   - name: device_config_file
@@ -1520,7 +1522,7 @@ snippets:
     severity:
       - scored: true
       - level: 1
-      - implementated: false
+      - implemented: false
 
   # 6.8 Ensure a secure Vulnerability Protection Profile is applied to all security rules allowing traffic
   - name: device_config_file
@@ -1592,20 +1594,56 @@ snippets:
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: url_filtering_object
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/url-filtering/entry
+      - name: url_filtering_block_override
+        capture_variable: |-
+          {%- set profiles_block_override = dict() %}
+          {%- set actions = ['block', 'override'] %}
+          {%- for item in url_filtering_object %}
+            {%- set entry_dict = dict() %}
+            {%- for action in actions %}
+              {%- if item['entry'][action] %}
+                {%- set configured_categories = [] %}
+                {%- if item['entry'][action][1] %}
+                  {%- for category in item['entry'][action]['member'] %}
+                    {%- set _ = configured_categories.append(category) %}
+                  {%- endfor %}
+                {%- else %}
+                    {%-  set _ = configured_categories.append(item['entry'][action]['member']) %}
+                {%- endif %}
+                {%- if configured_categories | length %}
+                  {%- set _ = entry_dict.update({ action: configured_categories }) %}
+                {%- endif %}
+              {%- endif %}
+            {%- endfor %}
+            {%- set _ = profiles_block_override.update({ item['entry']['@name']: entry_dict }) %}
+          {%- endfor %}
+          {{ profiles_block_override | to_json }}
 
-  - name: url_filtering_block_or_override
+  - name: url_filtering_block_or_override_test
     label: 6.10 Ensure that URL Filtering uses the action of “block” or “override” on the URL categories
-    test: false
-    fail_message: test is not implemented
+    test: true
+    pass_message: |-
+      The following profiles are associated categories are found in the configuration.
+      Check company practices to validate that these align with 'categories of interest' for block/override
+      {{ url_filtering_block_override }}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-url-filtering-uses-the-action-of-block-or-override-on-the-url-categories
     severity:
       - scored: true
       - level: 1
-      - implementated: false
+      - action_required: true
+
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-that-url-filtering-uses-the-action-of-block-or-override-on-the-url-categories
+    severity:
+      - scored: true
+      - level: 1
+      - action_required: true
 
   # 6.11 Ensure that access to every URL is logged
   - name: device_config_file
@@ -1896,7 +1934,7 @@ snippets:
     severity:
       - scored: true
       - level: 1
-      - implementated: false
+      - implemented: false
 
   # 7.1 Ensure application security policies exist when allowing traffic from an untrusted zone to a more trusted zone
   - name: device_config_file
@@ -2043,7 +2081,7 @@ snippets:
     severity:
       - scored: true
       - level: 1
-      - implementated: false
+      - implemented: false
 
   # 8.2 Ensure 'SSL Inbound Inspection' is required for all untrusted traffic destined for servers using SSL or TLS
   # TODO: requires user input of zones hosting servers
@@ -2064,7 +2102,7 @@ snippets:
     severity:
       - scored: true
       - level: 1
-      - implementated: false
+      - implemented: false
 
   # 8.3 Ensure that the Certificate used for Decryption is Trusted
   - name: device_config_file

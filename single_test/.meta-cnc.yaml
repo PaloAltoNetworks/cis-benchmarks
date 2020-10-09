@@ -15,66 +15,77 @@ labels:
 
 variables:
 
-  - name: log_types
-    description: device log types for log forwarding
-    type_hint: hidden
-    # globalprotect to be added in 10.0
-    default:
-      - system
-      - config
-      - userid
-      - hipmatch
-      - iptag
 
 snippets:
 
-  # 1.1.1.2 SNMPv3 traps should be configured
-  # TODO: future update to include Panorama/CDL option in the checks
+# skillet preamble information used by panhandler
+# ---------------------------------------------------------------------
+# unique snippet name
+name: CIS_benchmark_testing
+# label used for menu selection
+label: test CIS content
+description: single capture and test for CIS validation creation and test
+
+type: pan_validation
+
+# grouping of like snippets for dynamic menu creation in panhandler
+labels:
+  collection:
+    - CIS
+
+variables:
+
+snippets:
+
+  # 6.10 Ensure that URL Filtering uses the action of “block” or “override” on the URL categories
+  # TODO: requires user selection for 'categories of interest'
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: shared_log_settings
-        capture_object: /config/shared/log-settings
-      - name: logtypes_without_snmp
+      - name: url_filtering_object
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/url-filtering/entry
+      - name: url_filtering_block_override
         capture_variable: |-
-          {%- set good_log_types = [] %}
-          {%- set bad_log_types = [] %}
-          {%- for logtype in shared_log_settings['log-settings'] %}
-            {%- if logtype in log_types %}
-              {%- for item in shared_log_settings['log-settings'][logtype]['match-list'] %}
-                {%- if shared_log_settings['log-settings'][logtype]['match-list'][item][1] %}
-                  {%- for entry in shared_log_settings['log-settings'][logtype]['match-list'][item] %}
-                    {%- if entry['filter'] == 'All Logs' and entry['send-snmptrap'] %}
-                      {%- set _ = good_log_types.append(logtype) %}
-                    {%- endif %}
+          {%- set profiles_block_override = dict() %}
+          {%- set actions = ['block', 'override'] %}
+          {%- for item in url_filtering_object %}
+            {%- set entry_dict = dict() %}
+            {%- for action in actions %}
+              {%- if item['entry'][action] %}
+                {%- set configured_categories = [] %}
+                {%- if item['entry'][action][1] %}
+                  {%- for category in item['entry'][action]['member'] %}
+                    {%- set _ = configured_categories.append(category) %}
                   {%- endfor %}
                 {%- else %}
-                  {%- set itemElement = shared_log_settings['log-settings'][logtype]['match-list'][item] %}
-                  {%- if itemElement['filter'] == 'All Logs' and itemElement['send-snmptrap'] %}
-                    {%- set _ = good_log_types.append(logtype) %}
-                  {%- endif %}
+                    {%-  set _ = configured_categories.append(item['entry'][action]['member']) %}
                 {%- endif %}
-              {%- endfor %}
-            {%- endif %}
+                {%- if configured_categories | length %}
+                  {%- set _ = entry_dict.update({ action: configured_categories }) %}
+                {%- endif %}
+              {%- endif %}
+            {%- endfor %}
+            {%- set _ = profiles_block_override.update({ item['entry']['@name']: entry_dict }) %}
           {%- endfor %}
-          {%- for logtype in log_types %}
-            {%- if logtype not in good_log_types %}
-              {%- set _ = bad_log_types.append(logtype) %}
-            {%- endif %}
-          {%- endfor %}
-          {{ bad_log_types | to_json }}
+          {{ profiles_block_override | to_json }}
 
-  - name: system_logging_configured_snmp
-    label: 1.1.1.2 SNMPv3 traps should be configured
-    test: logtypes_without_snmp | from_json | length == 0
-    fail_message: |-
-      log types violating benchmark requirement:
-      {{ logtypes_without_snmp }}
-    documentation_link: https://iron-skillet.readthedocs.io
+  - name: url_filtering_block_or_override_test
+    label: 6.10 Ensure that URL Filtering uses the action of “block” or “override” on the URL categories
+    test: true
+    pass_message: |-
+      The following profiles are associated categories are found in the configuration.
+      Check company practices to validate that these align with 'categories of interest' for block/override
+      {{ url_filtering_block_override }}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-that-url-filtering-uses-the-action-of-block-or-override-on-the-url-categories
     severity:
       - scored: true
       - level: 1
-      - implemented: false
+      - action_required: true
+
+
 
 
