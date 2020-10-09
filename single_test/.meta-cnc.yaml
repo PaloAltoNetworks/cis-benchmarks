@@ -72,6 +72,9 @@ snippets:
       log types violating benchmark requirement:
       {{ logtypes_without_snmp }}
     documentation_link: https://iron-skillet.readthedocs.io
-
+    severity:
+      - scored: true
+      - level: 1
+      - implemented: false
 
 
