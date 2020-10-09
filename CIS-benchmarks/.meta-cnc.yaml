@@ -738,8 +738,9 @@ snippets:
 
   - name: userid_internal_zones_only
     label: 2.3 Ensure that User-ID is only enabled for internal trusted interfaces
-    test: false
-    fail_message: test is not implemented
+    test: true
+    severity: informational
+    pass_message: Roadmap item. First release does not include contextual user input
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-user-id-is-only-enabled-for-internal-trusted-interfaces
