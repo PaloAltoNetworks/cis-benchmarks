@@ -1966,24 +1966,60 @@ snippets:
       - implmented: false
 
   # 6.20 Ensure that User Credential Submission uses the action of “block” or “continue” on the URL categories
+
+  - name: get_predefined_url_categories
+    cmd: op
+    cmd_str: <show><predefined><xpath>/predefined/pan-url-categories</xpath></predefined></show>
+    output_type: xml
+    outputs:
+      - name: predefined_url_categories
+        capture_list: /pan-url-categories/entry/@name
+
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: url_filtering_profiles
+        capture_list: /config/devices/entry[@name='localhost.localdomain']/vsys/entry/profiles/url-filtering/entry
+      - name: url_filter_credential_submission
+        capture_json: |-
+          {%- set output = {'valid': True, 'profiles': {}} %}
+          {%- for profile in url_filtering_profiles %}
+
+            {# Create a list of dicts that specify profile validity #}
+            {%- set profile_name = profile['entry']['@name'] %}
+            {%- set _ = output['profiles'].update({profile_name: {'valid': True}}) %}
+
+            {# If a category is not accounted for, profile is invalid #}
+            {%- for category in predefined_url_categories %}
+              {%-
+                if category not in profile['entry']['credential-enforcement']['continue']['member']
+                and category not in profile['entry']['credential-enforcement']['block']['member']
+              %}
+                {%- set _ = output['profiles'][profile_name].update({'valid': False}) %}
+                {%- set _ = output.update({'valid': False}) %}
+              {%- endif %}
+            {%- endfor %}
+
+            {# Test per category parameters #}
+            {%-
+              if 'allow' in profile['entry']['credential-enforcement']
+              or 'alert' in profile['entry']['credential-enforcement']
+            %}
+                {%- set _ = output['profiles'][profile_name].update({'valid': False}) %}
+                {%- set _ = output.update({'valid': False}) %}
+            {%- endif %}
+
+          {%- endfor %}
+          {{ output | to_json }}
 
   - name: user_cred_block_continue
     label: 6.20 Ensure that User Credential Submission uses the action of “block” or “continue” on the URL categories
-    test: false
-    fail_message: test is not implemented
-    documentation_link: |-
-      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
-      ensure-that-user-credential-submission-uses-the-action-of-block-or-continue-on-the-url-categories
-    severity:
-      - scored: true
-      - level: 1
-      - implemented: false
+    test: url_filter_credential_submission.valid
+    fail_message: |-
+      Profiles with invalid User Credential Submission action:
+      {%- for profile in url_filter_credential_submission.profiles %}{% if not url_filter_credential_submission.profiles[profile].valid %} {{ profile }}{% endif %}{% endfor %}
+    documentation_link: https://www.paloaltonetworks.com
 
   # 7.1 Ensure application security policies exist when allowing traffic from an untrusted zone to a more trusted zone
   - name: device_config_file
