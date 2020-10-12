@@ -15,76 +15,68 @@ labels:
 
 variables:
 
-
 snippets:
 
-# skillet preamble information used by panhandler
-# ---------------------------------------------------------------------
-# unique snippet name
-name: CIS_benchmark_testing
-# label used for menu selection
-label: test CIS content
-description: single capture and test for CIS validation creation and test
-
-type: pan_validation
-
-# grouping of like snippets for dynamic menu creation in panhandler
-labels:
-  collection:
-    - CIS
-
-variables:
-
-snippets:
-
-  # 6.10 Ensure that URL Filtering uses the action of “block” or “override” on the URL categories
-  # TODO: requires user selection for 'categories of interest'
+  # 6.14 Ensure alerting after a threshold of credit card or Social Security numbers is detected is enabled
+  # requires data input for specific pattern types so flagging as action required
+  # provide contextual data of configured data patterns
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: url_filtering_object
-        capture_object: |-
-          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/url-filtering/entry
-      - name: url_filtering_block_override
+      - name: data_pattern_names_w_cc_ss
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/
+          data-objects/entry[pattern-type/predefined/pattern/entry/@name='credit-card-numbers' or
+          pattern-type/predefined/pattern/entry/@name='social-security-numbers']/@name
+      - name: data_filtering_profile_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/
+          data-filtering/entry
+        filter_items: item
+      - name: data_filtering_with_cc_or_ss
+        # iterate over all profiles and rules to see if a data-object matching a credit card or SS data patterns
         capture_variable: |-
-          {%- set profiles_block_override = dict() %}
-          {%- set actions = ['block', 'override'] %}
-          {%- for item in url_filtering_object %}
+          {%- set data_profiles = dict() %}
+          {%- for item in data_filtering_profile_object %}
             {%- set entry_dict = dict() %}
-            {%- for action in actions %}
-              {%- if item['entry'][action] %}
-                {%- set configured_categories = [] %}
-                {%- if item['entry'][action][1] %}
-                  {%- for category in item['entry'][action]['member'] %}
-                    {%- set _ = configured_categories.append(category) %}
-                  {%- endfor %}
-                {%- else %}
-                    {%-  set _ = configured_categories.append(item['entry'][action]['member']) %}
-                {%- endif %}
-                {%- if configured_categories | length %}
-                  {%- set _ = entry_dict.update({ action: configured_categories }) %}
+              {%- if item['entry']['rules']['entry'][1] %}
+                {%- for rule in item['entry']['rules']['entry'] %}
+                  {%- if rule['data-object'] in data_pattern_names_w_cc_ss %}
+                    {%- set _ = entry_dict.update({ 'data-pattern': rule['data-object'] }) %}
+                    {%- set _ = entry_dict.update({ 'alert-threshold': rule['alert-threshold'] }) %}
+                    {%- set _ = entry_dict.update({ 'block-threshold': rule['block-threshold'] }) %}
+                    {%- set _ = data_profiles.update({ item['entry']['@name']: entry_dict }) %}
+                  {%- endif %}
+                {%- endfor %}
+              {%- else %}
+                {%- if item['entry']['rules']['entry']['data-object'] in data_pattern_names_w_cc_ss %}
+                  {%- set _ = entry_dict.update({ data-pattern: item['entry']['rules']['entry']['data-object'] }) %}
+                  {%- set _ = entry_dict.update({ alert-threshold: item['entry']['rules']['entry']['alert-threshold'] }) %}
+                  {%- set _ = entry_dict.update({ block-threshold: item['entry']['rules']['entry']['block-threshold'] }) %}
+                  {%- set _ = data_profiles.update({ item['entry']['@name']: entry_dict }) %}
                 {%- endif %}
               {%- endif %}
-            {%- endfor %}
-            {%- set _ = profiles_block_override.update({ item['entry']['@name']: entry_dict }) %}
           {%- endfor %}
-          {{ profiles_block_override | to_json }}
+          {{ data_profiles }}
 
-  - name: url_filtering_block_or_override_test
-    label: 6.10 Ensure that URL Filtering uses the action of “block” or “override” on the URL categories
+  - name: data_filtering_cc_ss_numbers
+    label: 6.14 Ensure alerting after a threshold of credit card or Social Security numbers is detected is enabled
     test: true
     pass_message: |-
-      The following profiles are associated categories are found in the configuration.
-      Check company practices to validate that these align with 'categories of interest' for block/override
-      {{ url_filtering_block_override }}
+      Profiles found with a credit card or Social Security number predefined pattern
+      Includes alert and block thresholds that should be non-zero
+
+      {{ data_filtering_with_cc_or_ss }}
+
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
-      ensure-that-url-filtering-uses-the-action-of-block-or-override-on-the-url-categories
+      ensure-alerting-after-a-threshold-of-credit-card-or-social-security-numbers-is-detected-is-enabled
     severity:
       - scored: true
       - level: 1
       - action_required: true
+
 
 
 

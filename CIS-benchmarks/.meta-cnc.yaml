@@ -265,6 +265,9 @@ snippets:
     test: device_setting | element_value('management.enable-log-high-dp-load') == 'yes'
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-enable-log-on-high-dp-load-is-enabled
+    severity:
+      - scored: true
+      - level: 1
 
   # 1.2.1 permitted ip addresses for device management
   - name: device_config_file
@@ -716,6 +719,9 @@ snippets:
     pass_message: Verify Update Server Idenity is enabled
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-verify-update-server-identity-is-enabled
+    severity:
+      - scored: true
+      - level: 1
 
   # 1.6.2 Ensure redundant NTP servers are configured appropriately
   - name: device_config_file
@@ -1188,6 +1194,9 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-a-wildfire-analysis-profile-is-enabled-for-all-security-policies
+    severity:
+      - scored: true
+      - level: 1
 
   # 5.4 Ensure forwarding of decrypted content to WildFire is enabled
   - name: device_config_file
@@ -1762,25 +1771,64 @@ snippets:
       - level: 1
 
   # 6.14 Ensure alerting after a threshold of credit card or Social Security numbers is detected is enabled
-  # TODO: requires user specific input for data patterns; just test that a data pattern profile is configured?
+  # requires data input for specific pattern types so flagging as action required
+  # provide contextual data of configured data patterns
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: data_pattern_names_w_cc_ss
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/
+          data-objects/entry[pattern-type/predefined/pattern/entry/@name='credit-card-numbers' or
+          pattern-type/predefined/pattern/entry/@name='social-security-numbers']/@name
+      - name: data_filtering_profile_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/
+          data-filtering/entry
+        filter_items: item
+      - name: data_filtering_with_cc_or_ss
+        # iterate over all profiles and rules to see if a data-object matching a credit card or SS data patterns
+        capture_variable: |-
+          {%- set data_profiles = dict() %}
+          {%- for item in data_filtering_profile_object %}
+            {%- set entry_dict = dict() %}
+              {%- if item['entry']['rules']['entry'][1] %}
+                {%- for rule in item['entry']['rules']['entry'] %}
+                  {%- if rule['data-object'] in data_pattern_names_w_cc_ss %}
+                    {%- set _ = entry_dict.update({ 'data-pattern': rule['data-object'] }) %}
+                    {%- set _ = entry_dict.update({ 'alert-threshold': rule['alert-threshold'] }) %}
+                    {%- set _ = entry_dict.update({ 'block-threshold': rule['block-threshold'] }) %}
+                    {%- set _ = data_profiles.update({ item['entry']['@name']: entry_dict }) %}
+                  {%- endif %}
+                {%- endfor %}
+              {%- else %}
+                {%- if item['entry']['rules']['entry']['data-object'] in data_pattern_names_w_cc_ss %}
+                  {%- set _ = entry_dict.update({ data-pattern: item['entry']['rules']['entry']['data-object'] }) %}
+                  {%- set _ = entry_dict.update({ alert-threshold: item['entry']['rules']['entry']['alert-threshold'] }) %}
+                  {%- set _ = entry_dict.update({ block-threshold: item['entry']['rules']['entry']['block-threshold'] }) %}
+                  {%- set _ = data_profiles.update({ item['entry']['@name']: entry_dict }) %}
+                {%- endif %}
+              {%- endif %}
+          {%- endfor %}
+          {{ data_profiles }}
 
   - name: data_filtering_cc_ss_numbers
     label: 6.14 Ensure alerting after a threshold of credit card or Social Security numbers is detected is enabled
-    test: false
-    fail_message: test is not implemented
+    test: true
+    pass_message: |-
+      Profiles found with a credit card or Social Security number predefined pattern
+      Includes alert and block thresholds that should be non-zero
+
+      {{ data_filtering_with_cc_or_ss }}
+
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-alerting-after-a-threshold-of-credit-card-or-social-security-numbers-is-detected-is-enabled
     severity:
       - scored: true
       - level: 1
-      - implemented: false
+      - action_required: true
 
   # 6.15 Ensure a secure Data Filtering profile is applied to all security policies allowing traffic to or from the Internet
   - name: device_config_file

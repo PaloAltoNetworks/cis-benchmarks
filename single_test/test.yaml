@@ -1,40 +1,37 @@
-  # 6.10 Ensure that URL Filtering uses the action of “block” or “override” on the URL categories
-  # TODO: requires user selection for 'categories of interest'
-  - name: device_config_file
-    cmd: parse
-    variable: config
-    outputs:
-      - name: url_filtering_object
-        capture_object: |-
-          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/url-filtering/entry
-      - name: url_filtering_block_override
-        capture_variable: |-
-          {%- set profiles_block_override = dict() %}
-          {%- set actions = ['block', 'override'] %}
-          {%- for item in url_filtering_object %}
-            {%- for action in actions %}
-              {%- set configured_categories = [] %}
-              {%- if item['entry'][action] %}
-                {%- for category in item['entry'][action]['member'] %}
-                  {%- set _ = configured_categories.append(category) %}
-                {%- endfor %}
-                {%- set _ = profiles_block_override.update({ item['entry'][action]: configured_categories }) %}
-              {%- endif %}
-            {%- endfor %}
-          {%- endfor %}
-          {{ profiles_block_override | to_json }}
+  <pattern-type>
+    <predefined>
+      <pattern>
+        <entry name="credit-card-numbers">
+          <file-type>
+            <member>any</member>
+          </file-type>
+        </entry>
+        <entry name="social-security-numbers">
+          <file-type>
+            <member>any</member>
+          </file-type>
+        </entry>
+      </pattern>
+    </predefined>
+  </pattern-type>
 
-  - name: url_filtering_block_or_override
-    label: 6.10 Ensure that URL Filtering uses the action of “block” or “override” on the URL categories
-    test: true
-    pass_message: |-
-      The following profiles are associated categories are found in the configuration.
-      Check company practices to validate that these align with 'categories of interest' for block/override
-      {{ url_filtering_block_override }}
-    documentation_link: |-
-      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
-      ensure-that-url-filtering-uses-the-action-of-block-or-override-on-the-url-categories
-    severity:
-      - scored: true
-      - level: 1
-      - action_required: true
+  <rules>
+    <entry name="rule0">
+      <application>
+      <member>any</member>
+      </application>
+      <file-type>
+      <member>any</member>
+      </file-type>
+      <direction>both</direction>
+      <alert-threshold>0</alert-threshold>
+      <block-threshold>0</block-threshold>
+      <data-object>CCandSSpattern</data-object>
+      <log-severity>informational</log-severity>
+    </entry>
+  </rules>
+
+
+    {%- set _ = entry_dict.update({ data-pattern: rule['data-object'] }) %}
+    {%- set _ = entry_dict.update({ alert-threshold: rule['alert-threshold'] }) %}
+    {%- set _ = entry_dict.update({ block-threshold: rule['block-threshold'] }) %}
