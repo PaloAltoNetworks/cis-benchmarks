@@ -1,20 +1,37 @@
-<botnet-domains>
-    <lists>
-      <entry name="default-paloalto-dns">
-        <action>
-          <sinkhole/>
-        </action>
-        <packet-capture>disable</packet-capture>
-      </entry>
-    </lists>
-    <dns-security-categories>
-      <entry name="pan-dns-sec-benign">
-        <log-level>default</log-level>
-        <action>default</action>
-        <packet-capture>disable</packet-capture>
-      </entry>
-      <entry name="pan-dns-sec-cc">
-        <log-level>default</log-level>
-        <action>sinkhole</action>
-        <packet-capture>disable</packet-capture>
-      </entry>
+  <pattern-type>
+    <predefined>
+      <pattern>
+        <entry name="credit-card-numbers">
+          <file-type>
+            <member>any</member>
+          </file-type>
+        </entry>
+        <entry name="social-security-numbers">
+          <file-type>
+            <member>any</member>
+          </file-type>
+        </entry>
+      </pattern>
+    </predefined>
+  </pattern-type>
+
+  <rules>
+    <entry name="rule0">
+      <application>
+      <member>any</member>
+      </application>
+      <file-type>
+      <member>any</member>
+      </file-type>
+      <direction>both</direction>
+      <alert-threshold>0</alert-threshold>
+      <block-threshold>0</block-threshold>
+      <data-object>CCandSSpattern</data-object>
+      <log-severity>informational</log-severity>
+    </entry>
+  </rules>
+
+
+    {%- set _ = entry_dict.update({ data-pattern: rule['data-object'] }) %}
+    {%- set _ = entry_dict.update({ alert-threshold: rule['alert-threshold'] }) %}
+    {%- set _ = entry_dict.update({ block-threshold: rule['block-threshold'] }) %}

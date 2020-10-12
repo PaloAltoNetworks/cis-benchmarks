@@ -15,23 +15,69 @@ labels:
 
 variables:
 
-
 snippets:
 
-  # 6.9 Ensure that PAN-DB URL Filtering is used
-  # this is an operational command requiring API access to the device
-  - name: get_license_info
-    cmd: cli
-    # This cli command will return xml
-    cmd_str: request license info
-    output_type: xml
+  # 6.14 Ensure alerting after a threshold of credit card or Social Security numbers is detected is enabled
+  # requires data input for specific pattern types so flagging as action required
+  # provide contextual data of configured data patterns
+  - name: device_config_file
+    cmd: parse
+    variable: config
     outputs:
-      - name: logging_service_URL
-        capture_value: ./entry/feature[text()="PAN-DB URL Filtering"]/../expired/text()
+      - name: data_pattern_names_w_cc_ss
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/
+          data-objects/entry[pattern-type/predefined/pattern/entry/@name='credit-card-numbers' or
+          pattern-type/predefined/pattern/entry/@name='social-security-numbers']/@name
+      - name: data_filtering_profile_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/
+          data-filtering/entry
+        filter_items: item
+      - name: data_filtering_with_cc_or_ss
+        # iterate over all profiles and rules to see if a data-object matching a credit card or SS data patterns
+        capture_variable: |-
+          {%- set data_profiles = dict() %}
+          {%- for item in data_filtering_profile_object %}
+            {%- set entry_dict = dict() %}
+              {%- if item['entry']['rules']['entry'][1] %}
+                {%- for rule in item['entry']['rules']['entry'] %}
+                  {%- if rule['data-object'] in data_pattern_names_w_cc_ss %}
+                    {%- set _ = entry_dict.update({ 'data-pattern': rule['data-object'] }) %}
+                    {%- set _ = entry_dict.update({ 'alert-threshold': rule['alert-threshold'] }) %}
+                    {%- set _ = entry_dict.update({ 'block-threshold': rule['block-threshold'] }) %}
+                    {%- set _ = data_profiles.update({ item['entry']['@name']: entry_dict }) %}
+                  {%- endif %}
+                {%- endfor %}
+              {%- else %}
+                {%- if item['entry']['rules']['entry']['data-object'] in data_pattern_names_w_cc_ss %}
+                  {%- set _ = entry_dict.update({ data-pattern: item['entry']['rules']['entry']['data-object'] }) %}
+                  {%- set _ = entry_dict.update({ alert-threshold: item['entry']['rules']['entry']['alert-threshold'] }) %}
+                  {%- set _ = entry_dict.update({ block-threshold: item['entry']['rules']['entry']['block-threshold'] }) %}
+                  {%- set _ = data_profiles.update({ item['entry']['@name']: entry_dict }) %}
+                {%- endif %}
+              {%- endif %}
+          {%- endfor %}
+          {{ data_profiles }}
 
-  - name: pandb_url_filtering
-    label: 6.9 Ensure that PAN-DB URL Filtering is used
-    test: logging_service_URL == 'no'
-    fail_message: PAN-DB license is not used or inactive
-    documentation_link: https://www.paloaltonetworks.com
+  - name: data_filtering_cc_ss_numbers
+    label: 6.14 Ensure alerting after a threshold of credit card or Social Security numbers is detected is enabled
+    test: true
+    pass_message: |-
+      Profiles found with a credit card or Social Security number predefined pattern
+      Includes alert and block thresholds that should be non-zero
+
+      {{ data_filtering_with_cc_or_ss }}
+
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-alerting-after-a-threshold-of-credit-card-or-social-security-numbers-is-detected-is-enabled
+    severity:
+      - scored: true
+      - level: 1
+      - action_required: true
+
+
+
+
 
