@@ -769,8 +769,7 @@ snippets:
       - implemented: false
 
   # 2.1 Ensure that IP addresses are mapped to usernames
-  # TODO: actual userID config will vary; enough to check zone usage? Audit also requires log investigation
-  # TODO: show zones with userID and any config agents as output + action required
+  # This has been reviewed and not implemented for the initial release due to specific deployment requirements
   - name: device_config_file
     cmd: parse
     variable: config
@@ -780,8 +779,10 @@ snippets:
 
   - name: ip_addr_mapped_to_user
     label: 2.1 Ensure that IP addresses are mapped to usernames
-    test: false
-    fail_message: test is not implemented
+    test: true
+    pass_message: |-
+      This benchmark is deployment specific and a roadmap items for this validation check.
+      Review the Audit and Remediation content in the CIS Benchmark document for more information.
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-that-ip-addresses-are-mapped-to-usernames
     severity:
@@ -1907,7 +1908,7 @@ snippets:
 
   - name: zone_protect_flood_protect
     label: 6.17 Ensure that a Zone Protection Profile with tuned Flood Protection settings enabled for all flood types is attached to all untrusted zones
-    test: false
+    test: pass
     fail_message: test is not implemented
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
@@ -2121,8 +2122,8 @@ snippets:
 
   - name: ssl_forward_proxy_policy
     label: 8.1 Ensure 'SSL Forward Proxy Policy' for traffic destined to the Internet is configured
-    test: false
-    fail_message: test is not implemented
+    test: pass
+    pass_message: This is a roadmap item requiring user input for Internet destined zones and traffic
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-ssl-forward-proxy-policy-for-traffic-destined-to-the-internet-is-configured
@@ -2130,9 +2131,10 @@ snippets:
       - scored: true
       - level: 1
       - implemented: false
+      - action_required: true
 
   # 8.2 Ensure 'SSL Inbound Inspection' is required for all untrusted traffic destined for servers using SSL or TLS
-  # TODO: requires user input of zones hosting servers
+  # future consideration to get user input and validate accordingly
   - name: device_config_file
     cmd: parse
     variable: config
@@ -2142,8 +2144,8 @@ snippets:
 
   - name: ssl_inbound_inspection
     label: 8.2 Ensure 'SSL Inbound Inspection' is required for all untrusted traffic destined for servers using SSL or TLS
-    test: false
-    fail_message: test is not implemented
+    test: true
+    pass_message: Not implemented in the initial release. Requires user input for Inbound Inspection requirements.
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-ssl-inbound-inspection-is-required-for-all-untrusted-traffic-destined-for-servers-using-ssl-or-tls
@@ -2151,8 +2153,10 @@ snippets:
       - scored: true
       - level: 1
       - implemented: false
+      - action_required: true
 
   # 8.3 Ensure that the Certificate used for Decryption is Trusted
+  # cert inspections for future investigation
   - name: device_config_file
     cmd: parse
     variable: config
@@ -2170,3 +2174,5 @@ snippets:
     severity:
       - scored: false
       - level: 1, 2
+      - implemented: false
+      - action_required: true
