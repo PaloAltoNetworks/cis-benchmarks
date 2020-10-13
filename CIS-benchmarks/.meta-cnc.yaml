@@ -551,8 +551,13 @@ snippets:
 
   - name: test_password_min_change_period
     label: 1.3.7 Ensure 'Required Password Change Period' is less than or equal to 90 days
-    test: password_min_change_period <= '90'
-    fail_message: Required Password Change Period is set to {{ password_min_change_period }} days
+    test: password_min_change_period > '0' and password_min_change_period <= '90'
+    fail_message: |-
+      {%- if not password_min_change_period %}
+      Required Password Change Period is not configured
+      {%- else %}
+      Required Password Change Period is set to {{ password_min_change_period }} days
+      {%- endif %}
     pass_message: Required Password Change Period is set to {{ password_min_change_period }} days
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
