@@ -2259,7 +2259,7 @@ snippets:
 
   - name: ssl_forward_proxy_policy
     label: 8.1 Ensure 'SSL Forward Proxy Policy' for traffic destined to the Internet is configured
-    test: pass
+    test: true
     pass_message: This is a roadmap item requiring user input for Internet destined zones and traffic
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
