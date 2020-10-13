@@ -2018,8 +2018,16 @@ snippets:
     test: url_filter_credential_submission.valid
     fail_message: |-
       Profiles with invalid User Credential Submission action:
-      {%- for profile in url_filter_credential_submission.profiles %}{% if not url_filter_credential_submission.profiles[profile].valid %} {{ profile }}{% endif %}{% endfor %}
-    documentation_link: https://www.paloaltonetworks.com
+      {%- for profile in url_filter_credential_submission.profiles %}
+      {% if not url_filter_credential_submission.profiles[profile].valid %}
+        {{ profile }}
+      {% endif %}{% endfor %}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-that-user-credential-submission-uses-the-action-of-block-or-continue-on-the-url-categories
+    severity:
+      - scored: true
+      - level: 1
 
   # 7.1 Ensure application security policies exist when allowing traffic from an untrusted zone to a more trusted zone
   - name: device_config_file
