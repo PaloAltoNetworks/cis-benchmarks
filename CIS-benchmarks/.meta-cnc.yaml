@@ -420,6 +420,7 @@ snippets:
       - scored: false
       - level: 2
       - implemented: false
+      - action_requirerd: true
 
   # 1.3.1 enable min password complexity
   - name: device_config_file
@@ -765,6 +766,7 @@ snippets:
       - scored: false
       - level: 1,2
       - implemented: false
+      - action_requirerd: true
 
   # 2.1 Ensure that IP addresses are mapped to usernames
   # This has been reviewed and not implemented for the initial release due to specific deployment requirements
@@ -830,6 +832,7 @@ snippets:
       - scored: true
       - level: 1
       - implemented: false
+      - action_requirerd: true
 
   # 2.4 Ensure that 'Include/Exclude Networks' is used if User-ID is enabled
   - name: device_config_file
@@ -865,6 +868,7 @@ snippets:
       - scored: true
       - level: 1
       - implemented: false
+      - action_requirerd: true
 
   # 2.6 Ensure that the User-ID service account does not have interactive logon rights
   - name: userid_no_interactive_logon
@@ -878,6 +882,7 @@ snippets:
       - scored: true
       - level: 1
       - implemented: false
+      - action_requirerd: true
 
   # 2.7 Ensure remote access capabilities for the User-ID service account are forbidden
   - name: userid_service_account
@@ -891,6 +896,7 @@ snippets:
       - scored: false
       - level: 1
       - implemented: false
+      - action_requirerd: true
 
   # 2.8 Ensure that security policies restrict User-ID Agent traffic from crossing into untrusted zones
   - name: device_config_file
@@ -911,6 +917,7 @@ snippets:
       - scored: true
       - level: 1
       - implemented: false
+      - action_requirerd: true
 
   # 3.1 Ensure a fully-synchronized High Availability peer is configured
   - name: device_config_file
