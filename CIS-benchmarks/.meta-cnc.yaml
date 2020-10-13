@@ -1923,7 +1923,7 @@ snippets:
       The following zones are configured with a zone protection profile having SYN Flood Action of SYN Cookies:
       {{ zones_with_syn_flooding_names }}
 
-      Verify that untrusted zones are excluded from this list
+      Verify that all untrusted zones are included in this list
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-a-zone-protection-profile-with-an-enabled-syn-flood-action-of-syn-cookies-is-attached-to-
@@ -1966,7 +1966,7 @@ snippets:
       The following zones are configured with a zone protection profile having all flood protection enabled:
       {{ zones_with_all_flooding_names }}
 
-      Verify that untrusted zones are excluded from this list
+      Verify that all untrusted zones are included in this list
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-a-zone-protection-profile-with-tuned-flood-protection-settings-enabled-for-all-flood-types-
@@ -2003,14 +2003,23 @@ snippets:
     label: |-
       6.18 Ensure that all zones have Zone Protection Profiles with all Reconnaissance Protection settings enabled,
       tuned, and set to appropriate actions
-    test: zones_without_reconn_enabled | length == 0
+    test: |-
+      (
+        zone_protect_profile_reconn_enabled | length
+        and zones_without_reconn_enabled | length == 0
+      )
     fail_message: |-
-      The followings are either configured without a zone protect profile or the associated profile
+      {%- if zone_protect_profile_reconn_enabled | length == 0 %}
+      No zone protection profiles were found with all Reconnaissance Protection settings enabled
+      {% endif %}
+      {%- if zones_without_pkt_attack_enabled | length %}
+      The following are either configured without a zone protect profile or the associated profile
       is not configured with reconn settings enabled:
 
       {{ zones_without_reconn_enabled }}
+      {%- endif %}
     pass_message: |-
-      This test has verified zones with zone protection profiles using reconn  are configured.
+      This test has verified zones with zone protection profiles using reconn are configured.
       It is still recommended that all thresholds are tuned accordingly
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
@@ -2045,12 +2054,21 @@ snippets:
 
   - name: zone_protect_crafted_pkts
     label: 6.19 Ensure all zones have Zone Protection Profiles that drop specially crafted packets
-    test: zones_without_pkt_attack_enabled | length == 0
+    test: |-
+      (
+        zone_protect_profile_pkt_attack_enabled | length
+        and zones_without_pkt_attack_enabled | length == 0
+      )
     fail_message: |-
-      The followings are either configured without a zone protect profile or the associated profile
+      {%- if zone_protect_profile_pkt_attack_enabled | length == 0 %}
+      No zone protection profiles were found to drop specially crafted packets
+      {% endif %}
+      {%- if zones_without_pkt_attack_enabled | length %}
+      The following are either configured without a zone protect profile or the associated profile
       is not configured with reconn settings enabled:
 
       {{ zones_without_pkt_attack_enabled }}
+      {%- endif %}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-all-zones-have-zone-protection-profiles-that-drop-specially-crafted-packets
