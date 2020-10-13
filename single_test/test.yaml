@@ -1,8 +1,0 @@
-<request cmd="edit" obj="/config/devices/entry[@name='localhost.localdomain']/network/profiles/zone-protection-profile/entry[@name='cisTest']" cookie="5019791530869693">
-  <entry name="cisTest">
-    <discard-ip-spoof>yes</discard-ip-spoof>
-    <discard-strict-source-routing>yes</discard-strict-source-routing>
-    <discard-loose-source-routing>yes</discard-loose-source-routing>
-    <discard-malformed-option>yes</discard-malformed-option>
-    <discard-overlapping-tcp-segment-mismatch>yes</discard-overlapping-tcp-segment-mismatch>
-  </entry>
