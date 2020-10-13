@@ -135,8 +135,6 @@ variables:
 
 snippets:
 
-  # TODO: determine what to use for doc links: CIS text, IronSkillet, palo docs
-
   # 1.1.1.1 Syslog logging should be configured
   # TODO: future update to include Panorama/CDL option in the checks
   - name: device_config_file

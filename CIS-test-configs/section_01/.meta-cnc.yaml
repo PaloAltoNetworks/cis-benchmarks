@@ -1,16 +1,20 @@
-# TBD - part of IronSkillet
+# demo config skillets for section 1 of the CIS benchmark
 
-name: snmpv3_test
-label: config snmp and logging
-description: Skillet Generated from 192.168.55.168 using skillet_baseline.xml and
-    Candidate Config
+name: CIS_9_0_0_section_1
+label: Section 1 configuration
+description: |-
+    configuration elements to be loaded into the NGFW as part of CIS benchmark testing or demo.
+    These could also be used in some cases for remediation requirements
 type: panos
 labels:
-    collection: Unknown
-variables: []
+    collection: CIS
+
+variables:
+
+
 snippets:
 
--   name: log-settings-866495
+-   name: device-log-settings
     xpath: /config/shared
     element: |-
         <log-settings>
@@ -130,7 +134,7 @@ snippets:
                     <v3>
                       <server>
                         <entry name="testv3">
-                          <manager>1.1.1.1</manager>
+                          <manager>192.0.2.3</manager>
                           <authpwd>-AQ==W6ph5Mm5Pz8GgiULbPgzG37mj9g=w2hP4BspAiin+j7uXWkGKA==</authpwd>
                           <privpwd>-AQ==W6ph5Mm5Pz8GgiULbPgzG37mj9g=w2hP4BspAiin+j7uXWkGKA==</privpwd>
                           <user>admin</user>
