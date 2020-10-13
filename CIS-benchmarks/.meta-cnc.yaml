@@ -1136,25 +1136,32 @@ snippets:
       - level: 1
 
   # 5.2 Ensure forwarding is enabled for all applications and file types in WildFire file blocking profiles
-  # TODO: will assume this is the WF analysis profile and check rules for all apps and all file types
+  # inspecting the WF analysis profile and not the file blocking profile
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: wildfire_any_any_profiles
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/
+          wildfire-analysis/entry[rules/entry/application/member='any' or rules/entry/file-type/member='any']/@name
 
   - name: WF_all_apps_files
     label: 5.2 Ensure forwarding is enabled for all applications and file types in WildFire file blocking profiles
-    test: false
-    fail_message: test is not implemented
+    test: true
+    pass_message: |-
+      This assessment inspects the Wildfire analysis profile
+      File blocking profiles no longer support the action of forward
+
+      Wildfire analysis profiles configured with application=any and filetype=any
+      {{ wildfire_any_any_profiles }}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-forwarding-is-enabled-for-all-applications-and-file-types-in-wildfire-file-blocking-profiles
     severity:
       - scored: true
       - level: 1
-      - implemented: false
+      - action_required: true
 
   # 5.3 Ensure a WildFire Analysis profile is enabled for all security policies
   - name: device_config_file
@@ -1511,20 +1518,28 @@ snippets:
 
   # 6.7 Ensure a Vulnerability Protection Profile is set to block attacks against critical and high vulnerabilities,
   # and set to default on medium, low, and informational vulnerabilities
-  # TODO: complex rule set due to all combinations of rules; will require enhanced coding logic
+  #
+  # Not default, allow, alert for critical or high severity
+  # Not allow/alert for medium/low/info severity
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: vulnerability_profile_object
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/vulnerability/entry
+      - name: vulnerability_profile_blockAll
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/vulnerability/entry
+          [rules/entry/severity/member='any' and count(rules/entry/action/alert)=0 and
+          count(rules/entry/action/default)=0 and count(rules/entry/action/allow)=0]/@name
 
   - name: vulnerability_profile_blocking
     label: |
       6.7 Ensure a Vulnerability Protection Profile is set to block attacks against critical and high vulnerabilities,
       and set to default on medium, low, and informational vulnerabilities
-    test: false
-    fail_message: test is not implemented
+    test: true
+    pass_message: Roadmap item to work through all of the rule configuration scenarios
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-a-vulnerability-protection-profile-is-set-to-block-attacks-against-critical-and-high-vulnerabilities
@@ -1533,6 +1548,7 @@ snippets:
       - scored: true
       - level: 1
       - implemented: false
+      - action_required: true
 
   # 6.8 Ensure a secure Vulnerability Protection Profile is applied to all security rules allowing traffic
   - name: device_config_file
@@ -1876,18 +1892,33 @@ snippets:
       - level: 1
 
   # 6.16 Ensure that a Zone Protection Profile with an enabled SYN Flood Action of SYN Cookies is attached to all untrusted zones
-  # TODO: platform-volumetric specific; can look for any configuration and would be a notice to the user for manual check
+  # This still requires manual action to determine untrusted zones and volumetric settings for each profile
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: zone_protect_profile_syn_flood_cookies
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/network/profiles/zone-protection-profile/entry
+          [flood/tcp-syn/enable='yes' and count(flood/tcp-syn/syn-cookies)]/@name
+      - name: zones_with_syn_flooding_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/zone/entry
+        filter_items: |-
+          item | element_value('network.zone-protection-profile') in zone_protect_profile_syn_flood_cookies
+      - name: zones_with_syn_flooding_names
+        capture_expression: zones_with_syn_flooding_object | map(attribute="entry.@name") | list
 
   - name: zone_protect_syn_flood
     label: 6.16 Ensure that a Zone Protection Profile with an enabled SYN Flood Action of SYN Cookies is attached to all untrusted zones
-    test: false
-    fail_message: test is not implemented
+    test: true
+    pass_message: |-
+      This test is not fully implemented in this release without discovery of device type and untrusted zones.
+
+      The following zones are configured with a zone protection profile having SYN Flood Action of SYN Cookies:
+      {{ zones_with_syn_flooding_names }}
+
+      Verify that untrusted zones are excluded from this list
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-a-zone-protection-profile-with-an-enabled-syn-flood-action-of-syn-cookies-is-attached-to-
@@ -1896,20 +1927,41 @@ snippets:
       - scored: true
       - level: 1
       - implemented: false
+      - action_required: true
 
   # 6.17 Ensure that a Zone Protection Profile with tuned Flood Protection settings enabled for all flood types is attached to all untrusted zones
-  # TODO: can check for config knobs yet requires user tuning to set values based on thresholds
+  # partial implementation without ability to check untrust zone names
+  # users should validate threshold settings for each zone protect profile using flood protections
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: zone_protect_profile_all_flooding_enabled
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/network/profiles/zone-protection-profile/entry
+          [flood/tcp-syn/enable='yes' and flood/udp/enable='yes' and flood/icmp/enable='yes'
+          and flood/icmpv6/enable='yes' and flood/other-ip/enable='yes']/@name
+      - name: zones_with_all_flooding_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/zone/entry
+        filter_items: |-
+          item | element_value('network.zone-protection-profile') in zone_protect_profile_all_flooding_enabled
+      - name: zones_with_all_flooding_names
+        capture_expression: zones_with_all_flooding_object | map(attribute="entry.@name") | list
+
 
   - name: zone_protect_flood_protect
-    label: 6.17 Ensure that a Zone Protection Profile with tuned Flood Protection settings enabled for all flood types is attached to all untrusted zones
-    test: pass
-    fail_message: test is not implemented
+    label: |-
+      6.17 Ensure that a Zone Protection Profile with tuned Flood Protection settings enabled
+      for all flood types is attached to all untrusted zones
+    test: true
+    pass_message: |-
+      This test is not fully implemented in this release without discovery of device type and untrusted zones.
+
+      The following zones are configured with a zone protection profile having all flood protection enabled:
+      {{ zones_with_all_flooding_names }}
+
+      Verify that untrusted zones are excluded from this list
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-a-zone-protection-profile-with-tuned-flood-protection-settings-enabled-for-all-flood-types-
@@ -1918,23 +1970,43 @@ snippets:
       - scored: true
       - level: 2
       - implemented: false
+      - action_required: true
 
   # 6.18 Ensure that all zones have Zone Protection Profiles with all Reconnaissance Protection settings enabled,
   # tuned, and set to appropriate actions
-  # TODO: have to check that zones have protect profiles + settings for reconn enabled
+  # checking all reconn types are enabled and applied to zones
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: zone_protect_profile_reconn_enabled
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/network/profiles/zone-protection-profile/entry
+          [scan/entry/@name='8001' and scan/entry/@name='8002' and scan/entry/@name='8003']/@name
+      - name: zones_with_reconn_enabled_object
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/zone/entry
+        filter_items: |-
+          item | element_value('network.zone-protection-profile') in zone_protect_profile_reconn_enabled
+      - name: zones_with_reconn_enabled_names
+        capture_expression: zones_with_reconn_enabled_object | map(attribute="entry.@name") | list
+      - name: zones_without_reconn_enabled
+        capture_list: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/zone/entry/@name
+        filter_items: item not in zones_with_reconn_enabled_names
 
   - name: zone_protection_reconn_protect
     label: |-
       6.18 Ensure that all zones have Zone Protection Profiles with all Reconnaissance Protection settings enabled,
       tuned, and set to appropriate actions
-    test: false
-    fail_message: test is not implemented
+    test: zones_without_reconn_enabled | length == 0
+    fail_message: |-
+      The followings are either configured without a zone protect profile or the associated profile
+      is not configured with reconn settings enabled:
+
+      {{ zones_without_reconn_enabled }}
+    pass_message: |-
+      This test has verified zones with zone protection profiles using reconn  are configured.
+      It is still recommended that all thresholds are tuned accordingly
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-all-zones-have-zone-protection-profiles-with-all-reconnaissance-protection-settings-
@@ -1942,28 +2014,44 @@ snippets:
     severity:
       - scored: true
       - level: 1
-      - implemented: false
 
   # 6.19 Ensure all zones have Zone Protection Profiles that drop specially crafted packets
-  # TODO: check zone protect settings per the benchmark
+  # test checks for all zones having a zone protect profile with recommended settings enabled
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: zone_protect_profile_pkt_attack_enabled
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/network/profiles/zone-protection-profile/entry
+          [discard-ip-spoof='yes' and discard-strict-source-routing='yes' and
+          discard-loose-source-routing='yes' and discard-malformed-option='yes' and
+          discard-overlapping-tcp-segment-mismatch='yes']/@name
+      - name: zones_with_pkt_attack_enabled_object
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/zone/entry
+        filter_items: |-
+          item | element_value('network.zone-protection-profile') in zone_protect_profile_pkt_attack_enabled
+      - name: zones_with_pkt_attack_enabled_names
+        capture_expression: zones_with_pkt_attack_enabled_object | map(attribute="entry.@name") | list
+      - name: zones_without_pkt_attack_enabled
+        capture_list: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/zone/entry/@name
+        filter_items: item not in zones_with_pkt_attack_enabled_names
 
   - name: zone_protect_crafted_pkts
     label: 6.19 Ensure all zones have Zone Protection Profiles that drop specially crafted packets
-    test: false
-    fail_message: test is not implemented
+    test: zones_without_pkt_attack_enabled | length == 0
+    fail_message: |-
+      The followings are either configured without a zone protect profile or the associated profile
+      is not configured with reconn settings enabled:
+
+      {{ zones_without_pkt_attack_enabled }}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-all-zones-have-zone-protection-profiles-that-drop-specially-crafted-packets
     severity:
       - scored: true
       - level: 1
-      - implmented: false
 
   # 6.20 Ensure that User Credential Submission uses the action of “block” or “continue” on the URL categories
 

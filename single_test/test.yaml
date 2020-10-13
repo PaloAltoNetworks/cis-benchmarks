@@ -1,37 +1,8 @@
-  <pattern-type>
-    <predefined>
-      <pattern>
-        <entry name="credit-card-numbers">
-          <file-type>
-            <member>any</member>
-          </file-type>
-        </entry>
-        <entry name="social-security-numbers">
-          <file-type>
-            <member>any</member>
-          </file-type>
-        </entry>
-      </pattern>
-    </predefined>
-  </pattern-type>
-
-  <rules>
-    <entry name="rule0">
-      <application>
-      <member>any</member>
-      </application>
-      <file-type>
-      <member>any</member>
-      </file-type>
-      <direction>both</direction>
-      <alert-threshold>0</alert-threshold>
-      <block-threshold>0</block-threshold>
-      <data-object>CCandSSpattern</data-object>
-      <log-severity>informational</log-severity>
-    </entry>
-  </rules>
-
-
-    {%- set _ = entry_dict.update({ data-pattern: rule['data-object'] }) %}
-    {%- set _ = entry_dict.update({ alert-threshold: rule['alert-threshold'] }) %}
-    {%- set _ = entry_dict.update({ block-threshold: rule['block-threshold'] }) %}
+<request cmd="edit" obj="/config/devices/entry[@name='localhost.localdomain']/network/profiles/zone-protection-profile/entry[@name='cisTest']" cookie="5019791530869693">
+  <entry name="cisTest">
+    <discard-ip-spoof>yes</discard-ip-spoof>
+    <discard-strict-source-routing>yes</discard-strict-source-routing>
+    <discard-loose-source-routing>yes</discard-loose-source-routing>
+    <discard-malformed-option>yes</discard-malformed-option>
+    <discard-overlapping-tcp-segment-mismatch>yes</discard-overlapping-tcp-segment-mismatch>
+  </entry>
