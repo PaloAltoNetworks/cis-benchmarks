@@ -638,8 +638,13 @@ snippets:
 
   - name: max_idle_timeout
     label: 1.4.1 Ensure 'Idle timeout' is less than or equal to 10 minutes for device management
-    test: admin_idle_timeout <= '10'
-    fail_message: Idle Timeout is set to {{ admin_idle_timeout }} minutes
+    test: admin_idle_timeout and admin_idle_timeout <= '10'
+    fail_message: |-
+      {%- if admin_idle_timeout %}
+      Idle Timeout is set to {{ admin_idle_timeout }} minutes
+      {%- else %}
+      Idle Timeout is not configured or set to default of 60 minutes
+      {%- endif %}
     pass_message: Idle Timeout is set to {{ admin_idle_timeout }} minutes
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
