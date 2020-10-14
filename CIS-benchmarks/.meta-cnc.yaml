@@ -1317,6 +1317,9 @@ snippets:
     cmd: parse
     variable: config
     outputs:
+      - name: av_profiles_found
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/virus/entry/@name
       - name: av_profile_block_all_decoders
         capture_list: |-
           /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/virus/entry
@@ -1326,8 +1329,14 @@ snippets:
     label: 6.1 Ensure that antivirus profiles are set to block on all decoders except 'imap' and 'pop3'
     test: av_profile_block_all_decoders | length == 0
     fail_message: |-
-      AV profiles failing benchmark test:
+      Antivius profiles failing benchmark test:
       {{ av_profile_block_all_decoders }}
+    pass_message: |-
+      {%- if not av_profiles_found %}
+      No configured Antivirus profiles found
+      {%- else %}
+      No configured Antivirus profiles violate this benchmark
+      {%- endif %}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-antivirus-profiles-are-set-to-block-on-all-decoders-except-imap-and-pop3
@@ -1341,6 +1350,10 @@ snippets:
     variable: config
     outputs:
       # capture for security rules using named profiles instead of a profile group
+      - name: security_policies_found
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry/@name
       - name: security_rules_without_virus_profile
         capture_list: |-
           /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
@@ -1371,6 +1384,12 @@ snippets:
       {{ security_rules_without_virus_profile }}
       Using profile group without a virus profile
       {{ security_rules_with_group_without_virus_names }}
+    pass_message: |-
+      {%- if not security_policies_found %}
+      No configured security policies found
+      {%- else %}
+      No configured security policies violate this benchmark
+      {%- endif %}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-a-secure-antivirus-profile-is-applied-to-all-relevant-security-policies
@@ -1383,6 +1402,10 @@ snippets:
     cmd: parse
     variable: config
     outputs:
+      - name: spyware_profiles_found
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/spyware/
+          entry/@name
       - name: spyware_profile_block_all_category_threat_severity_one_rule
         capture_list: |-
           /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/spyware/
@@ -1409,9 +1432,14 @@ snippets:
       (
         spyware_profile_block_all_category_threat_severity_one_rule | length
         or spyware_profile_block_all_category_threat_severity_many_rules | length
+        and spyware_profiles_found | length
       )
     fail_message: |-
-      No Anti-Spyware profiles meet the benchmark criteria
+      {%- if spyware_profiles_found | length == 0 %}
+      No Anti-Spyware profiles configured
+      {%- else %}
+      No configured Anti-Spyware profiles meet the benchmark criteria
+      {%- endif %}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-an-anti-spyware-profile-is-configured-to-block-on-all-spyware-severity-levels-categories-and-threats
@@ -1425,6 +1453,10 @@ snippets:
     cmd: parse
     variable: config
     outputs:
+      - name: spyware_profiles_found
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/spyware/
+          entry/@name
       # output pre 10.0 before categories available
       - name: spyware_profiles_without_sinkhole_no_category
         capture_list: |-
@@ -1447,7 +1479,7 @@ snippets:
         and spyware_profiles_without_sinkhole_category | length == 0
       )
     fail_message: |-
-      The following Anti-Spyware are not correctly configured with DNS sinkholing:
+      The following Anti-Spyware profiles are not correctly configured with DNS sinkholing:
       {%- if spyware_profiles_without_sinkhole_no_category | length %}
        Non-category DNS policies:
        {{ spyware_profiles_without_sinkhole_no_category }}
@@ -1456,7 +1488,12 @@ snippets:
        Category-based DNS policies:
        {{ spyware_profiles_without_sinkhole_category }}
       {%- endif %}
-
+    pass_message: |-
+      {%- if spyware_profiles_found %}
+      Benchmark criteria met
+      {%- else %}
+      No Anti-Spyware profiles are configured
+      {%- endif %}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-dns-sinkholing-is-configured-on-all-anti-spyware-profiles-in-use
@@ -1471,16 +1508,25 @@ snippets:
     cmd: parse
     variable: config
     outputs:
+      - name: spyware_profiles_found
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/spyware/
+          entry/@name
       - name: telemetry_passive_dns_monitoring
         capture_value: |-
           /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/update-schedule/statistics-service/
           passive-dns-monitoring/text()
 
-
   - name: enable_passive_DNS_monitoring
     label: 6.5 Ensure passive DNS monitoring is set to enabled on all anti-spyware profiles in use
     test: telemetry_passive_dns_monitoring != 'no'
     fail_message: Passive DNS monitoring is not currently enabled
+    pass_message: |-
+      {%- if spyware_profiles_found %}
+      Benchmark criteria met
+      {%- else %}
+      No Anti-Spyware profiles are configured
+      {%- endif %}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-passive-dns-monitoring-is-set-to-enabled-on-all-anti-spyware-profiles-in-use
@@ -1635,6 +1681,10 @@ snippets:
     cmd: parse
     variable: config
     outputs:
+      - name: url_profiles_found
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/url-filtering
+          /entry/@name
       - name: url_filtering_object
         capture_object: |-
           /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/url-filtering/entry
@@ -1667,17 +1717,13 @@ snippets:
     label: 6.10 Ensure that URL Filtering uses the action of “block” or “override” on the URL categories
     test: true
     pass_message: |-
+      {%- if url_profiles_found %}
       The following profiles are associated categories are found in the configuration.
       Check company practices to validate that these align with 'categories of interest' for block/override
       {{ url_filtering_block_override }}
-    documentation_link: |-
-      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
-      ensure-that-url-filtering-uses-the-action-of-block-or-override-on-the-url-categories
-    severity:
-      - scored: true
-      - level: 1
-      - action_required: true
-
+      {%- else %}
+      No URL filtering profiles are currently configured
+      {%- endif %}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-url-filtering-uses-the-action-of-block-or-override-on-the-url-categories
@@ -1724,6 +1770,12 @@ snippets:
     fail_message: |-
       Profiles and respective categories causing benchmark to fail
       {{ url_profile_categories_and_allow_actions }}
+    pass_message: |-
+      {%- if url_profiles_object %}
+      Benchmark criteria met
+      {%- else %}
+      No URL filtering profiles are currently configured
+      {%- endif %}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-that-access-to-every-url-is-logged
     severity:
@@ -1735,6 +1787,9 @@ snippets:
     cmd: parse
     variable: config
     outputs:
+      - name: url_profiles_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/url-filtering/entry
       - name: url_profiles_with_header_logging
         capture_list: |-
           /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/url-filtering/
@@ -1746,13 +1801,18 @@ snippets:
           entry/@name
         filter_items: item not in url_profiles_with_header_logging
 
-
   - name: url_filtering_http_header_logging
     label: 6.12 Ensure all HTTP Header Logging options are enabled
     test: url_profiles_without_header_logging | length == 0
     fail_message: |-
       Profiles without heading logging options enabled:
       {{ url_profiles_without_header_logging }}
+    pass_message: |-
+      {%- if url_profiles_object %}
+      Benchmark criteria met
+      {%- else %}
+      No URL filtering profiles are currently configured
+      {%- endif %}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-all-http-header-logging-options-are-enabled
     severity:
@@ -1849,10 +1909,14 @@ snippets:
     label: 6.14 Ensure alerting after a threshold of credit card or Social Security numbers is detected is enabled
     test: true
     pass_message: |-
+      {%- if data_filtering_profile_object %}
       Profiles found with a credit card or Social Security number predefined pattern
       Includes alert and block thresholds that should be non-zero
 
       {{ data_filtering_with_cc_or_ss }}
+      {%- else %}
+      No Data Filtering profiles are currently configured
+      {%- endif %}
 
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
@@ -1912,6 +1976,9 @@ snippets:
     cmd: parse
     variable: config
     outputs:
+      - name: zone_protect_profiles_configured
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/network/profiles/zone-protection-profile/entry/@name
       - name: zone_protect_profile_syn_flood_cookies
         capture_list: |-
           /config/devices/entry[@name='localhost.localdomain']/network/profiles/zone-protection-profile/entry
@@ -1928,12 +1995,16 @@ snippets:
     label: 6.16 Ensure that a Zone Protection Profile with an enabled SYN Flood Action of SYN Cookies is attached to all untrusted zones
     test: true
     pass_message: |-
+      {%- if zone_protect_profiles_configured %}
       This test is not fully implemented in this release without discovery of device type and untrusted zones.
 
       The following zones are configured with a zone protection profile having SYN Flood Action of SYN Cookies:
       {{ zones_with_syn_flooding_names }}
 
       Verify that all untrusted zones are included in this list
+      {%- else %}
+      No Zone Protect Profiles are currently configured
+      {%- endif %}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-a-zone-protection-profile-with-an-enabled-syn-flood-action-of-syn-cookies-is-attached-to-
@@ -1951,6 +2022,9 @@ snippets:
     cmd: parse
     variable: config
     outputs:
+      - name: zone_protect_profiles_configured
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/network/profiles/zone-protection-profile/entry/@name
       - name: zone_protect_profile_all_flooding_enabled
         capture_list: |-
           /config/devices/entry[@name='localhost.localdomain']/network/profiles/zone-protection-profile/entry
@@ -1964,19 +2038,23 @@ snippets:
       - name: zones_with_all_flooding_names
         capture_expression: zones_with_all_flooding_object | map(attribute="entry.@name") | list
 
-
   - name: zone_protect_flood_protect
     label: |-
       6.17 Ensure that a Zone Protection Profile with tuned Flood Protection settings enabled
       for all flood types is attached to all untrusted zones
     test: true
     pass_message: |-
+      {%- if zone_protect_profiles_configured %}
       This test is not fully implemented in this release without discovery of device type and untrusted zones.
 
       The following zones are configured with a zone protection profile having all flood protection enabled:
       {{ zones_with_all_flooding_names }}
 
       Verify that all untrusted zones are included in this list
+      {%- else %}
+      No Zone Protect Profiles are currently configured
+      {%- endif %}
+
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-a-zone-protection-profile-with-tuned-flood-protection-settings-enabled-for-all-flood-types-
@@ -2143,6 +2221,12 @@ snippets:
       {% if not url_filter_credential_submission.profiles[profile].valid %}
         {{ profile }}
       {% endif %}{% endfor %}
+    pass_message: |-
+      {%- if url_filtering_profiles %}
+      Benchmark criteria satisfied
+      {%- else %}
+      No configured URL Filtering profiles found
+      {%- endif %}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-user-credential-submission-uses-the-action-of-block-or-continue-on-the-url-categories
