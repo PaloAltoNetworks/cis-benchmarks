@@ -2192,8 +2192,8 @@ snippets:
             {# If a category is not accounted for, profile is invalid #}
             {%- for category in predefined_url_categories %}
               {%-
-                if category not in profile['entry']['credential-enforcement']['continue']['member']
-                and category not in profile['entry']['credential-enforcement']['block']['member']
+                if category not in profile['entry']['credential-enforcement'].get('continue', {'member': []})['member']
+                and category not in profile['entry']['credential-enforcement'].get('block', {'membmer': []})['member']
               %}
                 {%- set _ = output['profiles'][profile_name].update({'valid': False}) %}
                 {%- set _ = output.update({'valid': False}) %}
