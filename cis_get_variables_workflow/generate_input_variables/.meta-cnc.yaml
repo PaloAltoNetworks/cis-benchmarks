@@ -13,10 +13,9 @@ variables:
 
   - name: cis_internal_zones
     description: Internal Zones for this NGFW
-    type_hint: checklist
-    default:
+    type_hint: checkbox
+    default: ['']
     source: zones_list
-
 
 snippets:
   - name: create_input_variables
