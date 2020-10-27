@@ -52,83 +52,6 @@ variables:
         linux: 50
         script: 2000
 
-  - name: url_filtering_categories
-    description: current release of url categories
-    type_hint: hidden
-    default:
-      - abortion
-      - abused-drugs
-      - adult
-      - alcohol-and-tobacco
-      - auctions
-      - business-and-economy
-      - command-and-control
-      - computer-and-internet-info
-      - content-delivery-networks
-      - copyright-infringement
-      - cryptocurrency
-      - dating
-      - dynamic-dns
-      - educational-institutions
-      - entertainment-and-arts
-      - extremism
-      - financial-services
-      - gambling
-      - games
-      - government
-      - grayware
-      - hacking
-      - health-and-medicine
-      - high-risk
-      - home-and-garden
-      - hunting-and-fishing
-      - insufficient-content
-      - internet-communications-and-telephony
-      - internet-portals
-      - job-search
-      - legal
-      - low-risk
-      - malware
-      - medium-risk
-      - military
-      - motor-vehicles
-      - music
-      - newly-registered-domain
-      - news
-      - not-resolved
-      - nudity
-      - online-storage-and-backup
-      - parked
-      - peer-to-peer
-      - personal-sites-and-blogs
-      - philosophy-and-political-advocacy
-      - phishing
-      - private-ip-addresses
-      - proxy-avoidance-and-anonymizers
-      - questionable
-      - real-estate
-      - recreation-and-hobbies
-      - reference-and-research
-      - religion
-      - search-engines
-      - sex-education
-      - shareware-and-freeware
-      - shopping
-      - social-networking
-      - society
-      - sports
-      - stock-advice-and-tools
-      - streaming-media
-      - swimsuits-and-intimate-apparel
-      - training-and-tools
-      - translation
-      - travel
-      - unknown
-      - weapons
-      - web-advertisements
-      - web-based-email
-      - web-hosting
-
   - name: url_profile_actions
     description: list of url profile actions
     type_hint: hidden
@@ -2325,15 +2248,6 @@ snippets:
       - name: threat_prevention
         capture_value: ./entry[feature="Threat Prevention" and not(expired="yes")]
 
-  - name: security_policy_deny_threat_ips_license
-    label: 7.3 Ensure active Threat Prevention license
-    test: threat_prevention
-    fail_message: Feature license "Threat Prevention" missing or expired
-    documentation_link: https://docs.paloaltonetworks.com/threat-prevention
-    severity:
-      - scored: true
-      - level: 1
-
   - name: device_config_file
     cmd: parse
     variable: config
@@ -2373,10 +2287,18 @@ snippets:
       (
         threat_prevention_inbound_policy
         and threat_prevention_outbound_policy
+        and threat_prevention
       )
     fail_message: |-
-      {% if not threat_prevention_inbound_policy %}Known malicious IP's must be blocked inbound at top of security policy for any applications on any services on any zones.{% endif %}
-      {% if not threat_prevention_outbound_policy %}Known malicious IP's must be blocked outbound at top of security policy for any applications on any services on any zones.{% endif %}
+      {%- if not threat_prevention_inbound_policy %}
+      Known malicious IP's must be blocked inbound at top of security policy for any applications on any services on any zones.
+      {%- endif %}
+      {% if not threat_prevention_outbound_policy %}
+      Known malicious IP's must be blocked outbound at top of security policy for any applications on any services on any zones.
+      {% endif %}
+      {% if not threat_prevention %}
+      Feature license "Threat Prevention" missing or expired
+      {% endif %}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-security-policy-denying-any-all-traffic-to-from-ip-addresses-on-trusted-threat-intelligence-sources-exists
