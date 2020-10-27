@@ -17,6 +17,7 @@ variables:
     default: ['']
     source: zones_list
 
+
 snippets:
   - name: create_input_variables
     file: create_input_variables.txt

@@ -828,26 +828,37 @@ snippets:
       - level: 2
 
   # 2.3 Ensure that User-ID is only enabled for internal trusted interfaces
-  # TODO: require user input to select trust zones - common for a few tests
+  # depends on sources variable cis_internal_zones to determine internal zones
+  # otherwise this variable will be empty and all zones used causing a benchmark fail
   - name: device_config_file
     cmd: parse
     variable: config
     outputs:
-      - name: device_setting
-        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+      - name: cis_nonInternal_zones_with_userid_list
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/zone/
+          entry[enable-user-identification='yes']/@name
+        filter_items: item not in cis_internal_zones
 
   - name: userid_internal_zones_only
     label: 2.3 Ensure that User-ID is only enabled for internal trusted interfaces
-    test: true
-    pass_message: Roadmap item. First release does not include contextual user input
+    test: cis_nonInternal_zones_with_userid_list | length == 0
+    fail_message: |-
+      The following zone(s) were tagged as internal:
+      {%- for zone in cis_internal_zones %}
+        {{ zone }}
+      {%- endfor %}
+
+      Yet the following non internal trusted zone(s) have userID configured:
+      {%- for zone in cis_nonInternal_zones_with_userid_list %}
+        {{ zone }}
+      {%- endfor %}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-user-id-is-only-enabled-for-internal-trusted-interfaces
     severity:
       - scored: true
       - level: 1
-      - implemented: false
-      - action_requirerd: true
 
   # 2.4 Ensure that 'Include/Exclude Networks' is used if User-ID is enabled
   - name: device_config_file
@@ -1738,6 +1749,14 @@ snippets:
       - action_required: true
 
   # 6.11 Ensure that access to every URL is logged
+  - name: get_predefined_url_categories
+    cmd: op
+    cmd_str: <show><predefined><xpath>/predefined/pan-url-categories</xpath></predefined></show>
+    output_type: xml
+    outputs:
+      - name: predefined_url_categories
+        capture_list: /pan-url-categories/entry/@name
+
   - name: device_config_file
     cmd: parse
     variable: config
@@ -1758,7 +1777,7 @@ snippets:
                 {%- endfor %}
               {%- endif %}
             {%- endfor %}
-            {%- for category in url_filtering_categories %}
+            {%- for category in predefined_url_categories %}
               {%- if category not in configured_categories %}
               {%- set _ = missing_categories.append(category) %}
               {%- endif %}
