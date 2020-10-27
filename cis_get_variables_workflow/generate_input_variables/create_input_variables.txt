@@ -1,12 +1,12 @@
 
 
-A suite of system varilables have been created for use in the CIS benchmark validation.
+A suite of system variables have been created for use in the CIS benchmark validation.
 
 These are stored in panHandler and referenced as input values for the benchmark.
 
 Internal Zones
 
 {%- for zone in cis_internal_zones %}
-zone
-{% endfor %}
+    {{ zone }}
+{%- endfor %}
 
