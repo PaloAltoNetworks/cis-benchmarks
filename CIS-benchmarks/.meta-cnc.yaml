@@ -13,6 +13,11 @@ labels:
 
 variables:
 
+  - name: cis_internal_zones
+    description: list of configured internal zones
+    type_hint: list
+    default: []
+
   - name: log_types
     description: device log types for log forwarding
     type_hint: hidden

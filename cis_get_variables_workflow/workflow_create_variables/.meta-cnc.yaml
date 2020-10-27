@@ -1,0 +1,42 @@
+# workflow demo that cleans the config, does a content update, then configures a basic internet gateway
+
+name: cis_capture_values_and_create_variables
+label: Capture values and create input variables for the benchmark
+description: |
+  this workflow steps through get current configuration information and presenting
+  to the user to generate contextual input variables for the benchmark assessment
+
+type: workflow
+
+labels:
+    collection:
+      - CIS
+
+variables:
+  - name: TARGET_IP
+    description: NGFW IP or Hostname
+    default: 192.168.55.10
+    type_hint: fqdn_or_ip
+  - name: TARGET_USERNAME
+    description: NGFW Username
+    default: admin
+    type_hint: text
+  - name: TARGET_PASSWORD
+    description: NGFW Password
+    default: admin
+    type_hint: password
+
+
+snippets:
+# workflow stages to capture information and let the user select items to create input values
+  - name: cis_get_system_config_info
+# content updates to latest version
+  - name: cis_create_input_variables
+# run the benchmark
+  - name: CIS_NGFW_benchmark
+
+
+
+
+
+

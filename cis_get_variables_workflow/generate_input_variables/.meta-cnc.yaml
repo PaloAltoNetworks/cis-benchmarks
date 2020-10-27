@@ -1,0 +1,23 @@
+# capture input variables to use in the CIS benchmark validation
+
+name: cis_create_input_variables
+label: Create Input Variables
+description: |-
+    part of a workflow to capture values from the NGFW and then let the user select contextual values
+    to ge used in the benchmark
+type: template
+labels:
+    collection: lib
+
+variables:
+
+  - name: cis_internal_zones
+    description: Internal Zones for this NGFW
+    type_hint: checklist
+    default:
+    source: zones_list
+
+
+snippets:
+  - name: create_input_variables
+    file: create_input_variables.txt
