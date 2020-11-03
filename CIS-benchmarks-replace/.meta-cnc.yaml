@@ -1,0 +1,2303 @@
+name: CIS_NGFW_benchmark
+label: CIS NGFW benchmarks
+
+description: |
+  Use CIS CSC benchmarks for system validations
+
+type: pan_validation
+labels:
+  collection:
+    - CIS
+    - Benchmark
+    - Validation
+
+variables:
+
+  - name: cis_internal_zones
+    description: list of configured internal zones
+    type_hint: list
+    default: []
+
+  - name: log_types
+    description: device log types for log forwarding
+    type_hint: hidden
+    # globalprotect to be added in 10.0
+    default:
+      - system
+      - config
+      - userid
+      - hipmatch
+      - iptag
+
+  - name: app_threat_intervals
+    description: interval values used for 4.2 apps threats update interval test
+    type_hint: hidden
+    default:
+      - daily
+      - hourly
+      - every-30-mins
+
+  - name: wf_file_size_limits
+    description: wildfire recommended file size limits
+    type_hint: hidden
+    default:
+      - pe: 16
+        apk: 30
+        pdf: 3072
+        ms-office: 16384
+        jar: 5
+        flash: 5
+        MacOSX: 10
+        archive: 50
+        linux: 50
+        script: 2000
+
+  - name: url_profile_actions
+    description: list of url profile actions
+    type_hint: hidden
+    default:
+      - block
+      - alert
+      - continue
+      - override
+
+snippets:
+
+  # 1.1.1.1 Syslog logging should be configured
+  - name: capture_log_settings_syslog
+    include_by_name: capture_log_settings_syslog
+
+  - name: system_logging_configured_syslog
+    include_by_name: system_logging_configured
+    replace:
+      - label: 1.1.1.1 Syslog logging should be configured
+        documentation_link: |-
+          https://iron-skillet.readthedocs.io/en/docs_master/cis.html#syslog-logging-should-be-configured
+    metadata:
+      - scored: true
+      - level: 1
+
+  # 1.1.1.2 SNMPv3 traps should be configured
+  - name: capture_log_settings_snmp
+    include_by_name: capture_log_settings_snmp
+
+  - name: system_logging_configured_snmp
+    include_by_name: system_logging_configured_snmp
+    replace:
+      - label: 1.1.1.2 SNMPv3 traps should be configured
+        documentation_link: |-
+          https://iron-skillet.readthedocs.io/en/docs_master/cis.html#snmpv3-traps-should-be-configured
+    metadata:
+      - scored: true
+      - level: 2
+
+  # 1.1.2 login banner set
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: login_banner
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/login-banner
+
+  - name: login_banner_set
+    label: 1.1.2 Ensure 'Login Banner' is set
+    test: login_banner | tag_present('login-banner')
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-login-banner-is-set
+    severity:
+      - scored: true
+      - level: 1
+
+  # 1.1.3 log on high dp load
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: device_setting
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+
+  - name: enable_log_high_dp_load
+    label: 1.1.3 Ensure 'Enable Log on High DP Load' is enabled
+    test: device_setting | element_value('management.enable-log-high-dp-load') == 'yes'
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-enable-log-on-high-dp-load-is-enabled
+    severity:
+      - scored: true
+      - level: 1
+
+  # 1.2.1 permitted ip addresses for device management
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: mgmt_permitted_ips
+        capture_list: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/permitted-ip/entry/@name
+
+  - name: permitted_ip_addresses_mgmt
+    label: 1.2.1 Ensure 'Permitted IP Addresses' is set to those necessary for device management
+    test: mgmt_permitted_ips | length
+    fail_message: no permitted IP addresses configured for the management interface
+    pass_message: permitted IP addresses configured
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-permitted-ip-addresses-is-set-to-those-necessary-for-device-management
+    severity:
+      - scored: true
+      - level: 1
+
+  # 1.2.2 permitted ip addresses for management profiles
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: profile_permitted_ips
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile
+          /entry/permitted-ip/../@name
+      - name: profile_ssh_enabled
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile
+          /entry/ssh[text()='yes']/../@name
+      - name: profile_https_enabled
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile
+          /entry/https[text()='yes']/../@name
+      - name: profile_snmp_enabled
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile
+          /entry/snmp[text()='yes']/../@name
+      - name: ssh_https_snmp_enabled_profiles_no_ip_list
+        capture_expression: |
+          profile_ssh_enabled
+          + profile_https_enabled
+          + profile_snmp_enabled
+        filter_items: item not in profile_permitted_ips
+
+  - name: permitted_ip_address_mgmt_profiles
+    label: 1.2.2 Ensure 'Permitted IP Addresses' is set for all management profiles where SSH, HTTPS, or SNMP is enabled
+    test: ssh_https_snmp_enabled_profiles_no_ip_list | length == 0
+    fail_message: |
+      network profiles failing this benchmark are
+      {%- for item in ssh_https_snmp_enabled_profiles_no_ip_list | unique %}
+      {{ item }}
+      {%- endfor %}
+    pass_message: all ssh, https, snmp enabled profiles have permitted IP addresses configured
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-permitted-ip-addresses-is-set-for-all-management-profiles-where-ssh-https-or-snmp-is-enabled
+    severity:
+      - scored: true
+      - level: 1
+
+  # 1.2.3 disable http and telnet for mgmt interface
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: mgmt_disable_http
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/service/disable-http/text()
+      - name: mgmt_disable_telnet
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/service/disable-telnet/text()
+
+  - name: http_telnet_disabled_mgmt
+    label: 1.2.3 Ensure HTTP and Telnet options are disabled for the management interface
+    test: |
+      (
+        mgmt_disable_http != 'no'
+        and mgmt_disable_telnet != 'no'
+      )
+    fail_message: |
+      {%- if mgmt_disable_http == 'no' %}
+        http management access is not disabled
+      {%- endif %}
+      {%- if mgmt_disable_telnet == 'no' %}
+        telnet management access is not disabled
+      {%- endif %}
+    pass_message: http and telnet are disable for management interface access
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-http-and-telnet-options-are-disabled-for-the-management-interface
+    severity:
+      - scored: true
+      - level: 1
+
+  # 1.2.4 disable http and telnet for mgmt profiles
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: http_enabled_profiles
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile/
+          entry/http[text()='yes']/../@name
+      - name: telnet_enabled_profiles
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/network/profiles/interface-management-profile/
+          entry/telnet[text()='yes']/../@name
+
+  - name: http_telnet_disabled_mgmt_profiles
+    label: 1.2.4 Ensure HTTP and Telnet options are disabled for all management profiles
+    test: |
+      (
+        http_enabled_profiles | length == 0
+        and telnet_enabled_profiles | length == 0
+      )
+    fail_message: |
+      {%- if http_disabled_profiles | length %}
+        http not disabled for profiles: {{ http_enabled_profiles }}
+      {%- endif %}
+      {%- if telnet_enabled_profiles | length %}
+        telnet not disabled for profiles: {{ telnet_enabled_profiles }}
+      {%- endif %}
+    pass_message: http and telnet disabled for all management profiles
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-http-and-telnet-options-are-disabled-for-all-management-profiles
+    severity:
+      - scored: true
+      - level: 1
+
+  # 1.2.5 valid cert set for UI admin intf
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: ssl_profiles
+        capture_list: /config/shared/ssl-tls-service-profile/entry/@name
+
+  - name: valid_cert_admin_intf
+    label: 1.2.5 Ensure valid certificate is set for browser-based administrator interface
+    test: true
+    pass_message: Not part of initial release. Roadmap item to investigate certificate assessment.
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-valid-certificate-is-set-for-browser-based-administrator-interface
+    severity:
+      - scored: false
+      - level: 2
+      - implemented: false
+      - action_requirerd: true
+
+  # 1.3.1 enable min password complexity
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: password_complexity_enabled
+        capture_value: /config/mgt-config/password-complexity/enabled/text()
+
+  - name: test_password_complexity_enabled
+    label: 1.3.1 Ensure 'Minimum Password Complexity' is enabled
+    test: password_complexity_enabled == 'yes'
+    fail_message: Minimum Password Complexity is not enabled
+    pass_message: Minimum Password Complexity is enabled
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-minimum-password-complexity-is-enabled
+    severity:
+      - scored: true
+      - level: 1
+
+  # 1.3.2 password complexity min length
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: password_min_length
+        capture_value: /config/mgt-config/password-complexity/minimum-length/text()
+
+  - name: test_password_min_length
+    label: 1.3.2 Ensure 'Minimum Length' is greater than or equal to 12
+    test: password_min_length >= '12'
+    fail_message: Minimum length is set to {{ password_min_length }}
+    pass_message: Minimum length is set to {{ password_min_length }}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-minimum-length-is-greater-than-or-equal-to-12
+    severity:
+      - scored: true
+      - level: 1
+
+  # 1.3.3 password minimum uppercase letters
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: password_min_uppercase
+        capture_value: /config/mgt-config/password-complexity/minimum-uppercase-letters/text()
+
+  - name: test_password_min_uppercase
+    label: 1.3.3 Ensure 'Minimum Uppercase Letters' is greater than or equal to 1
+    test: password_min_uppercase >= '1'
+    fail_message: Minimum Uppercase Letters is set to {{ password_min_length }}
+    pass_message: Minimum Uppercase Letters is set to {{ password_min_length }}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-minimum-uppercase-letters-is-greater-than-or-equal-to-1
+    severity:
+      - scored: true
+      - level: 1
+
+  # 1.3.4 password complexity min lowercase
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: password_min_lowercase
+        capture_value: /config/mgt-config/password-complexity/minimum-lowercase-letters/text()
+
+  - name: test_password_min_lowercase
+    label: 1.3.4 Ensure 'Minimum Lowercase Letters' is greater than or equal to 1
+    test: password_min_lowercase >= '1'
+    fail_message: Minimum Lowercase Letters is set to {{ password_min_lowercase }}
+    pass_message: Minimum Lowercase Letters is set to {{ password_min_lowercase }}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-minimum-lowercase-letters-is-greater-than-or-equal-to-1
+    severity:
+      - scored: true
+      - level: 1
+
+  # 1.3.5 password complexity min numeric
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: password_min_numeric
+        capture_value: /config/mgt-config/password-complexity/minimum-numeric-letters/text()
+
+  - name: test_password_min_numeric
+    label: 1.3.5 Ensure 'Minimum Numeric Letters' is greater than or equal to 1
+    test: password_min_numeric >= '1'
+    fail_message: Minimum Numeric Letters is set to {{ password_min_numeric }}
+    pass_message: Minimum Numeric Letters is set to {{ password_min_numeric }}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-minimum-numeric-letters-is-greater-than-or-equal-to-1
+    severity:
+      - scored: true
+      - level: 1
+
+  # 1.3.6 password complexity min specials chars
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: password_min_special
+        capture_value: /config/mgt-config/password-complexity/minimum-special-characters/text()
+
+  - name: test_password_min_special
+    label: 1.3.6 Ensure 'Minimum Special Characters' is greater than or equal to 1
+    test: password_min_special >= '1'
+    fail_message: Minimum Special Characters is set to {{ password_min_special }}
+    pass_message: Minimum Special Characters is set to {{ password_min_special }}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-minimum-special-characters-is-greater-than-or-equal-to-1
+    severity:
+      - scored: true
+      - level: 1
+
+  # 1.3.7 password complexity change period
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: password_min_change_period
+        capture_value: /config/mgt-config/password-complexity/password-change/expiration-period/text()
+
+  - name: test_password_min_change_period
+    label: 1.3.7 Ensure 'Required Password Change Period' is less than or equal to 90 days
+    test: password_min_change_period > '0' and password_min_change_period <= '90'
+    fail_message: |-
+      {%- if not password_min_change_period %}
+      Required Password Change Period is not configured
+      {%- else %}
+      Required Password Change Period is set to {{ password_min_change_period }} days
+      {%- endif %}
+    pass_message: Required Password Change Period is set to {{ password_min_change_period }} days
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-required-password-change-period-is-less-than-or-equal-to-90-days
+    severity:
+      - scored: true
+      - level: 1
+
+  # 1.3.8 password complexity new password differs by char
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: password_differs_by_char
+        capture_value: /config/mgt-config/password-complexity/new-password-differs-by-characters/text()
+
+  - name: test_password_differs_by_char
+    label: 1.3.8 Ensure 'New Password Differs By Characters' is greater than or equal to 3
+    test: password_differs_by_char >= '3'
+    fail_message: New Password Differs By Characters is set to {{ password_differs_by_char }}
+    pass_message: New Password Differs By Characters is set to {{ password_differs_by_char }}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-new-password-differs-by-characters-is-greater-than-or-equal-to-3
+    severity:
+      - scored: true
+      - level: 1
+
+  # 1.3.9 password complexity password reuse limit
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: password_history_count
+        capture_value: /config/mgt-config/password-complexity/password-history-count/text()
+
+  - name: test_password_history_count
+    label: 1.3.9 Ensure 'Prevent Password Reuse Limit' is set to 24 or more passwords
+    test: password_history_count >= '24'
+    fail_message: Prevent Password Reuse Limit is set to {{ password_history_count }} passwords
+    pass_message: Prevent Password Reuse Limit is set to {{ password_history_count }} passwords
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-prevent-password-reuse-limit-is-set-to-24-or-more-passwords
+    severity:
+      - scored: true
+      - level: 1
+
+  # 1.3.10 password profiles do not exist
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: password_profiles
+        capture_list: /config/mgt-config/password-profile/entry/@name
+
+  - name: test_password_profiles
+    label: 1.3.10 Ensure 'Password Profiles' do not exist
+    test: password_profiles | length == 0
+    fail_message: |
+      Password profiles {{ password_profiles }} have been configured.
+      If they are used ensure settings are stronger than the password complexity settings
+    pass_message: benchmark requirements are met. No password profiles configured.
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-password-profiles-do-not-exist
+    severity:
+      - scored: true
+      - level: 1
+
+  # 1.4.1 admin idle timeout
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: admin_idle_timeout
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/management/idle-timeout/text()
+
+  - name: max_idle_timeout
+    label: 1.4.1 Ensure 'Idle timeout' is less than or equal to 10 minutes for device management
+    test: admin_idle_timeout and admin_idle_timeout <= '10'
+    fail_message: |-
+      {%- if admin_idle_timeout %}
+      Idle Timeout is set to {{ admin_idle_timeout }} minutes
+      {%- else %}
+      Idle Timeout is not configured or set to default of 60 minutes
+      {%- endif %}
+    pass_message: Idle Timeout is set to {{ admin_idle_timeout }} minutes
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-idle-timeout-is-less-than-or-equal-to-10-minutes-for-device-management
+    severity:
+      - scored: true
+      - level: 1
+
+  # 1.4.2 admin failed attempts and lockout
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: failed_attempts
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/management/
+          admin-lockout/failed-attempts/text()
+      - name: lockout_time
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/management/
+          admin-lockout/lockout-time/text()
+
+  - name: test_failed_attempts_lockout
+    label: 1.4.2 Ensure 'Failed Attempts' and 'Lockout Time' for Authentication Profile are properly configured
+    test: |
+      (
+      failed_attempts | length
+      and failed_attempts > '0'
+      and lockout_time | length
+      )
+    fail_message: |
+      {%- if failed_attempts | length == 0 or failed_attempts == 0 %}
+        Failed Attempts not configured or set to unlimited tries
+      {%- endif %}
+      {%- if lockout_time | length == 0 %}
+        Lockout Time is not configured
+      {%- endif %}
+    pass_message: |
+      Failed Attempts set to {{ failed_attempts }} and Lockout Time set to {{ lockout_time }}.
+      Check that these are set in accordance with company policy.
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-failed-attempts-and-lockout-time-for-authentication-profile-are-properly-configured
+    severity:
+      - scored: true
+      - level: 1
+
+  # 1.5.1 use snmpv3 for polling
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: snmp_version
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/snmp-setting/access-setting/version
+
+  - name: snmpv3_selected
+    label: 1.5.1 Ensure 'V3' is selected for SNMP polling
+    test: snmp_version | tag_present('v3')
+    fail_message: V3 is not selected for SNMP polling
+    pass_message: V3 is selected for SNMP polling
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-v3-is-selected-for-snmp-polling
+    severity:
+      - scored: true
+      - level: 1
+
+  # 1.6.1 Ensure 'Verify Update Server Identity' is enabled
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: verify_server_identiy
+        capture_value: |
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/server-verification/text()
+
+  - name: verify_update_service_enabled
+    label: 1.6.1 Ensure 'Verify Update Server Identity' is enabled
+    test: verify_server_identiy != 'no'
+    fail_message: Verify Update Server Idenity is not enabled
+    pass_message: Verify Update Server Idenity is enabled
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-verify-update-server-identity-is-enabled
+    severity:
+      - scored: true
+      - level: 1
+
+  # 1.6.2 Ensure redundant NTP servers are configured appropriately
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: ntp_servers
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/ntp-servers
+
+  - name: redundant_ntp_servers
+    label: 1.6.2 Ensure redundant NTP servers are configured appropriately
+    test: |
+      (
+      ntp_servers | tag_present('primary-ntp-server.ntp-server-address')
+      and ntp_servers | tag_present('secondary-ntp-server.ntp-server-address')
+      )
+    fail_message: |
+      Primary and Secondary NTP servers are not configured
+    pass_message: Redundant NTP servers are configured
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-redundant-ntp-servers-are-configured-appropriately
+    severity:
+      - scored: true
+      - level: 1
+
+  # 1.6.3 Ensure that the Certificate Securing Remote Access VPNs is Valid
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: device_setting
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+
+  - name: vpn_cert_valid
+    label: 1.6.3 Ensure that the Certificate Securing Remote Access VPNs is Valid
+    test: true
+    pass_message: Not part of initial release. Roadmap item to investigate certificate assessment.
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-that-the-certificate-securing-remote-access-vpns-is-valid
+    severity:
+      - scored: false
+      - level: 1,2
+      - implemented: false
+      - action_requirerd: true
+
+  # 2.1 Ensure that IP addresses are mapped to usernames
+  # This has been reviewed and not implemented for the initial release due to specific deployment requirements
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: device_setting
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+
+  - name: ip_addr_mapped_to_user
+    label: 2.1 Ensure that IP addresses are mapped to usernames
+    test: true
+    pass_message: |-
+      This benchmark is deployment specific and a roadmap items for this validation check.
+      Review the Audit and Remediation content in the CIS Benchmark document for more information.
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-that-ip-addresses-are-mapped-to-usernames
+    severity:
+      - scored: true
+      - level: 2
+      - implemented: false
+      - action_required: true
+
+  # 2.2 Ensure that WMI probing is disabled
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: userid_probing
+        capture_value: |
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/
+          user-id-collector/setting/enable-probing/text()
+
+  - name: wmi_probing_disabled
+    label: 2.2 Ensure that WMI probing is disabled
+    test: userid_probing != 'yes'
+    fail_message: WMI probing is not disabled
+    pass_message: WMI probing is disabled
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-that-wmi-probing-is-disabled
+    severity:
+      - scored: true
+      - level: 2
+
+  # 2.3 Ensure that User-ID is only enabled for internal trusted interfaces
+  # depends on sources variable cis_internal_zones to determine internal zones
+  # otherwise this variable will be empty and all zones used causing a benchmark fail
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: cis_nonInternal_zones_with_userid_list
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/zone/
+          entry[enable-user-identification='yes']/@name
+        filter_items: item not in cis_internal_zones
+
+  - name: userid_internal_zones_only
+    label: 2.3 Ensure that User-ID is only enabled for internal trusted interfaces
+    test: cis_nonInternal_zones_with_userid_list | length == 0
+    fail_message: |-
+      The following zone(s) were tagged as internal:
+      {%- for zone in cis_internal_zones %}
+        {{ zone }}
+      {%- endfor %}
+
+      Yet the following non internal trusted zone(s) have userID configured:
+      {%- for zone in cis_nonInternal_zones_with_userid_list %}
+        {{ zone }}
+      {%- endfor %}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-that-user-id-is-only-enabled-for-internal-trusted-interfaces
+    severity:
+      - scored: true
+      - level: 1
+
+  # 2.4 Ensure that 'Include/Exclude Networks' is used if User-ID is enabled
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: userID_include_exclude_networks_entries
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/
+          user-id-collector/include-exclude-network/entry/@name
+
+  - name: userid_with_include_exclude
+    label: 2.4 Ensure that 'Include/Exclude Networks' is used if User-ID is enabled
+    test: userID_include_exclude_networks_entries | length
+    fail_message: Include/Exclude Networks configuration for userID not found
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-that-include-exclude-networks-is-used-if-user-id-is-enabled
+    severity:
+      - scored: true
+      - level: 1
+
+
+  # 2.5 Ensure that the User-ID Agent has minimal permissions if User-ID is enabled
+  - name: userid_agent_min_permissions
+    label: 2.5 Ensure that the User-ID Agent has minimal permissions if User-ID is enabled
+    test: true
+    pass_message: test cannot be implemented for PAN-OS. External system configuration elements
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-that-the-user-id-agent-has-minimal-permissions-if-user-id-is-enabled
+    severity:
+      - scored: true
+      - level: 1
+      - implemented: false
+      - action_requirerd: true
+
+  # 2.6 Ensure that the User-ID service account does not have interactive logon rights
+  - name: userid_no_interactive_logon
+    label: 2.6 Ensure that the User-ID service account does not have interactive logon rights
+    test: true
+    pass_message: test cannot be implemented for PAN-OS. External system configuration elements
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-that-the-user-id-service-account-does-not-have-interactive-logon-rights
+    severity:
+      - scored: true
+      - level: 1
+      - implemented: false
+      - action_requirerd: true
+
+  # 2.7 Ensure remote access capabilities for the User-ID service account are forbidden
+  - name: userid_service_account
+    label: 2.7 Ensure remote access capabilities for the User-ID service account are forbidden
+    test: true
+    pass_message: test cannot be implemented for PAN-OS. External system configuration elements
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-remote-access-capabilities-for-the-user-id-service-account-are-forbidden
+    severity:
+      - scored: false
+      - level: 1
+      - implemented: false
+      - action_requirerd: true
+
+  # 2.8 Ensure that security policies restrict User-ID Agent traffic from crossing into untrusted zones
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: device_setting
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+
+  - name: userid_agent_no_untrust_zone
+    label: 2.8 Ensure that security policies restrict User-ID Agent traffic from crossing into untrusted zones
+    test: true
+    pass_message: Not part of initial release. Roadmap item to investigate
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-that-security-policies-restrict-user-id-agent-traffic-from-crossing-into-untrusted-zones
+    severity:
+      - scored: true
+      - level: 1
+      - implemented: false
+      - action_requirerd: true
+
+  # 3.1 Ensure a fully-synchronized High Availability peer is configured
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: high_availability_ha2
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/interface/ha2
+
+  - name: HA_peer_configured
+    label: 3.1 Ensure a fully-synchronized High Availability peer is configured
+    test: high_availability_ha2 | tag_present('port')
+    fail_message: HA2 does not have a configured port
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-a-fully-synchronized-high-availability-peer-is-configured
+    severity:
+      - scored: true
+      - level: 1
+
+  # 3.2 Ensure 'High Availability' requires Link Monitoring and/or Path Monitoring
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      # Link monitoring configuration
+      - name: ha_link_monitoring_disabled
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/link-monitoring/
+          enabled[text() = 'no']
+      - name: ha_link_other_failure
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/link-monitoring/
+          failure-condition[text() != 'any']
+      - name: ha_link_group
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/link-monitoring/link-group/
+          entry[not(failure-condition = 'all') and not(enabled = 'no') and count(interface/member)]
+      # Path monitoring configuration
+      - name: ha_path_monitoring_disabled
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/path-monitoring/
+          enabled[text() = 'no']
+      - name: ha_path_other_failure
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/path-monitoring/
+          failure-condition[text() != 'any']
+      - name: ha_path_group_vr
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/path-monitoring/path-group/virtual-router/
+          entry[not(enabled = 'no') and not(failure-condition = 'all') and count(destination-ip)]
+      - name: ha_path_group_vw
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/path-monitoring/path-group/virtual-wire/
+          entry[not(enabled = 'no') and not(failure-condition = 'all') and count(destination-ip)]
+      - name: ha_path_group_vlan
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/monitoring/path-monitoring/path-group/vlan/
+          entry[not(enabled = 'no') and not(failure-condition = 'all') and count(destination-ip)]
+
+  - name: HA_link_path_monitoring
+    label: 3.2 Ensure 'High Availability' requires Link Monitoring and/or Path Monitoring
+    test: |
+      (
+        (
+          not ha_link_monitoring_disabled
+          and not ha_link_other_failure
+          and ha_link_group
+        )
+        or
+        (
+          not ha_path_monitoring_disabled
+          and not ha_path_other_failure
+          and
+          (
+            ha_path_group_vr
+            or ha_path_group_vw
+            or ha_path_group_vlan
+          )
+        )
+      )
+    fail_message: |-
+      Either link groups or path monitoring must be configured with a failure condition of "any",
+      and monitored links or destination IP addresses
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-high-availability-requires-link-monitoring-and-or-path-monitoring
+    severity:
+      - scored: true
+      - level: 1
+
+  # 3.3 Ensure 'Passive Link State' and 'Preemptive' are configured appropriately
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: ha_passive_link_state
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/mode
+          /active-passive/passive-link-state[text() = 'auto']
+      - name: ha_preemptive
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/high-availability/group/
+          election-option/preemptive[text() = 'yes']
+
+  - name: HA_passive_link_preemptive
+    label: 3.3 Ensure 'Passive Link State' and 'Preemptive' are configured appropriately
+    test: |
+      (
+        ha_passive_link_state
+        and not ha_preemptive
+      )
+    fail_message: Passive link state must be set to auto and preemption must be disabled
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-passive-link-state-and-preemptive-are-configured-appropriately
+    severity:
+      - scored: true
+      - level: 1
+
+  # 4.1 Ensure 'Antivirus Update Schedule' is set to download and install updates hourly
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: av_update_interval
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/
+          update-schedule/anti-virus/recurring/*[1]
+      - name: av_update_action
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/
+          update-schedule/anti-virus/recurring/hourly/action/text()
+
+  - name: AV_update_schedule
+    label: 4.1 Ensure 'Antivirus Update Schedule' is set to download and install updates hourly
+    test: |
+      (
+        av_update_interval == 'hourly'
+        and av_update_action == 'download-and-install'
+      )
+    fail_message: |
+      Antivirus Update Schedule is set to {{ av_update_interval }} with action {{ av_update_action }}
+    pass_message: |
+      Antivirus Update Schedule is set to {{ av_update_interval }} with action {{ av_update_action }}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-antivirus-update-schedule-is-set-to-download-and-install-updates-hourly
+    severity:
+      - scored: true
+      - level: 1
+
+  # 4.2 Ensure 'Applications and Threats Update Schedule'
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: threats_update_interval
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/
+          update-schedule/threats/recurring/*[1]
+      - name: threats_update_action
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/
+          update-schedule/threats/recurring//action/text()
+
+  - name: test_apps_threats_updates
+    label: |
+      4.2 Ensure 'Applications and Threats Update Schedule' is set to download and install updates
+      at daily or shorter intervals
+    test: |
+      (
+        threats_update_interval in app_threat_intervals
+        and threats_update_action == 'download-and-install'
+      )
+    fail_message: |
+     Applications and Threats Update Schedule is set to {{ threats_update_interval }}
+     with action {{ threats_update_action }}
+    pass_message: |
+      Applications and Threats Update Schedule is set to {{ threats_update_interval }}
+      with action {{ threats_update_action }}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-applications-and-threats-update-schedule-is-set-to-download-and-install-updates-at-daily
+      -or-shorter-intervals
+    severity:
+      - scored: true
+      - level: 1
+
+  # 5.1 Ensure that WildFire file size upload limits are maximized
+  - name: wf_size_testing
+    cmd: parse
+    variable: config
+    outputs:
+      - name: wf_file_size_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/
+          file-size-limit/entry
+      - name: wf_filetypes_wo_max_size
+        capture_variable: |-
+          {%- set bad_filetypes = [] %}
+          {%- for item in wf_file_size_object %}
+            {%- set filetype = item['entry']['@name'] %}
+            {%- if item['entry']['size-limit'] | int < wf_file_size_limits[0][filetype] | int %}
+              {%- set _ = bad_filetypes.append(filetype) %}
+            {%- endif %}
+          {%- endfor %}
+          {{ bad_filetypes | to_json }}
+
+  - name:  wf_limit_pe_test
+    label: 5.1 Ensure that WildFire file size upload limits are maximized
+    test: wf_filetypes_wo_max_size | from_json | length == 0
+    fail_message: |-
+      filetypes not configured to meet max size requirements:
+      {{ wf_filetypes_wo_max_size }}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-that-wildfire-file-size-upload-limits-are-maximized
+    severity:
+      - scored: true
+      - level: 1
+
+  # 5.2 Ensure forwarding is enabled for all applications and file types in WildFire file blocking profiles
+  # inspecting the WF analysis profile and not the file blocking profile
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: wildfire_any_any_profiles
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/
+          wildfire-analysis/entry[rules/entry/application/member='any' or rules/entry/file-type/member='any']/@name
+
+  - name: WF_all_apps_files
+    label: 5.2 Ensure forwarding is enabled for all applications and file types in WildFire file blocking profiles
+    test: true
+    pass_message: |-
+      This assessment inspects the Wildfire analysis profile
+      File blocking profiles no longer support the action of forward
+
+      Wildfire analysis profiles configured with application=any and filetype=any
+      {{ wildfire_any_any_profiles }}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-forwarding-is-enabled-for-all-applications-and-file-types-in-wildfire-file-blocking-profiles
+    severity:
+      - scored: true
+      - level: 1
+      - action_required: true
+
+  # 5.3 Ensure a WildFire Analysis profile is enabled for all security policies
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      # capture for security rules using named profiles instead of a profile group
+      - name: security_rules_without_wf_profile
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry/profile-setting/profiles[count(wildfire-analysis)=0]/../../@name
+      # capture for security rules using profile groups
+      - name: profile_groups_without_wf
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profile-group/
+          entry[count(wildfire-analysis)=0]/@name
+      - name: security_rules_with_group_without_wf_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry
+        filter_items: item | element_value('profile-setting.group.member') in profile_groups_without_wf
+      - name: security_rules_with_group_without_wf_names
+        capture_expression: security_rules_with_group_without_wf_object | map(attribute="entry.@name") | list
+
+  - name: WF_profile_in_policies
+    label: 5.3 Ensure a WildFire Analysis profile is enabled for all security policies
+    test: |-
+      (
+        security_rules_without_wf_profile | length == 0
+        and security_rules_with_group_without_wf_names | length == 0
+      )
+    fail_message: |-
+      security policies without Wildfire profile:
+      Using explicit profile:
+      {{ security_rules_without_wf_profile }}
+      Using profile group without a Wildfire profile
+      {{ security_rules_with_group_without_wf_names }}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-a-wildfire-analysis-profile-is-enabled-for-all-security-policies
+    severity:
+      - scored: true
+      - level: 1
+
+  # 5.4 Ensure forwarding of decrypted content to WildFire is enabled
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: allow_forward_decrypted_content
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/setting/
+          ssl-decrypt/allow-forward-decrypted-content/text()
+
+  - name: WF_forward_decrypt_content
+    label: 5.4 Ensure forwarding of decrypted content to WildFire is enabled
+    test: allow_forward_decrypted_content == 'yes'
+    fail_message: Forwarding of decrypted content is not enabled
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-forwarding-of-decrypted-content-to-wildfire-is-enabled
+    severity:
+      - scored: true
+      - level: 1
+
+  # 5.5 Ensure all WildFire session information settings are enabled
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: wf_session_disabled_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/
+          wildfire/session-info-select/*[text()='yes']
+
+  - name: WF_session_info_enabled
+    label: 5.5 Ensure all WildFire session information settings are enabled
+    test: wf_session_disabled_object | length == 0
+    fail_message: |-
+      Session information settings not enabled:
+      {%- for item in wf_session_disabled_object %}
+        {%- for key in item %}
+          {{ key }}
+        {%- endfor %}
+      {%- endfor %}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-all-wildfire-session-information-settings-are-enabled
+    severity:
+      - scored: true
+      - level: 1
+
+  # 5.6 Ensure alerts are enabled for malicious files detected by WildFire
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: log_forwaring_profiles_wf_malicious_alerts
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/log-settings/profiles
+          /entry/match-list/entry[log-type='wildfire' and filter='(verdict neq benign)'
+          and (count(send-email) or count(send-http) or count(send-snmp) or count(send-syslog))]
+
+  - name: WF_alerts_malicious_files
+    label: 5.6 Ensure alerts are enabled for malicious files detected by WildFire
+    test: log_forwaring_profiles_wf_malicious_alerts
+    fail_message: no log forwarding profiles found matching benchmark criteria
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-alerts-are-enabled-for-malicious-files-detected-by-wildfire
+    severity:
+      - scored: true
+      - level: 1
+
+  # 5.7 Ensure 'WildFire Update Schedule' is set to download and install updates every minute
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: wf_update_schedule_recurring
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/update-schedule/
+          wildfire[count(recurring) and (count(recurring/real-time) or count(recurring/every-min))]
+
+  - name: WF_update_schedule
+    label: 5.7 Ensure 'WildFire Update Schedule' is set to download and install updates every minute
+    test: wf_update_schedule_recurring
+    fail_message: Wildfire Update Schedule not configured for one-minute or real-time updates
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-wildfire-update-schedule-is-set-to-download-and-install-updates-every-minute
+    severity:
+      - scored: true
+      - level: 1
+
+  # 6.1 Ensure that antivirus profiles are set to block on all decoders except 'imap' and 'pop3'
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: av_profiles_found
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/virus/entry/@name
+      - name: av_profile_block_all_decoders
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/virus/entry
+          /decoder/entry[not(action='reset-both') and not(wildfire-action='reset-both')]/../../@name
+
+  - name: av_profile_block_all_decoders_test
+    label: 6.1 Ensure that antivirus profiles are set to block on all decoders except 'imap' and 'pop3'
+    test: av_profile_block_all_decoders | length == 0
+    fail_message: |-
+      Antivius profiles failing benchmark test:
+      {{ av_profile_block_all_decoders }}
+    pass_message: |-
+      {%- if not av_profiles_found %}
+      No configured Antivirus profiles found
+      {%- else %}
+      No configured Antivirus profiles violate this benchmark
+      {%- endif %}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-that-antivirus-profiles-are-set-to-block-on-all-decoders-except-imap-and-pop3
+    severity:
+      - scored: true
+      - level: 1
+
+  # 6.2 Ensure a secure antivirus profile is applied to all relevant security policies
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      # capture for security rules using named profiles instead of a profile group
+      - name: security_policies_found
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry/@name
+      - name: security_rules_without_virus_profile
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry[action='allow' and count(profile-setting/profiles)>0 and count(virus)=0]/@name
+      # capture for security rules using profile groups
+      - name: profile_groups_without_virus
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profile-group/
+          entry[count(virus)=0]/@name
+      - name: security_rules_with_group_without_virus_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry[action='allow']
+        filter_items: item | element_value('profile-setting.group.member') in profile_groups_without_virus
+      - name: security_rules_with_group_without_virus_names
+        capture_expression: security_rules_with_group_without_virus_object | map(attribute="entry.@name") | list
+
+  - name: AV_profile_in_policies
+    label: 6.2 Ensure a secure antivirus profile is applied to all relevant security policies
+    test: |-
+      (
+        security_rules_without_virus_profile | length == 0
+        and security_rules_with_group_without_virus_names | length == 0
+      )
+    fail_message: |-
+      security policies without an Antivirus profile:
+      Using explicit profile:
+      {{ security_rules_without_virus_profile }}
+      Using profile group without a virus profile
+      {{ security_rules_with_group_without_virus_names }}
+    pass_message: |-
+      {%- if not security_policies_found %}
+      No configured security policies found
+      {%- else %}
+      No configured security policies violate this benchmark
+      {%- endif %}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-a-secure-antivirus-profile-is-applied-to-all-relevant-security-policies
+    severity:
+      - scored: true
+      - level: 1
+
+  # 6.3 Ensure an anti-spyware profile is configured to block on all spyware severity levels, categories, and threats
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: spyware_profiles_found
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/spyware/
+          entry/@name
+      - name: spyware_profile_block_all_category_threat_severity_one_rule
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/spyware/
+          entry[
+          rules/entry/threat-name='any'
+          and (count(rules/entry/action/allow)=0 and count(rules/entry/action/alert)=0 and count(rules/entry/action/default)=0)
+          and rules/entry/severity/member='any'
+          ]/@name
+      - name: spyware_profile_block_all_category_threat_severity_many_rules
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/spyware/
+          entry[
+          rules/entry/threat-name='any'
+          and (count(rules/entry/action/allow)=0 and count(rules/entry/action/alert)=0 and count(rules/entry/action/default)=0)
+          and rules/entry/severity/member='informational' and rules/entry/severity/member='low'
+          and rules/entry/severity/member='medium' and rules/entry/severity/member='high'
+          and rules/entry/severity/member='critical'
+          ]/@name
+
+  - name: spyware_profile_block_all
+    label: |-
+      6.3 Ensure an anti-spyware profile is configured to block on all spyware severity levels, categories, and threats
+    test: |-
+      (
+        spyware_profile_block_all_category_threat_severity_one_rule | length
+        or spyware_profile_block_all_category_threat_severity_many_rules | length
+        and spyware_profiles_found | length
+      )
+    fail_message: |-
+      {%- if spyware_profiles_found | length == 0 %}
+      No Anti-Spyware profiles configured
+      {%- else %}
+      No configured Anti-Spyware profiles meet the benchmark criteria
+      {%- endif %}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-an-anti-spyware-profile-is-configured-to-block-on-all-spyware-severity-levels-categories-and-threats
+    severity:
+      - scored: true
+      - level: 1
+
+  # 6.4 Ensure DNS sinkholing is configured on all anti-spyware profiles in use
+  # PAN-OS 9.0 version - does not include the 10.0 DNS categories element
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: spyware_profiles_found
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/spyware/
+          entry/@name
+      # output pre 10.0 before categories available
+      - name: spyware_profiles_without_sinkhole_no_category
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/spyware/
+          entry[count(botnet-domains/lists/entry/action/sinkhole)=0]/@name
+      # 10.0 and later support leveraging categories
+      # sinkhole known malicious categories:
+      - name: spyware_profiles_without_sinkhole_category
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/spyware/
+          entry/botnet-domains/dns-security-categories/entry[
+          (@name='pan-dns-sec-malware' or @name='pan-dns-sec-cc')
+          and action!='sinkhole']/../../../@name
+
+  - name: DNS_sinkhole_configured
+    label: 6.4 Ensure DNS sinkholing is configured on all anti-spyware profiles in use
+    test: |-
+      (
+        spyware_profiles_without_sinkhole_no_category | length == 0
+        and spyware_profiles_without_sinkhole_category | length == 0
+      )
+    fail_message: |-
+      The following Anti-Spyware profiles are not correctly configured with DNS sinkholing:
+      {%- if spyware_profiles_without_sinkhole_no_category | length %}
+       Non-category DNS policies:
+       {{ spyware_profiles_without_sinkhole_no_category }}
+      {%- endif %}
+      {%- if spyware_profiles_without_sinkhole_category | length %}
+       Category-based DNS policies:
+       {{ spyware_profiles_without_sinkhole_category }}
+      {%- endif %}
+    pass_message: |-
+      {%- if spyware_profiles_found %}
+      Benchmark criteria met
+      {%- else %}
+      No Anti-Spyware profiles are configured
+      {%- endif %}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-dns-sinkholing-is-configured-on-all-anti-spyware-profiles-in-use
+    severity:
+      - scored: true
+      - level: 1
+
+  # 6.5 Ensure passive DNS monitoring is set to enabled on all anti-spyware profiles in use
+  # this moved to a telemetry configuration option in 9.x
+  # passive DNS and telemetry configuration will change in PAN-OS 10.0
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: spyware_profiles_found
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/spyware/
+          entry/@name
+      - name: telemetry_passive_dns_monitoring
+        capture_value: |-
+          /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/update-schedule/statistics-service/
+          passive-dns-monitoring/text()
+
+  - name: enable_passive_DNS_monitoring
+    label: 6.5 Ensure passive DNS monitoring is set to enabled on all anti-spyware profiles in use
+    test: telemetry_passive_dns_monitoring != 'no'
+    fail_message: Passive DNS monitoring is not currently enabled
+    pass_message: |-
+      {%- if spyware_profiles_found %}
+      Benchmark criteria met
+      {%- else %}
+      No Anti-Spyware profiles are configured
+      {%- endif %}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-passive-dns-monitoring-is-set-to-enabled-on-all-anti-spyware-profiles-in-use
+    severity:
+      - scored: true
+      - level: 1
+
+  # 6.6 Ensure a secure anti-spyware profile is applied to all security policies permitting traffic to the Internet
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      # capture for security rules using named profiles instead of a profile group
+      - name: security_rules_without_spyware_profile
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry[action='allow' and count(profile-setting/profiles)>0 and count(spyware)=0]/@name
+      # capture for security rules using profile groups
+      - name: profile_groups_without_spyware
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profile-group/
+          entry[count(spyware)=0]/@name
+      - name: security_rules_with_group_without_spyware_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry[action='allow']
+        filter_items: item | element_value('profile-setting.group.member') in profile_groups_without_spyware
+      - name: security_rules_with_group_without_spyware_names
+        capture_expression: security_rules_with_group_without_spyware_object | map(attribute="entry.@name") | list
+
+  - name: spyware_profile_in_policies
+    label: 6.6 Ensure a secure anti-spyware profile is applied to all security policies permitting traffic to the Internet
+    test: |-
+      (
+        security_rules_without_spyware_profile | length == 0
+        and security_rules_with_group_without_spyware_names | length == 0
+      )
+    fail_message: |-
+      security policies without Anti-Spyware profile:
+      Using explicit profile:
+      {{ security_rules_without_spyware_profile }}
+      Using profile group without a Anti-Spyware profile
+      {{ security_rules_with_group_without_spyware_names }}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-a-secure-anti-spyware-profile-is-applied-to-all-security-policies-permitting-traffic-to-the-internet
+    severity:
+      - scored: true
+      - level: 1
+
+  # 6.7 Ensure a Vulnerability Protection Profile is set to block attacks against critical and high vulnerabilities,
+  # and set to default on medium, low, and informational vulnerabilities
+  #
+  # Not default, allow, alert for critical or high severity
+  # Not allow/alert for medium/low/info severity
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: vulnerability_profile_object
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/vulnerability/entry
+      - name: vulnerability_profile_blockAll
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/vulnerability/entry
+          [rules/entry/severity/member='any' and count(rules/entry/action/alert)=0 and
+          count(rules/entry/action/default)=0 and count(rules/entry/action/allow)=0]/@name
+
+  - name: vulnerability_profile_blocking
+    label: |
+      6.7 Ensure a Vulnerability Protection Profile is set to block attacks against critical and high vulnerabilities,
+      and set to default on medium, low, and informational vulnerabilities
+    test: true
+    pass_message: Roadmap item to work through all of the rule configuration scenarios
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-a-vulnerability-protection-profile-is-set-to-block-attacks-against-critical-and-high-vulnerabilities
+      -and-set-to-default-on-medium-low-and-informational-vulnerabilities
+    severity:
+      - scored: true
+      - level: 1
+      - implemented: false
+      - action_required: true
+
+  # 6.8 Ensure a secure Vulnerability Protection Profile is applied to all security rules allowing traffic
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      # capture for security rules using named profiles instead of a profile group
+      - name: security_rules_without_vulnerability_profile
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry[action='allow' and count(profile-setting/profiles)>0 and count(vulnerability)=0]/@name
+      # capture for security rules using profile groups
+      - name: profile_groups_without_vulnerability
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profile-group/
+          entry[count(vulnerability)=0]/@name
+      - name: security_rules_with_group_without_vulnerability_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry[action='allow']
+        filter_items: item | element_value('profile-setting.group.member') in profile_groups_without_vulnerability
+      - name: security_rules_with_group_without_vulnerability_names
+        capture_expression: security_rules_with_group_without_vulnerability_object | map(attribute="entry.@name") | list
+
+  - name: vulnerability_profile_in_policies
+    label: 6.8 Ensure a secure Vulnerability Protection Profile is applied to all security rules allowing traffic
+    test: |-
+      (
+        security_rules_without_vulnerability_profile | length == 0
+        and security_rules_with_group_without_vulnerability_names | length == 0
+      )
+    fail_message: |-
+      security policies without Vulnerability profile:
+      Using explicit profile:
+      {{ security_rules_without_vulnerability_profile }}
+      Using profile group without a Vulnerability profile
+      {{ security_rules_with_group_without_vulnerability_names }}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-a-secure-vulnerability-protection-profile-is-applied-to-all-security-rules-allowing-traffic
+    severity:
+      - scored: true
+      - level: 1
+
+  # 6.9 Ensure that PAN-DB URL Filtering is used
+  # this is an operational command requiring API access to the device
+  - name: get_license_info
+    cmd: cli
+    # This cli command will return xml
+    cmd_str: request license info
+    output_type: xml
+    outputs:
+      - name: logging_service_URL
+        capture_value: ./entry/feature[text()="PAN-DB URL Filtering"]/../expired/text()
+
+  - name: pandb_url_filtering
+    label: 6.9 Ensure that PAN-DB URL Filtering is used
+    test: logging_service_URL == 'no'
+    fail_message: PAN-DB license is not used or inactive
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-that-pan-db-url-filtering-is-used
+    severity:
+      - scored: true
+      - level: 1
+
+  # 6.10 Ensure that URL Filtering uses the action of “block” or “override” on the URL categories
+  # TODO: requires user selection for 'categories of interest'
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: url_profiles_found
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/url-filtering
+          /entry/@name
+      - name: url_filtering_object
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/url-filtering/entry
+      - name: url_filtering_block_override
+        capture_variable: |-
+          {%- set profiles_block_override = dict() %}
+          {%- set actions = ['block', 'override'] %}
+          {%- for item in url_filtering_object %}
+            {%- set entry_dict = dict() %}
+            {%- for action in actions %}
+              {%- if item['entry'][action] %}
+                {%- set configured_categories = [] %}
+                {%- if item['entry'][action][1] %}
+                  {%- for category in item['entry'][action]['member'] %}
+                    {%- set _ = configured_categories.append(category) %}
+                  {%- endfor %}
+                {%- else %}
+                    {%-  set _ = configured_categories.append(item['entry'][action]['member']) %}
+                {%- endif %}
+                {%- if configured_categories | length %}
+                  {%- set _ = entry_dict.update({ action: configured_categories }) %}
+                {%- endif %}
+              {%- endif %}
+            {%- endfor %}
+            {%- set _ = profiles_block_override.update({ item['entry']['@name']: entry_dict }) %}
+          {%- endfor %}
+          {{ profiles_block_override | to_json }}
+
+  - name: url_filtering_block_or_override_test
+    label: 6.10 Ensure that URL Filtering uses the action of “block” or “override” on the URL categories
+    test: true
+    pass_message: |-
+      {%- if url_profiles_found %}
+      The following profiles are associated categories are found in the configuration.
+      Check company practices to validate that these align with 'categories of interest' for block/override
+      {{ url_filtering_block_override }}
+      {%- else %}
+      No URL filtering profiles are currently configured
+      {%- endif %}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-that-url-filtering-uses-the-action-of-block-or-override-on-the-url-categories
+    severity:
+      - scored: true
+      - level: 1
+      - action_required: true
+
+  # 6.11 Ensure that access to every URL is logged
+  - name: get_predefined_url_categories
+    cmd: op
+    cmd_str: <show><predefined><xpath>/predefined/pan-url-categories</xpath></predefined></show>
+    output_type: xml
+    outputs:
+      - name: predefined_url_categories
+        capture_list: /pan-url-categories/entry/@name
+
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: url_profiles_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/url-filtering/entry
+      - name: url_profile_categories_and_allow_actions
+        capture_variable: |-
+          {%- set bad_profile_categories = dict() %}
+          {%- for item in url_profiles_object %}
+            {%- set configured_categories = [] %}
+            {%- set missing_categories = [] %}
+            {%- for action in url_profile_actions %}
+              {%- if item['entry'][action] %}
+                {%- for category in item['entry'][action]['member'] %}
+                  {%- set _ = configured_categories.append(category) %}
+                {%- endfor %}
+              {%- endif %}
+            {%- endfor %}
+            {%- for category in predefined_url_categories %}
+              {%- if category not in configured_categories %}
+              {%- set _ = missing_categories.append(category) %}
+              {%- endif %}
+            {%- endfor %}
+            {%- if missing_categories | length %}
+              {%- set _ = bad_profile_categories.update({ item['entry']['@name']: missing_categories }) %}
+            {%- endif %}
+          {%- endfor %}
+          {{ bad_profile_categories | to_json }}
+
+  - name: url_filtering_log_all_categories
+    label: 6.11 Ensure that access to every URL is logged
+    test: url_profile_categories_and_allow_actions | from_json | length == 0
+    fail_message: |-
+      Profiles and respective categories causing benchmark to fail
+      {{ url_profile_categories_and_allow_actions }}
+    pass_message: |-
+      {%- if url_profiles_object %}
+      Benchmark criteria met
+      {%- else %}
+      No URL filtering profiles are currently configured
+      {%- endif %}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-that-access-to-every-url-is-logged
+    severity:
+      - scored: true
+      - level: 1
+
+  # 6.12 Ensure all HTTP Header Logging options are enabled
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: url_profiles_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/url-filtering/entry
+      - name: url_profiles_with_header_logging
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/url-filtering/
+          entry[log-http-hdr-user-agent='yes' and log-http-hdr-referer='yes'
+          and log-http-hdr-xff='yes']/@name
+      - name: url_profiles_without_header_logging
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/url-filtering/
+          entry/@name
+        filter_items: item not in url_profiles_with_header_logging
+
+  - name: url_filtering_http_header_logging
+    label: 6.12 Ensure all HTTP Header Logging options are enabled
+    test: url_profiles_without_header_logging | length == 0
+    fail_message: |-
+      Profiles without heading logging options enabled:
+      {{ url_profiles_without_header_logging }}
+    pass_message: |-
+      {%- if url_profiles_object %}
+      Benchmark criteria met
+      {%- else %}
+      No URL filtering profiles are currently configured
+      {%- endif %}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-all-http-header-logging-options-are-enabled
+    severity:
+      - scored: true
+      - level: 1
+
+  # 6.13 Ensure secure URL filtering is enabled for all security policies allowing traffic to the Internet
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      # capture for security rules using named profiles instead of a profile group
+      - name: security_rules_without_urlfiltering_profile
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry[action='allow' and count(profile-setting/profiles)>0 and count(url-filtering)=0]/@name
+      # capture for security rules using profile groups
+      - name: profile_groups_without_urlfiltering
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profile-group/
+          entry[count(url-filtering)=0]/@name
+      - name: security_rules_with_group_without_urlfiltering_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry[action='allow']
+        filter_items: item | element_value('profile-setting.group.member') in profile_groups_without_urlfiltering
+      - name: security_rules_with_group_without_urlfiltering_names
+        capture_expression: security_rules_with_group_without_urlfiltering_object | map(attribute="entry.@name") | list
+
+  - name: urlfiltering_profile_in_policies
+    label: 6.13 Ensure secure URL filtering is enabled for all security policies allowing traffic to the Internet
+    test: |-
+      (
+        security_rules_without_urlfiltering_profile | length == 0
+        and security_rules_with_group_without_urlfiltering_names | length == 0
+      )
+    fail_message: |-
+      security policies without URL Filtering profile:
+      Using explicit profile:
+      {{ security_rules_without_urlfiltering_profile }}
+      Using profile group without a URL Filtering profile
+      {{ security_rules_with_group_without_urlfiltering_names }}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-secure-url-filtering-is-enabled-for-all-security-policies-allowing-traffic-to-the-internet
+    severity:
+      - scored: true
+      - level: 1
+
+  # 6.14 Ensure alerting after a threshold of credit card or Social Security numbers is detected is enabled
+  # requires data input for specific pattern types so flagging as action required
+  # provide contextual data of configured data patterns
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: data_pattern_names_w_cc_ss
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/
+          data-objects/entry[pattern-type/predefined/pattern/entry/@name='credit-card-numbers' or
+          pattern-type/predefined/pattern/entry/@name='social-security-numbers']/@name
+      - name: data_filtering_profile_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/
+          data-filtering/entry
+        filter_items: item
+      - name: data_filtering_with_cc_or_ss
+        # iterate over all profiles and rules to see if a data-object matching a credit card or SS data patterns
+        capture_variable: |-
+          {%- set data_profiles = dict() %}
+          {%- for item in data_filtering_profile_object %}
+            {%- set entry_dict = dict() %}
+              {%- if item['entry']['rules']['entry'][1] %}
+                {%- for rule in item['entry']['rules']['entry'] %}
+                  {%- if rule['data-object'] in data_pattern_names_w_cc_ss %}
+                    {%- set _ = entry_dict.update({ 'data-pattern': rule['data-object'] }) %}
+                    {%- set _ = entry_dict.update({ 'alert-threshold': rule['alert-threshold'] }) %}
+                    {%- set _ = entry_dict.update({ 'block-threshold': rule['block-threshold'] }) %}
+                    {%- set _ = data_profiles.update({ item['entry']['@name']: entry_dict }) %}
+                  {%- endif %}
+                {%- endfor %}
+              {%- else %}
+                {%- if item['entry']['rules']['entry']['data-object'] in data_pattern_names_w_cc_ss %}
+                  {%- set _ = entry_dict.update({ data-pattern: item['entry']['rules']['entry']['data-object'] }) %}
+                  {%- set _ = entry_dict.update({ alert-threshold: item['entry']['rules']['entry']['alert-threshold'] }) %}
+                  {%- set _ = entry_dict.update({ block-threshold: item['entry']['rules']['entry']['block-threshold'] }) %}
+                  {%- set _ = data_profiles.update({ item['entry']['@name']: entry_dict }) %}
+                {%- endif %}
+              {%- endif %}
+          {%- endfor %}
+          {{ data_profiles }}
+
+  - name: data_filtering_cc_ss_numbers
+    label: 6.14 Ensure alerting after a threshold of credit card or Social Security numbers is detected is enabled
+    test: true
+    pass_message: |-
+      {%- if data_filtering_profile_object %}
+      Profiles found with a credit card or Social Security number predefined pattern
+      Includes alert and block thresholds that should be non-zero
+
+      {{ data_filtering_with_cc_or_ss }}
+      {%- else %}
+      No Data Filtering profiles are currently configured
+      {%- endif %}
+
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-alerting-after-a-threshold-of-credit-card-or-social-security-numbers-is-detected-is-enabled
+    severity:
+      - scored: true
+      - level: 1
+      - action_required: true
+
+  # 6.15 Ensure a secure Data Filtering profile is applied to all security policies allowing traffic to or from the Internet
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      # capture for security rules using named profiles instead of a profile group
+      - name: security_rules_without_datafiltering_profile
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry[action='allow' and count(profile-setting/profiles)>0 and count(data-filtering)=0]/@name
+      # capture for security rules using profile groups
+      - name: profile_groups_without_datafiltering
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profile-group/
+          entry[count(data-filtering)=0]/@name
+      - name: security_rules_with_group_without_datafiltering_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security
+          /rules/entry[action='allow']
+        filter_items: item | element_value('profile-setting.group.member') in profile_groups_without_datafiltering
+      - name: security_rules_with_group_without_datafiltering_names
+        capture_expression: security_rules_with_group_without_datafiltering_object | map(attribute="entry.@name") | list
+
+  - name: datafiltering_profile_in_policies
+    label: 6.15 Ensure a secure Data Filtering profile is applied to all security policies allowing traffic to or from the Internet
+    test: |-
+      (
+        security_rules_without_datafiltering_profile | length == 0
+        and security_rules_with_group_without_datafiltering_names | length == 0
+      )
+    fail_message: |-
+      security policies without Data Filtering profile:
+      Using explicit profile:
+      {{ security_rules_without_datafiltering_profile }}
+      Using profile group without a Data Filtering profile
+      {{ security_rules_with_group_without_datafiltering_names }}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-a-secure-data-filtering-profile-is-applied-to-all-security-policies-allowing-
+      traffic-to-or-from-the-internet
+    severity:
+      - scored: true
+      - level: 1
+
+  # 6.16 Ensure that a Zone Protection Profile with an enabled SYN Flood Action of SYN Cookies is attached to all untrusted zones
+  # This still requires manual action to determine untrusted zones and volumetric settings for each profile
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: zone_protect_profiles_configured
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/network/profiles/zone-protection-profile/entry/@name
+      - name: zone_protect_profile_syn_flood_cookies
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/network/profiles/zone-protection-profile/entry
+          [flood/tcp-syn/enable='yes' and count(flood/tcp-syn/syn-cookies)]/@name
+      - name: zones_with_syn_flooding_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/zone/entry
+        filter_items: |-
+          item | element_value('network.zone-protection-profile') in zone_protect_profile_syn_flood_cookies
+      - name: zones_with_syn_flooding_names
+        capture_expression: zones_with_syn_flooding_object | map(attribute="entry.@name") | list
+
+  - name: zone_protect_syn_flood
+    label: 6.16 Ensure that a Zone Protection Profile with an enabled SYN Flood Action of SYN Cookies is attached to all untrusted zones
+    test: true
+    pass_message: |-
+      {%- if zone_protect_profiles_configured %}
+      This test is not fully implemented in this release without discovery of device type and untrusted zones.
+
+      The following zones are configured with a zone protection profile having SYN Flood Action of SYN Cookies:
+      {{ zones_with_syn_flooding_names }}
+
+      Verify that all untrusted zones are included in this list
+      {%- else %}
+      No Zone Protect Profiles are currently configured
+      {%- endif %}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-that-a-zone-protection-profile-with-an-enabled-syn-flood-action-of-syn-cookies-is-attached-to-
+      all-untrusted-zones
+    severity:
+      - scored: true
+      - level: 1
+      - implemented: false
+      - action_required: true
+
+  # 6.17 Ensure that a Zone Protection Profile with tuned Flood Protection settings enabled for all flood types is attached to all untrusted zones
+  # partial implementation without ability to check untrust zone names
+  # users should validate threshold settings for each zone protect profile using flood protections
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: zone_protect_profiles_configured
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/network/profiles/zone-protection-profile/entry/@name
+      - name: zone_protect_profile_all_flooding_enabled
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/network/profiles/zone-protection-profile/entry
+          [flood/tcp-syn/enable='yes' and flood/udp/enable='yes' and flood/icmp/enable='yes'
+          and flood/icmpv6/enable='yes' and flood/other-ip/enable='yes']/@name
+      - name: zones_with_all_flooding_object
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/zone/entry
+        filter_items: |-
+          item | element_value('network.zone-protection-profile') in zone_protect_profile_all_flooding_enabled
+      - name: zones_with_all_flooding_names
+        capture_expression: zones_with_all_flooding_object | map(attribute="entry.@name") | list
+
+  - name: zone_protect_flood_protect
+    label: |-
+      6.17 Ensure that a Zone Protection Profile with tuned Flood Protection settings enabled
+      for all flood types is attached to all untrusted zones
+    test: true
+    pass_message: |-
+      {%- if zone_protect_profiles_configured %}
+      This test is not fully implemented in this release without discovery of device type and untrusted zones.
+
+      The following zones are configured with a zone protection profile having all flood protection enabled:
+      {{ zones_with_all_flooding_names }}
+
+      Verify that all untrusted zones are included in this list
+      {%- else %}
+      No Zone Protect Profiles are currently configured
+      {%- endif %}
+
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-that-a-zone-protection-profile-with-tuned-flood-protection-settings-enabled-for-all-flood-types-
+      is-attached-to-all-untrusted-zones
+    severity:
+      - scored: true
+      - level: 2
+      - implemented: false
+      - action_required: true
+
+  # 6.18 Ensure that all zones have Zone Protection Profiles with all Reconnaissance Protection settings enabled,
+  # tuned, and set to appropriate actions
+  # checking all reconn types are enabled and applied to zones
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: zone_protect_profile_reconn_enabled
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/network/profiles/zone-protection-profile/entry
+          [scan/entry/@name='8001' and scan/entry/@name='8002' and scan/entry/@name='8003']/@name
+      - name: zones_with_reconn_enabled_object
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/zone/entry
+        filter_items: |-
+          item | element_value('network.zone-protection-profile') in zone_protect_profile_reconn_enabled
+      - name: zones_with_reconn_enabled_names
+        capture_expression: zones_with_reconn_enabled_object | map(attribute="entry.@name") | list
+      - name: zones_without_reconn_enabled
+        capture_list: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/zone/entry/@name
+        filter_items: item not in zones_with_reconn_enabled_names
+
+  - name: zone_protection_reconn_protect
+    label: |-
+      6.18 Ensure that all zones have Zone Protection Profiles with all Reconnaissance Protection settings enabled,
+      tuned, and set to appropriate actions
+    test: |-
+      (
+        zone_protect_profile_reconn_enabled | length
+        and zones_without_reconn_enabled | length == 0
+      )
+    fail_message: |-
+      {%- if zone_protect_profile_reconn_enabled | length == 0 %}
+      No zone protection profiles were found with all Reconnaissance Protection settings enabled
+      {% endif %}
+      {%- if zones_without_pkt_attack_enabled | length %}
+      The following are either configured without a zone protect profile or the associated profile
+      is not configured with reconn settings enabled:
+
+      {{ zones_without_reconn_enabled }}
+      {%- endif %}
+    pass_message: |-
+      This test has verified zones with zone protection profiles using reconn are configured.
+      It is still recommended that all thresholds are tuned accordingly
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-that-all-zones-have-zone-protection-profiles-with-all-reconnaissance-protection-settings-
+      enabled-tuned-and-set-to-appropriate-actions
+    severity:
+      - scored: true
+      - level: 1
+
+  # 6.19 Ensure all zones have Zone Protection Profiles that drop specially crafted packets
+  # test checks for all zones having a zone protect profile with recommended settings enabled
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: zone_protect_profile_pkt_attack_enabled
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/network/profiles/zone-protection-profile/entry
+          [discard-ip-spoof='yes' and discard-strict-source-routing='yes' and
+          discard-loose-source-routing='yes' and discard-malformed-option='yes' and
+          discard-overlapping-tcp-segment-mismatch='yes']/@name
+      - name: zones_with_pkt_attack_enabled_object
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/zone/entry
+        filter_items: |-
+          item | element_value('network.zone-protection-profile') in zone_protect_profile_pkt_attack_enabled
+      - name: zones_with_pkt_attack_enabled_names
+        capture_expression: zones_with_pkt_attack_enabled_object | map(attribute="entry.@name") | list
+      - name: zones_without_pkt_attack_enabled
+        capture_list: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/zone/entry/@name
+        filter_items: item not in zones_with_pkt_attack_enabled_names
+
+  - name: zone_protect_crafted_pkts
+    label: 6.19 Ensure all zones have Zone Protection Profiles that drop specially crafted packets
+    test: |-
+      (
+        zone_protect_profile_pkt_attack_enabled | length
+        and zones_without_pkt_attack_enabled | length == 0
+      )
+    fail_message: |-
+      {%- if zone_protect_profile_pkt_attack_enabled | length == 0 %}
+      No zone protection profiles were found to drop specially crafted packets
+      {% endif %}
+      {%- if zones_without_pkt_attack_enabled | length %}
+      The following are either configured without a zone protect profile or the associated profile
+      is not configured with reconn settings enabled:
+
+      {{ zones_without_pkt_attack_enabled }}
+      {%- endif %}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-all-zones-have-zone-protection-profiles-that-drop-specially-crafted-packets
+    severity:
+      - scored: true
+      - level: 1
+
+  # 6.20 Ensure that User Credential Submission uses the action of “block” or “continue” on the URL categories
+
+  - name: get_predefined_url_categories
+    cmd: op
+    cmd_str: <show><predefined><xpath>/predefined/pan-url-categories</xpath></predefined></show>
+    output_type: xml
+    outputs:
+      - name: predefined_url_categories
+        capture_list: /pan-url-categories/entry/@name
+
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: url_filtering_profiles
+        capture_list: /config/devices/entry[@name='localhost.localdomain']/vsys/entry/profiles/url-filtering/entry
+      - name: url_filter_credential_submission
+        capture_json: |-
+          {%- set output = {'valid': True, 'profiles': {}} %}
+          {%- for profile in url_filtering_profiles %}
+
+            {# Create a list of dicts that specify profile validity #}
+            {%- set profile_name = profile['entry']['@name'] %}
+            {%- set _ = output['profiles'].update({profile_name: {'valid': True}}) %}
+
+            {# If a category is not accounted for, profile is invalid #}
+            {%- for category in predefined_url_categories %}
+              {%-
+                if category not in profile['entry']['credential-enforcement'].get('continue', {'member': []})['member']
+                and category not in profile['entry']['credential-enforcement'].get('block', {'membmer': []})['member']
+              %}
+                {%- set _ = output['profiles'][profile_name].update({'valid': False}) %}
+                {%- set _ = output.update({'valid': False}) %}
+              {%- endif %}
+            {%- endfor %}
+
+            {# Test per category parameters #}
+            {%-
+              if 'allow' in profile['entry']['credential-enforcement']
+              or 'alert' in profile['entry']['credential-enforcement']
+            %}
+                {%- set _ = output['profiles'][profile_name].update({'valid': False}) %}
+                {%- set _ = output.update({'valid': False}) %}
+            {%- endif %}
+
+          {%- endfor %}
+          {{ output | to_json }}
+
+  - name: user_cred_block_continue
+    label: 6.20 Ensure that User Credential Submission uses the action of “block” or “continue” on the URL categories
+    test: url_filter_credential_submission.valid
+    fail_message: |-
+      Profiles with invalid User Credential Submission action:
+      {%- for profile in url_filter_credential_submission.profiles %}
+      {% if not url_filter_credential_submission.profiles[profile].valid %}
+        {{ profile }}
+      {% endif %}{% endfor %}
+    pass_message: |-
+      {%- if url_filtering_profiles %}
+      Benchmark criteria satisfied
+      {%- else %}
+      No configured URL Filtering profiles found
+      {%- endif %}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-that-user-credential-submission-uses-the-action-of-block-or-continue-on-the-url-categories
+    severity:
+      - scored: true
+      - level: 1
+
+  # 7.1 Ensure application security policies exist when allowing traffic from an untrusted zone to a more trusted zone
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: any_any_policies
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry/rulebase/security/rules/entry
+          [application/member="any" and service/member="application-default" and action="allow" and not (disabled="yes")]
+      - name: port_specific_policies 
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry/rulebase/security/rules/entry
+          [application/member="any" and not(service/member="application-default") and action="allow" and not(disabled="yes")]
+      - name: any_any_policies_names
+        capture_expression: any_any_policies | map(attribute="entry.@name") | list
+      - name: port_specific_policies_names
+        capture_expression: port_specific_policies | map(attribute="entry.@name") | list
+
+  - name: app_security_more_trusted_zone
+    label: 7.1 Ensure application security policies exist when allowing traffic from an untrusted zone to a more trusted zone
+    test: |-
+      (
+        not any_any_policies
+        and not port_specific_policies
+      )
+    fail_message: |-
+      {% if any_any_policies_names %} The following policies permit all applications on all ports, {% for pol in any_any_policies_names %}"{{ pol }}" {% endfor %}{% endif %}
+      {% if port_specific_policies_names %} The following policies only filter based on port, {% for pol in port_specific_policies_names %}"{{ pol }}" {% endfor %}{% endif %}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-application-security-policies-exist-when-allowing-traffic-from-an-untrusted-zone-to-a-more-trusted-zone
+    severity:
+      - scored: true
+      - level: 1,2
+
+  # 7.2 Ensure 'Service setting of ANY' in a security policy allowing traffic does not exist
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: service_any_policies
+        capture_list: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry/rulebase/security/rules/entry
+          [service/member="any" and action="allow" and not(disabled="yes")]
+      - name: service_any_policies_names
+        capture_expression: service_any_policies | map(attribute="entry.@name") | list
+
+  - name: service_any_not_allowed_in_policy
+    label: 7.2 Ensure 'Service setting of ANY' in a security policy allowing traffic does not exist
+    test: not service_any_policies
+    fail_message: The following policies have a service of 'any' configured, {% for pol in service_any_policies_names %}"{{ pol }}" {% endfor %}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-service-setting-of-any-in-a-security-policy-allowing-traffic-does-not-exist
+    severity:
+      - scored: true
+      - level: 1
+
+  # 7.3 Ensure 'Security Policy' denying any/all traffic to/from IP addresses on Trusted Threat Intelligence Sources Exists
+  - name: get_license_info
+    cmd: cli
+    cmd_str: request license info
+    output_type: xml
+    outputs:
+      - name: threat_prevention
+        capture_value: ./entry[feature="Threat Prevention" and not(expired="yes")]
+
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: threat_prevention_inbound_policy
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry/rulebase/security/rules/entry
+          [
+          position() < 3
+          and action="deny"
+          and from/member="any"
+          and to/member="any"
+          and destination/member="any"
+          and source/member="panw-known-ip-list"
+          and application/member="any"
+          and service/member="any"
+          and not(disabled="yes")
+          ]
+      - name: threat_prevention_outbound_policy
+        capture_object: |-
+          /config/devices/entry[@name='localhost.localdomain']/vsys/entry/rulebase/security/rules/entry
+          [
+          position() < 3
+          and action="deny"
+          and from/member="any"
+          and to/member="any"
+          and destination/member="panw-known-ip-list"
+          and source/member="any"
+          and application/member="any"
+          and service/member="any"
+          and not(disabled="yes")
+          ]
+
+  - name: security_policy_deny_threat_ips
+    label: 7.3 Ensure 'Security Policy' denying any/all traffic to/from IP addresses on Trusted Threat Intelligence Sources Exists
+    test: |-
+      (
+        threat_prevention_inbound_policy
+        and threat_prevention_outbound_policy
+        and threat_prevention
+      )
+    fail_message: |-
+      {%- if not threat_prevention_inbound_policy %}
+      Known malicious IP's must be blocked inbound at top of security policy for any applications on any services on any zones.
+      {%- endif %}
+      {% if not threat_prevention_outbound_policy %}
+      Known malicious IP's must be blocked outbound at top of security policy for any applications on any services on any zones.
+      {% endif %}
+      {% if not threat_prevention %}
+      Feature license "Threat Prevention" missing or expired
+      {% endif %}
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-security-policy-denying-any-all-traffic-to-from-ip-addresses-on-trusted-threat-intelligence-sources-exists
+    severity:
+      - scored: true
+      - level: 1
+
+  # 8.1 Ensure 'SSL Forward Proxy Policy' for traffic destined to the Internet is configured
+  # TODO: need user input of internet zones to check as destination in decrypt policies
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: device_setting
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+
+  - name: ssl_forward_proxy_policy
+    label: 8.1 Ensure 'SSL Forward Proxy Policy' for traffic destined to the Internet is configured
+    test: true
+    pass_message: This is a roadmap item requiring user input for Internet destined zones and traffic
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-ssl-forward-proxy-policy-for-traffic-destined-to-the-internet-is-configured
+    severity:
+      - scored: true
+      - level: 1
+      - implemented: false
+      - action_required: true
+
+  # 8.2 Ensure 'SSL Inbound Inspection' is required for all untrusted traffic destined for servers using SSL or TLS
+  # future consideration to get user input and validate accordingly
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: device_setting
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+
+  - name: ssl_inbound_inspection
+    label: 8.2 Ensure 'SSL Inbound Inspection' is required for all untrusted traffic destined for servers using SSL or TLS
+    test: true
+    pass_message: Not implemented in the initial release. Requires user input for Inbound Inspection requirements.
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-ssl-inbound-inspection-is-required-for-all-untrusted-traffic-destined-for-servers-using-ssl-or-tls
+    severity:
+      - scored: true
+      - level: 1
+      - implemented: false
+      - action_required: true
+
+  # 8.3 Ensure that the Certificate used for Decryption is Trusted
+  # cert inspections for future investigation
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: device_setting
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+
+  - name: decrypt_cert_trusted
+    label: 8.3 Ensure that the Certificate used for Decryption is Trusted
+    test: true
+    pass_message: Not part of initial release. Roadmap item to investigate certificate assessment.
+    documentation_link: |-
+      https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+      ensure-that-the-certificate-used-for-decryption-is-trusted
+    severity:
+      - scored: false
+      - level: 1, 2
+      - implemented: false
+      - action_required: true
