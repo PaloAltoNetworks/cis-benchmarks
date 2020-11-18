@@ -108,7 +108,7 @@ snippets:
       {{ logtypes_without_syslog }}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#syslog-logging-should-be-configured
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -157,7 +157,7 @@ snippets:
       {{ logtypes_without_snmp }}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#snmpv3-traps-should-be-configured
-    severity:
+    meta:
       - scored: true
       - level: 2
 
@@ -174,7 +174,7 @@ snippets:
     test: login_banner | tag_present('login-banner')
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-login-banner-is-set
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -191,7 +191,7 @@ snippets:
     test: device_setting | element_value('management.enable-log-high-dp-load') == 'yes'
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-enable-log-on-high-dp-load-is-enabled
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -211,7 +211,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-permitted-ip-addresses-is-set-to-those-necessary-for-device-management
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -255,7 +255,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-permitted-ip-addresses-is-set-for-all-management-profiles-where-ssh-https-or-snmp-is-enabled
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -289,7 +289,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-http-and-telnet-options-are-disabled-for-the-management-interface
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -325,7 +325,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-http-and-telnet-options-are-disabled-for-all-management-profiles
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -344,7 +344,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-valid-certificate-is-set-for-browser-based-administrator-interface
-    severity:
+    meta:
       - scored: false
       - level: 2
       - implemented: false
@@ -365,7 +365,7 @@ snippets:
     pass_message: Minimum Password Complexity is enabled
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-minimum-password-complexity-is-enabled
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -385,7 +385,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-minimum-length-is-greater-than-or-equal-to-12
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -405,7 +405,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-minimum-uppercase-letters-is-greater-than-or-equal-to-1
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -425,7 +425,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-minimum-lowercase-letters-is-greater-than-or-equal-to-1
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -445,7 +445,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-minimum-numeric-letters-is-greater-than-or-equal-to-1
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -465,7 +465,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-minimum-special-characters-is-greater-than-or-equal-to-1
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -490,7 +490,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-required-password-change-period-is-less-than-or-equal-to-90-days
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -510,7 +510,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-new-password-differs-by-characters-is-greater-than-or-equal-to-3
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -530,7 +530,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-prevent-password-reuse-limit-is-set-to-24-or-more-passwords
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -551,7 +551,7 @@ snippets:
     pass_message: benchmark requirements are met. No password profiles configured.
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-password-profiles-do-not-exist
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -577,7 +577,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-idle-timeout-is-less-than-or-equal-to-10-minutes-for-device-management
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -616,7 +616,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-failed-attempts-and-lockout-time-for-authentication-profile-are-properly-configured
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -636,7 +636,7 @@ snippets:
     pass_message: V3 is selected for SNMP polling
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-v3-is-selected-for-snmp-polling
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -656,7 +656,7 @@ snippets:
     pass_message: Verify Update Server Idenity is enabled
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-verify-update-server-identity-is-enabled
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -681,7 +681,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-redundant-ntp-servers-are-configured-appropriately
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -700,7 +700,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-the-certificate-securing-remote-access-vpns-is-valid
-    severity:
+    meta:
       - scored: false
       - level: 1,2
       - implemented: false
@@ -723,7 +723,7 @@ snippets:
       Review the Audit and Remediation content in the CIS Benchmark document for more information.
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-that-ip-addresses-are-mapped-to-usernames
-    severity:
+    meta:
       - scored: true
       - level: 2
       - implemented: false
@@ -746,14 +746,14 @@ snippets:
     pass_message: WMI probing is disabled
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-that-wmi-probing-is-disabled
-    severity:
+    meta:
       - scored: true
       - level: 2
 
   # 2.3 Ensure that User-ID is only enabled for internal trusted interfaces
   # depends on sources variable cis_internal_zones to determine internal zones
   # otherwise this variable will be empty and all zones used causing a benchmark fail
-  - name: device_config_file
+  - name: capture_userid_enabled_zones
     cmd: parse
     variable: config
     outputs:
@@ -779,12 +779,12 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-user-id-is-only-enabled-for-internal-trusted-interfaces
-    severity:
+    meta:
       - scored: true
       - level: 1
 
   # 2.4 Ensure that 'Include/Exclude Networks' is used if User-ID is enabled
-  - name: device_config_file
+  - name: capture_userid_include_exclude_networks
     cmd: parse
     variable: config
     outputs:
@@ -800,7 +800,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-include-exclude-networks-is-used-if-user-id-is-enabled
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -813,7 +813,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-the-user-id-agent-has-minimal-permissions-if-user-id-is-enabled
-    severity:
+    meta:
       - scored: true
       - level: 1
       - implemented: false
@@ -827,7 +827,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-the-user-id-service-account-does-not-have-interactive-logon-rights
-    severity:
+    meta:
       - scored: true
       - level: 1
       - implemented: false
@@ -841,14 +841,14 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-remote-access-capabilities-for-the-user-id-service-account-are-forbidden
-    severity:
+    meta:
       - scored: false
       - level: 1
       - implemented: false
       - action_requirerd: true
 
   # 2.8 Ensure that security policies restrict User-ID Agent traffic from crossing into untrusted zones
-  - name: device_config_file
+  - name: capture_userid_security_policies
     cmd: parse
     variable: config
     outputs:
@@ -862,7 +862,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-security-policies-restrict-user-id-agent-traffic-from-crossing-into-untrusted-zones
-    severity:
+    meta:
       - scored: true
       - level: 1
       - implemented: false
@@ -883,7 +883,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-a-fully-synchronized-high-availability-peer-is-configured
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -954,7 +954,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-high-availability-requires-link-monitoring-and-or-path-monitoring
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -983,7 +983,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-passive-link-state-and-preemptive-are-configured-appropriately
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -1015,7 +1015,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-antivirus-update-schedule-is-set-to-download-and-install-updates-hourly
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -1052,12 +1052,12 @@ snippets:
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-applications-and-threats-update-schedule-is-set-to-download-and-install-updates-at-daily
       -or-shorter-intervals
-    severity:
+    meta:
       - scored: true
       - level: 1
 
   # 5.1 Ensure that WildFire file size upload limits are maximized
-  - name: wf_size_testing
+  - name: capture_wf_size_testing
     cmd: parse
     variable: config
     outputs:
@@ -1085,13 +1085,13 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-wildfire-file-size-upload-limits-are-maximized
-    severity:
+    meta:
       - scored: true
       - level: 1
 
   # 5.2 Ensure forwarding is enabled for all applications and file types in WildFire file blocking profiles
   # inspecting the WF analysis profile and not the file blocking profile
-  - name: device_config_file
+  - name: capture_wildfire_profile_settings
     cmd: parse
     variable: config
     outputs:
@@ -1112,13 +1112,13 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-forwarding-is-enabled-for-all-applications-and-file-types-in-wildfire-file-blocking-profiles
-    severity:
+    meta:
       - scored: true
       - level: 1
       - action_required: true
 
   # 5.3 Ensure a WildFire Analysis profile is enabled for all security policies
-  - name: device_config_file
+  - name: capture_wildfire_profile_policies
     cmd: parse
     variable: config
     outputs:
@@ -1156,12 +1156,12 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-a-wildfire-analysis-profile-is-enabled-for-all-security-policies
-    severity:
+    meta:
       - scored: true
       - level: 1
 
   # 5.4 Ensure forwarding of decrypted content to WildFire is enabled
-  - name: device_config_file
+  - name: capture_wildfire_allow_forwarding_decrypted_content
     cmd: parse
     variable: config
     outputs:
@@ -1177,12 +1177,12 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-forwarding-of-decrypted-content-to-wildfire-is-enabled
-    severity:
+    meta:
       - scored: true
       - level: 1
 
   # 5.5 Ensure all WildFire session information settings are enabled
-  - name: device_config_file
+  - name: capture_wildfire_session_settings
     cmd: parse
     variable: config
     outputs:
@@ -1204,12 +1204,12 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-all-wildfire-session-information-settings-are-enabled
-    severity:
+    meta:
       - scored: true
       - level: 1
 
   # 5.6 Ensure alerts are enabled for malicious files detected by WildFire
-  - name: device_config_file
+  - name: capture_wildfire_alerts
     cmd: parse
     variable: config
     outputs:
@@ -1226,12 +1226,12 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-alerts-are-enabled-for-malicious-files-detected-by-wildfire
-    severity:
+    meta:
       - scored: true
       - level: 1
 
   # 5.7 Ensure 'WildFire Update Schedule' is set to download and install updates every minute
-  - name: device_config_file
+  - name: capture_wildfire_update_schedule
     cmd: parse
     variable: config
     outputs:
@@ -1247,12 +1247,12 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-wildfire-update-schedule-is-set-to-download-and-install-updates-every-minute
-    severity:
+    meta:
       - scored: true
       - level: 1
 
   # 6.1 Ensure that antivirus profiles are set to block on all decoders except 'imap' and 'pop3'
-  - name: device_config_file
+  - name: capture_av_profile_action_settings
     cmd: parse
     variable: config
     outputs:
@@ -1279,12 +1279,12 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-antivirus-profiles-are-set-to-block-on-all-decoders-except-imap-and-pop3
-    severity:
+    meta:
       - scored: true
       - level: 1
 
   # 6.2 Ensure a secure antivirus profile is applied to all relevant security policies
-  - name: device_config_file
+  - name: capture_av_profile_in_policies
     cmd: parse
     variable: config
     outputs:
@@ -1332,12 +1332,12 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-a-secure-antivirus-profile-is-applied-to-all-relevant-security-policies
-    severity:
+    meta:
       - scored: true
       - level: 1
 
   # 6.3 Ensure an anti-spyware profile is configured to block on all spyware severity levels, categories, and threats
-  - name: device_config_file
+  - name: capture_anti-spyware_profile_settings
     cmd: parse
     variable: config
     outputs:
@@ -1382,13 +1382,13 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-an-anti-spyware-profile-is-configured-to-block-on-all-spyware-severity-levels-categories-and-threats
-    severity:
+    meta:
       - scored: true
       - level: 1
 
   # 6.4 Ensure DNS sinkholing is configured on all anti-spyware profiles in use
   # PAN-OS 9.0 version - does not include the 10.0 DNS categories element
-  - name: device_config_file
+  - name: capture_dns_sinkhole_configuration
     cmd: parse
     variable: config
     outputs:
@@ -1436,14 +1436,14 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-dns-sinkholing-is-configured-on-all-anti-spyware-profiles-in-use
-    severity:
+    meta:
       - scored: true
       - level: 1
 
   # 6.5 Ensure passive DNS monitoring is set to enabled on all anti-spyware profiles in use
   # this moved to a telemetry configuration option in 9.x
   # passive DNS and telemetry configuration will change in PAN-OS 10.0
-  - name: device_config_file
+  - name: capture_passive_dns_monitoring
     cmd: parse
     variable: config
     outputs:
@@ -1469,12 +1469,12 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-passive-dns-monitoring-is-set-to-enabled-on-all-anti-spyware-profiles-in-use
-    severity:
+    meta:
       - scored: true
       - level: 1
 
   # 6.6 Ensure a secure anti-spyware profile is applied to all security policies permitting traffic to the Internet
-  - name: device_config_file
+  - name: capture_antispyware_profiles_in_policies
     cmd: parse
     variable: config
     outputs:
@@ -1512,7 +1512,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-a-secure-anti-spyware-profile-is-applied-to-all-security-policies-permitting-traffic-to-the-internet
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -1521,7 +1521,7 @@ snippets:
   #
   # Not default, allow, alert for critical or high severity
   # Not allow/alert for medium/low/info severity
-  - name: device_config_file
+  - name: capture_vulnerability_profile_rules
     cmd: parse
     variable: config
     outputs:
@@ -1544,14 +1544,14 @@ snippets:
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-a-vulnerability-protection-profile-is-set-to-block-attacks-against-critical-and-high-vulnerabilities
       -and-set-to-default-on-medium-low-and-informational-vulnerabilities
-    severity:
+    meta:
       - scored: true
       - level: 1
       - implemented: false
       - action_required: true
 
   # 6.8 Ensure a secure Vulnerability Protection Profile is applied to all security rules allowing traffic
-  - name: device_config_file
+  - name: capture_vulnerability_profile_policies
     cmd: parse
     variable: config
     outputs:
@@ -1589,13 +1589,13 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-a-secure-vulnerability-protection-profile-is-applied-to-all-security-rules-allowing-traffic
-    severity:
+    meta:
       - scored: true
       - level: 1
 
   # 6.9 Ensure that PAN-DB URL Filtering is used
   # this is an operational command requiring API access to the device
-  - name: get_license_info
+  - name: capture_url_license_info
     cmd: cli
     # This cli command will return xml
     cmd_str: request license info
@@ -1610,13 +1610,13 @@ snippets:
     fail_message: PAN-DB license is not used or inactive
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-that-pan-db-url-filtering-is-used
-    severity:
+    meta:
       - scored: true
       - level: 1
 
   # 6.10 Ensure that URL Filtering uses the action of “block” or “override” on the URL categories
   # TODO: requires user selection for 'categories of interest'
-  - name: device_config_file
+  - name: capture_url_filtering_block_override
     cmd: parse
     variable: config
     outputs:
@@ -1666,13 +1666,13 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-url-filtering-uses-the-action-of-block-or-override-on-the-url-categories
-    severity:
+    meta:
       - scored: true
       - level: 1
       - action_required: true
 
   # 6.11 Ensure that access to every URL is logged
-  - name: get_predefined_url_categories
+  - name: capture_predefined_url_categories
     cmd: op
     cmd_str: <show><predefined><xpath>/predefined/pan-url-categories</xpath></predefined></show>
     output_type: xml
@@ -1680,7 +1680,7 @@ snippets:
       - name: predefined_url_categories
         capture_list: /pan-url-categories/entry/@name
 
-  - name: device_config_file
+  - name: capture_url_category_actions
     cmd: parse
     variable: config
     outputs:
@@ -1725,12 +1725,12 @@ snippets:
       {%- endif %}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-that-access-to-every-url-is-logged
-    severity:
+    meta:
       - scored: true
       - level: 1
 
   # 6.12 Ensure all HTTP Header Logging options are enabled
-  - name: device_config_file
+  - name: capture_http_header_logging_options
     cmd: parse
     variable: config
     outputs:
@@ -1762,12 +1762,12 @@ snippets:
       {%- endif %}
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-all-http-header-logging-options-are-enabled
-    severity:
+    meta:
       - scored: true
       - level: 1
 
   # 6.13 Ensure secure URL filtering is enabled for all security policies allowing traffic to the Internet
-  - name: device_config_file
+  - name: capture_url_filtering_in_policies
     cmd: parse
     variable: config
     outputs:
@@ -1805,7 +1805,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-secure-url-filtering-is-enabled-for-all-security-policies-allowing-traffic-to-the-internet
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -1868,7 +1868,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-alerting-after-a-threshold-of-credit-card-or-social-security-numbers-is-detected-is-enabled
-    severity:
+    meta:
       - scored: true
       - level: 1
       - action_required: true
@@ -1913,7 +1913,7 @@ snippets:
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-a-secure-data-filtering-profile-is-applied-to-all-security-policies-allowing-
       traffic-to-or-from-the-internet
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -1956,7 +1956,7 @@ snippets:
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-a-zone-protection-profile-with-an-enabled-syn-flood-action-of-syn-cookies-is-attached-to-
       all-untrusted-zones
-    severity:
+    meta:
       - scored: true
       - level: 1
       - implemented: false
@@ -2006,7 +2006,7 @@ snippets:
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-a-zone-protection-profile-with-tuned-flood-protection-settings-enabled-for-all-flood-types-
       is-attached-to-all-untrusted-zones
-    severity:
+    meta:
       - scored: true
       - level: 2
       - implemented: false
@@ -2060,7 +2060,7 @@ snippets:
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-all-zones-have-zone-protection-profiles-with-all-reconnaissance-protection-settings-
       enabled-tuned-and-set-to-appropriate-actions
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -2107,13 +2107,13 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-all-zones-have-zone-protection-profiles-that-drop-specially-crafted-packets
-    severity:
+    meta:
       - scored: true
       - level: 1
 
   # 6.20 Ensure that User Credential Submission uses the action of “block” or “continue” on the URL categories
 
-  - name: get_predefined_url_categories
+  - name: capture_predefined_url_categories
     cmd: op
     cmd_str: <show><predefined><xpath>/predefined/pan-url-categories</xpath></predefined></show>
     output_type: xml
@@ -2121,7 +2121,7 @@ snippets:
       - name: predefined_url_categories
         capture_list: /pan-url-categories/entry/@name
 
-  - name: device_config_file
+  - name: capture_url_filtering_user_credential
     cmd: parse
     variable: config
     outputs:
@@ -2177,12 +2177,12 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-user-credential-submission-uses-the-action-of-block-or-continue-on-the-url-categories
-    severity:
+    meta:
       - scored: true
       - level: 1
 
   # 7.1 Ensure application security policies exist when allowing traffic from an untrusted zone to a more trusted zone
-  - name: device_config_file
+  - name: capture_app_security_in_policies
     cmd: parse
     variable: config
     outputs:
@@ -2212,12 +2212,12 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-application-security-policies-exist-when-allowing-traffic-from-an-untrusted-zone-to-a-more-trusted-zone
-    severity:
+    meta:
       - scored: true
       - level: 1,2
 
   # 7.2 Ensure 'Service setting of ANY' in a security policy allowing traffic does not exist
-  - name: device_config_file
+  - name: capture_security_policy_any_service
     cmd: parse
     variable: config
     outputs:
@@ -2235,12 +2235,12 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-service-setting-of-any-in-a-security-policy-allowing-traffic-does-not-exist
-    severity:
+    meta:
       - scored: true
       - level: 1
 
   # 7.3 Ensure 'Security Policy' denying any/all traffic to/from IP addresses on Trusted Threat Intelligence Sources Exists
-  - name: get_license_info
+  - name: capture_license_info
     cmd: cli
     cmd_str: request license info
     output_type: xml
@@ -2248,7 +2248,7 @@ snippets:
       - name: threat_prevention
         capture_value: ./entry[feature="Threat Prevention" and not(expired="yes")]
 
-  - name: device_config_file
+  - name: capture_security_policy_settings
     cmd: parse
     variable: config
     outputs:
@@ -2302,7 +2302,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-security-policy-denying-any-all-traffic-to-from-ip-addresses-on-trusted-threat-intelligence-sources-exists
-    severity:
+    meta:
       - scored: true
       - level: 1
 
@@ -2322,7 +2322,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-ssl-forward-proxy-policy-for-traffic-destined-to-the-internet-is-configured
-    severity:
+    meta:
       - scored: true
       - level: 1
       - implemented: false
@@ -2344,7 +2344,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-ssl-inbound-inspection-is-required-for-all-untrusted-traffic-destined-for-servers-using-ssl-or-tls
-    severity:
+    meta:
       - scored: true
       - level: 1
       - implemented: false
@@ -2366,7 +2366,7 @@ snippets:
     documentation_link: |-
       https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
       ensure-that-the-certificate-used-for-decryption-is-trusted
-    severity:
+    meta:
       - scored: false
       - level: 1, 2
       - implemented: false
