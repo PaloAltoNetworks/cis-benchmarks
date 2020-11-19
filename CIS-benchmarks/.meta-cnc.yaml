@@ -65,7 +65,7 @@ snippets:
 
   # 1.1.1.1 Syslog logging should be configured
   # TODO: future update to include Panorama/CDL option in the checks
-  - name: device_config_file
+  - name: capture_logging_syslog
     cmd: parse
     variable: config
     outputs:
@@ -114,7 +114,7 @@ snippets:
 
   # 1.1.1.2 SNMPv3 traps should be configured
   # TODO: future update to include Panorama/CDL option in the checks
-  - name: device_config_file
+  - name: capture_logging_snmp
     cmd: parse
     variable: config
     outputs:
@@ -162,7 +162,7 @@ snippets:
       - level: 2
 
   # 1.1.2 login banner set
-  - name: device_config_file
+  - name: capture_login_banner
     cmd: parse
     variable: config
     outputs:
@@ -179,7 +179,7 @@ snippets:
       - level: 1
 
   # 1.1.3 log on high dp load
-  - name: device_config_file
+  - name: capture_log_on_high_dp_load
     cmd: parse
     variable: config
     outputs:
@@ -196,7 +196,7 @@ snippets:
       - level: 1
 
   # 1.2.1 permitted ip addresses for device management
-  - name: device_config_file
+  - name: capture_perrmitted_ip_for_device_management
     cmd: parse
     variable: config
     outputs:
@@ -216,7 +216,7 @@ snippets:
       - level: 1
 
   # 1.2.2 permitted ip addresses for management profiles
-  - name: device_config_file
+  - name: capture_permitted_ip_for_mgmt_profile
     cmd: parse
     variable: config
     outputs:
@@ -260,7 +260,7 @@ snippets:
       - level: 1
 
   # 1.2.3 disable http and telnet for mgmt interface
-  - name: device_config_file
+  - name: capture_disable_http_telnet_for_mgmt_intf
     cmd: parse
     variable: config
     outputs:
@@ -294,7 +294,7 @@ snippets:
       - level: 1
 
   # 1.2.4 disable http and telnet for mgmt profiles
-  - name: device_config_file
+  - name: capture_http_telnet_mgmt_profiles
     cmd: parse
     variable: config
     outputs:
@@ -330,7 +330,7 @@ snippets:
       - level: 1
 
   # 1.2.5 valid cert set for UI admin intf
-  - name: device_config_file
+  - name: capture_valid_cert_for_ui_admin
     cmd: parse
     variable: config
     outputs:
@@ -351,7 +351,7 @@ snippets:
       - action_requirerd: true
 
   # 1.3.1 enable min password complexity
-  - name: device_config_file
+  - name: capture_enable_min_password_complexity
     cmd: parse
     variable: config
     outputs:
@@ -370,7 +370,7 @@ snippets:
       - level: 1
 
   # 1.3.2 password complexity min length
-  - name: device_config_file
+  - name: capture_password_complexity_min_length
     cmd: parse
     variable: config
     outputs:
@@ -390,7 +390,7 @@ snippets:
       - level: 1
 
   # 1.3.3 password minimum uppercase letters
-  - name: device_config_file
+  - name: capture_password_complexity_min_uppercase
     cmd: parse
     variable: config
     outputs:
@@ -410,7 +410,7 @@ snippets:
       - level: 1
 
   # 1.3.4 password complexity min lowercase
-  - name: device_config_file
+  - name: capture_password_complexity_min_lowercase
     cmd: parse
     variable: config
     outputs:
@@ -430,7 +430,7 @@ snippets:
       - level: 1
 
   # 1.3.5 password complexity min numeric
-  - name: device_config_file
+  - name: capture_password_complexity_min_numeric
     cmd: parse
     variable: config
     outputs:
@@ -450,7 +450,7 @@ snippets:
       - level: 1
 
   # 1.3.6 password complexity min specials chars
-  - name: device_config_file
+  - name: capture_password_complexity_min_special_chars
     cmd: parse
     variable: config
     outputs:
@@ -470,7 +470,7 @@ snippets:
       - level: 1
 
   # 1.3.7 password complexity change period
-  - name: device_config_file
+  - name: capture_password_complexity_change_period
     cmd: parse
     variable: config
     outputs:
@@ -495,7 +495,7 @@ snippets:
       - level: 1
 
   # 1.3.8 password complexity new password differs by char
-  - name: device_config_file
+  - name: capture_password_complexity_new_password_differs
     cmd: parse
     variable: config
     outputs:
@@ -515,7 +515,7 @@ snippets:
       - level: 1
 
   # 1.3.9 password complexity password reuse limit
-  - name: device_config_file
+  - name: capture_password_complexity_reuse_limit
     cmd: parse
     variable: config
     outputs:
@@ -535,7 +535,7 @@ snippets:
       - level: 1
 
   # 1.3.10 password profiles do not exist
-  - name: device_config_file
+  - name: capture_password_profiles_do_not_exit
     cmd: parse
     variable: config
     outputs:
@@ -556,7 +556,7 @@ snippets:
       - level: 1
 
   # 1.4.1 admin idle timeout
-  - name: device_config_file
+  - name: capture_admin_idle_timeout
     cmd: parse
     variable: config
     outputs:
@@ -582,7 +582,7 @@ snippets:
       - level: 1
 
   # 1.4.2 admin failed attempts and lockout
-  - name: device_config_file
+  - name: capture_admin_failed_attempts_lockout
     cmd: parse
     variable: config
     outputs:
@@ -621,7 +621,7 @@ snippets:
       - level: 1
 
   # 1.5.1 use snmpv3 for polling
-  - name: device_config_file
+  - name: capture_use_snmpv3_polling
     cmd: parse
     variable: config
     outputs:
@@ -641,7 +641,7 @@ snippets:
       - level: 1
 
   # 1.6.1 Ensure 'Verify Update Server Identity' is enabled
-  - name: device_config_file
+  - name: capture_verify_update_server_id_enabled
     cmd: parse
     variable: config
     outputs:
@@ -661,7 +661,7 @@ snippets:
       - level: 1
 
   # 1.6.2 Ensure redundant NTP servers are configured appropriately
-  - name: device_config_file
+  - name: capture_redundant_ntp_servers_configured
     cmd: parse
     variable: config
     outputs:
@@ -686,7 +686,7 @@ snippets:
       - level: 1
 
   # 1.6.3 Ensure that the Certificate Securing Remote Access VPNs is Valid
-  - name: device_config_file
+  - name: capture_remote_access_vpn_cert
     cmd: parse
     variable: config
     outputs:
@@ -708,7 +708,7 @@ snippets:
 
   # 2.1 Ensure that IP addresses are mapped to usernames
   # This has been reviewed and not implemented for the initial release due to specific deployment requirements
-  - name: device_config_file
+  - name: capture_ip_addresses_mapped_to_usernames
     cmd: parse
     variable: config
     outputs:
@@ -730,7 +730,7 @@ snippets:
       - action_required: true
 
   # 2.2 Ensure that WMI probing is disabled
-  - name: device_config_file
+  - name: captured_wmi_probing_disabled
     cmd: parse
     variable: config
     outputs:
@@ -869,7 +869,7 @@ snippets:
       - action_requirerd: true
 
   # 3.1 Ensure a fully-synchronized High Availability peer is configured
-  - name: device_config_file
+  - name: capture_ha_peer_configured
     cmd: parse
     variable: config
     outputs:
@@ -888,7 +888,7 @@ snippets:
       - level: 1
 
   # 3.2 Ensure 'High Availability' requires Link Monitoring and/or Path Monitoring
-  - name: device_config_file
+  - name: capture_ha_link_path_monitoring
     cmd: parse
     variable: config
     outputs:
@@ -959,7 +959,7 @@ snippets:
       - level: 1
 
   # 3.3 Ensure 'Passive Link State' and 'Preemptive' are configured appropriately
-  - name: device_config_file
+  - name: capture_ha_passive_link_and_preemptive
     cmd: parse
     variable: config
     outputs:
@@ -988,7 +988,7 @@ snippets:
       - level: 1
 
   # 4.1 Ensure 'Antivirus Update Schedule' is set to download and install updates hourly
-  - name: device_config_file
+  - name: capture_av_update_schedule
     cmd: parse
     variable: config
     outputs:
@@ -1020,7 +1020,7 @@ snippets:
       - level: 1
 
   # 4.2 Ensure 'Applications and Threats Update Schedule'
-  - name: device_config_file
+  - name: capture_apps_threats_update_schedule
     cmd: parse
     variable: config
     outputs:
@@ -1812,7 +1812,7 @@ snippets:
   # 6.14 Ensure alerting after a threshold of credit card or Social Security numbers is detected is enabled
   # requires data input for specific pattern types so flagging as action required
   # provide contextual data of configured data patterns
-  - name: device_config_file
+  - name: capture_data_pattern_alerting
     cmd: parse
     variable: config
     outputs:
@@ -1874,7 +1874,7 @@ snippets:
       - action_required: true
 
   # 6.15 Ensure a secure Data Filtering profile is applied to all security policies allowing traffic to or from the Internet
-  - name: device_config_file
+  - name: capture_data_filtering_profile_in_policies
     cmd: parse
     variable: config
     outputs:
@@ -1919,7 +1919,7 @@ snippets:
 
   # 6.16 Ensure that a Zone Protection Profile with an enabled SYN Flood Action of SYN Cookies is attached to all untrusted zones
   # This still requires manual action to determine untrusted zones and volumetric settings for each profile
-  - name: device_config_file
+  - name: capture_zone_protect_profile_syn_flood
     cmd: parse
     variable: config
     outputs:
@@ -1965,7 +1965,7 @@ snippets:
   # 6.17 Ensure that a Zone Protection Profile with tuned Flood Protection settings enabled for all flood types is attached to all untrusted zones
   # partial implementation without ability to check untrust zone names
   # users should validate threshold settings for each zone protect profile using flood protections
-  - name: device_config_file
+  - name: capture_zone_protect_profile_flood_protection
     cmd: parse
     variable: config
     outputs:
@@ -2015,7 +2015,7 @@ snippets:
   # 6.18 Ensure that all zones have Zone Protection Profiles with all Reconnaissance Protection settings enabled,
   # tuned, and set to appropriate actions
   # checking all reconn types are enabled and applied to zones
-  - name: device_config_file
+  - name: capture_zone_protect_reconn
     cmd: parse
     variable: config
     outputs:
@@ -2066,7 +2066,7 @@ snippets:
 
   # 6.19 Ensure all zones have Zone Protection Profiles that drop specially crafted packets
   # test checks for all zones having a zone protect profile with recommended settings enabled
-  - name: device_config_file
+  - name: capture_zone_protect_profile_crafted_pkts
     cmd: parse
     variable: config
     outputs:
@@ -2308,7 +2308,7 @@ snippets:
 
   # 8.1 Ensure 'SSL Forward Proxy Policy' for traffic destined to the Internet is configured
   # TODO: need user input of internet zones to check as destination in decrypt policies
-  - name: device_config_file
+  - name: capture_ssl_forward_proxy_policy
     cmd: parse
     variable: config
     outputs:
@@ -2330,7 +2330,7 @@ snippets:
 
   # 8.2 Ensure 'SSL Inbound Inspection' is required for all untrusted traffic destined for servers using SSL or TLS
   # future consideration to get user input and validate accordingly
-  - name: device_config_file
+  - name: capture_ssl_inbound_inspection
     cmd: parse
     variable: config
     outputs:
@@ -2352,7 +2352,7 @@ snippets:
 
   # 8.3 Ensure that the Certificate used for Decryption is Trusted
   # cert inspections for future investigation
-  - name: device_config_file
+  - name: capture_decryption_certs
     cmd: parse
     variable: config
     outputs:
