@@ -1657,7 +1657,7 @@ snippets:
     test: true
     pass_message: |-
       {%- if url_profiles_found %}
-      The following profiles are associated categories are found in the configuration.
+      The following profiles and associated categories are found in the configuration.
       Check company practices to validate that these align with 'categories of interest' for block/override
       {{ url_filtering_block_override }}
       {%- else %}
@@ -2047,7 +2047,7 @@ snippets:
       {%- if zone_protect_profile_reconn_enabled | length == 0 %}
       No zone protection profiles were found with all Reconnaissance Protection settings enabled
       {% endif %}
-      {%- if zones_without_pkt_attack_enabled | length %}
+      {%- if zones_without_reconn_enabled | length %}
       The following are either configured without a zone protect profile or the associated profile
       is not configured with reconn settings enabled:
 
