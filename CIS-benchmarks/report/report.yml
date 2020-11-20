@@ -1,0 +1,145 @@
+---
+
+content_templates:
+  validation_table:
+    type: table
+    columns:
+
+      - title: Level
+        key: META_level
+        type: text
+        style:
+          color: '#00AEC4'
+          width: 20px
+
+      - title: Scored
+        key: META_scored
+        type: icon
+        style:
+          width: 20px
+
+      - title: Benchmark Check
+        key: documentation_link
+        type: url
+        display_key: label
+
+      - title: Result
+        key: icon 
+        type: icon
+        style:
+          width: 30px
+        tooltip:
+          key: output_message
+          style:
+            left: -300px
+
+report:
+
+    title: CIS Benchmark Automated Validation
+    subtitle: PAN-OS
+    footer_links:
+      - name: Palo Alto Networks
+        url: https://paloaltonetworks.com
+      - name: CIS Benchmarks
+        url: https://www.cisecurity.org/cis-benchmarks/
+
+    sections:
+
+      - name: Validation Statistics
+        content:
+          - type: stats_block
+            key: stats
+            data:
+
+              - title: Total Checks
+                key: total
+
+              - title: Checks Passed
+                key: pass
+                icon: checkmark
+
+              - title: Checks Failed
+                key: fail
+                icon: alert
+
+              - title: Action Required
+                key: action
+                icon: notify 
+
+      - name: CIS Benchmark Section 1
+        content:
+          - template: validation_table
+            key: cis1
+
+      - name: CIS Benchmark Section 2
+        content:
+          - template: validation_table
+            key: cis2
+
+      - name: CIS Benchmark Section 3
+        content:
+          - template: validation_table
+            key: cis3
+
+      - name: CIS Benchmark Section 4
+        content:
+          - template: validation_table
+            key: cis4
+
+      - name: CIS Benchmark Section 5
+        content:
+          - template: validation_table
+            key: cis5
+
+      - name: CIS Benchmark Section 6
+        content:
+          - template: validation_table
+            key: cis6
+
+      - name: CIS Benchmark Section 7
+        content:
+          - template: validation_table
+            key: cis7
+
+      - name: CIS Benchmark Section 8
+        content:
+          - template: validation_table
+            key: cis8
+
+pre_processing: |-
+  {%
+    set output = {
+      'cis1': [], 'cis2': [], 'cis3': [], 'cis4': [], 
+      'cis5': [], 'cis6': [], 'cis7': [], 'cis8': [], 
+      'stats': {'total': 0, 'pass':0, 'fail':0, 'action':0}
+    }
+  %}
+
+  {% for check in data.pan_validation.keys() %}
+    {% set c = data.pan_validation[check] %}
+
+    {# Count statistics #}
+    {% set _= output.stats.__setitem__('total', output.stats.total + 1) %}
+    {% if c.meta.action_required %}
+      {% set _= c.__setitem__('icon', 'notify') %}
+      {% set _= output.stats.__setitem__('action', output.stats.action + 1) %}
+    {% elif c.results %}
+      {% set _= c.__setitem__('icon', 'checkmark') %}
+      {% set _= output.stats.__setitem__('pass', output.stats.pass + 1) %}
+    {% else %}
+      {% set _= c.__setitem__('icon', 'alert') %}
+      {% set _= output.stats.__setitem__('fail', output.stats.fail + 1) %}
+    {% endif %}
+
+    {# Map meta params onto root element required for report rendering #}
+    {% set _= c.__setitem__('META_level', c.meta.level) %}
+    {% if not c.meta.scored %}
+      {% set _= c.__setitem__('META_scored', 'cancel') %}
+    {% endif %}
+
+    {# Sort into specific sections #}
+    {% set section = c.meta.section %}
+    {% set _= output['cis' + section | string].append(c) %}
+
+  {% endfor %}
+  {{ output | tojson }}
