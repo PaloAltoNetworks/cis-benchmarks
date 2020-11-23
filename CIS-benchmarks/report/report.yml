@@ -115,8 +115,8 @@ pre_processing: |-
     }
   %}
 
-  {% for check in data.pan_validation.keys() %}
-    {% set c = data.pan_validation[check] %}
+  {% for check in data.keys() %}
+    {% set c = data[check] %}
 
     {# Count statistics #}
     {% set _= output.stats.__setitem__('total', output.stats.total + 1) %}
