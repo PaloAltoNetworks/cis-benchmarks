@@ -1,0 +1,1114 @@
+name: CIS_NGFW_benchmark_v90
+label: CIS NGFW benchmarks
+
+description: |
+ CIS v9.0 CSC benchmarks
+
+type: pan_validation
+labels:
+  collection:
+    - CIS
+    - Benchmark
+    - Validation
+
+variables:
+
+snippets:
+
+  # 1.1.1.1 Syslog logging should be configured
+    - name: 1_1_1_1_syslog_logging_configured
+      include: panos_validations_device_settings
+      include_variables: log_types
+      include_snippets:
+        - name: capture_logging_syslog
+        - name: system_logging_configured
+          label: |-
+            1.1.1.1 Syslog logging should be configured
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#syslog-logging-should-be-configured
+
+  # 1.1.1.2 SNMPv3 traps should be configured
+    - name: 1_1_1_2_snmpv3_traps_configured
+      include: panos_validations_device_settings
+      include_variables: log_types
+      include_snippets:
+        - name: capture_logging_snmp
+        - name: system_logging_configured_snmp
+          label: |-
+            1.1.1.2 SNMPv3 traps should be configured
+          meta:
+            - scored: true
+            - level: 2
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#snmpv3-traps-should-be-configured
+
+  # 1.1.2 login banner set
+    - name: 1_1_2_login_banner_set
+      include: panos_validations_device_settings
+      include_snippets:
+        - name: capture_login_banner
+        - name: login_banner_set
+          label: |-
+            1.1.2 Ensure 'Login Banner' is set
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-login-banner-is-set
+
+  # 1.1.3 log on high dp load
+    - name: 1_1_3_log_on_high_dp_load
+      include: panos_validations_device_settings
+      include_snippets:
+        - name: capture_log_on_high_dp_load
+        - name: enable_log_high_dp_load
+          label: |-
+            1.1.3 Ensure 'Enable Log on High DP Load' is enabled
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-enable-log-on-high-dp-load-is-enabled
+
+  # 1.2.1 permitted ip addresses for device management
+    - name: 1_2_1_capture_permit_ip_device_mgmt
+      include: panos_validations_device_settings
+      include_snippets:
+        - name: capture_perrmitted_ip_for_device_management
+        - name: permitted_ip_addresses_mgmt
+          label: |-
+            1.2.1 Ensure 'Permitted IP Addresses' is set to those necessary for device management
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-permitted-ip-addresses-is-set-to-those-necessary-for-device-management
+
+  # 1.2.2 permitted ip addresses for management profiles
+    - name: 1_2_2_permit_ip_address_mgmt_profiles
+      include: panos_validations_device_settings
+      include_snippets:
+        - name: capture_permitted_ip_for_mgmt_profile
+        - name: permitted_ip_address_mgmt_profiles
+          label: |-
+            1.2.2 Ensure 'Permitted IP Addresses' is set for all management profiles where SSH, HTTPS, or SNMP is enabled
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-permitted-ip-addresses-is-set-for-all-management-profiles-where-ssh-https-or-snmp-is-enabled
+
+  # 1.2.3 disable http and telnet for mgmt interface
+    - name: 1_2_3_disable_http_telnet_mgmt_intf
+      include: panos_validations_device_settings
+      include_snippets:
+        - name: capture_disable_http_telnet_for_mgmt_intf
+        - name: http_telnet_disabled_mgmt
+          label: |-
+            1.2.3 Ensure HTTP and Telnet options are disabled for the management interface
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-http-and-telnet-options-are-disabled-for-the-management-interface
+
+  # 1.2.4 disable http and telnet for mgmt profiles
+    - name: 1_2_4_disable_http_telnet_mgmt_profiles
+      include: panos_validations_device_settings
+      include_snippets:
+        - name: capture_http_telnet_mgmt_profiles
+        - name: http_telnet_disabled_mgmt_profiles
+          label: |-
+            1.2.4 Ensure HTTP and Telnet options are disabled for all management profiles
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-http-and-telnet-options-are-disabled-for-all-management-profiles
+
+  # 1.2.5 valid cert set for UI admin intf
+    - name: 1_2_5_valid_cert_for_UI_admin_intf
+      include: panos_validations_device_settings
+      include_snippets:
+        - name: capture_valid_cert_for_ui_admin
+        - name: valid_cert_admin_intf
+          label: |-
+            1.2.5 Ensure valid certificate is set for browser-based administrator interface
+          meta:
+            - scored: false
+            - level: 2
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-valid-certificate-is-set-for-browser-based-administrator-interface
+
+  # 1.3.1 enable min password complexity
+    - name: 1_3_1_enable_password_complexity
+      include: panos_validations_device_settings
+      include_snippets:
+        - name: capture_enable_min_password_complexity
+        - name: test_password_complexity_enabled
+          label: |-
+            1.3.1 Ensure 'Minimum Password Complexity' is enabled
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-minimum-password-complexity-is-enabled
+
+  # 1.3.2 password complexity min length
+    - name: 1_3_2_password_complexity_min_length
+      include: panos_validations_device_settings
+      include_snippets:
+        - name: capture_password_complexity_min_length
+        - name: test_password_min_length
+          label: |-
+            1.3.2 Ensure 'Minimum Length' is greater than or equal to 12
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-minimum-length-is-greater-than-or-equal-to-12
+
+  # 1.3.3 password minimum uppercase letters
+    - name: 1_3_3_password_complexity_min_uppercase
+      include: panos_validations_device_settings
+      include_snippets:
+        - name: capture_password_complexity_min_uppercase
+        - name: test_password_min_uppercase
+          label: |-
+            1.3.3 Ensure 'Minimum Uppercase Letters' is greater than or equal to 1
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-minimum-uppercase-letters-is-greater-than-or-equal-to-1
+
+  # 1.3.4 password complexity min lowercase
+    - name: 1_3_4_password_complexity_min_lowercase
+      include: panos_validations_device_settings
+      include_snippets:
+        - name: capture_password_complexity_min_lowercase
+        - name: test_password_min_lowercase
+          label: |-
+            1.3.4 Ensure 'Minimum Lowercase Letters' is greater than or equal to 1
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-minimum-lowercase-letters-is-greater-than-or-equal-to-1
+
+  # 1.3.5 password complexity min numeric
+    - name: 1_3_5_password_complexity_min_numeric
+      include: panos_validations_device_settings
+      include_snippets:
+        - name: capture_password_complexity_min_numeric
+        - name: test_password_min_numeric
+          label: |-
+            1.3.5 Ensure 'Minimum Numeric Letters' is greater than or equal to 1
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-minimum-numeric-letters-is-greater-than-or-equal-to-1
+
+  # 1.3.6 password complexity min specials chars
+    - name: 1_3_6_password_complexity_min_special
+      include: panos_validations_device_settings
+      include_snippets:
+        - name: capture_password_complexity_min_special_chars
+        - name: test_password_min_special
+          label: |-
+            1.3.6 Ensure 'Minimum Special Characters' is greater than or equal to 1
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-minimum-special-characters-is-greater-than-or-equal-to-1
+
+  # 1.3.7 password complexity change period
+    - name: 1_3_7_password_complexity_change_period
+      include: panos_validations_device_settings
+      include_snippets:
+        - name: capture_password_complexity_change_period
+        - name: test_password_min_change_period
+          label: |-
+            1.3.7 Ensure 'Required Password Change Period' is less than or equal to 90 days
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-required-password-change-period-is-less-than-or-equal-to-90-days
+
+  # 1.3.8 password complexity new password differs by char
+    - name: 1_3_8_password_complexity_differs_by_char
+      include: panos_validations_device_settings
+      include_snippets:
+        - name: capture_password_complexity_new_password_differs
+        - name: test_password_differs_by_char
+          label: |-
+            1.3.8 Ensure 'New Password Differs By Characters' is greater than or equal to 3
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-new-password-differs-by-characters-is-greater-than-or-equal-to-3
+
+  # 1.3.9 password complexity password reuse limit
+    - name: 1_3_9_password_complexity_reuse_limit
+      include: panos_validations_device_settings
+      include_snippets:
+        - name: capture_password_complexity_reuse_limit
+        - name: test_password_history_count
+          label: |-
+            1.3.9 Ensure 'Prevent Password Reuse Limit' is set to 24 or more passwords
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-prevent-password-reuse-limit-is-set-to-24-or-more-passwords
+
+  # 1.3.10 password profiles do not exist
+    - name: 1_3_10_password_profiles_do_not_exist
+      include: panos_validations_device_settings
+      include_snippets:
+        - name: capture_password_profiles_do_not_exit
+        - name: test_password_profiles
+          label: |-
+            1.3.10 Ensure 'Password Profiles' do not exist
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-password-profiles-do-not-exist
+
+  # 1.4.1 admin idle timeout
+    - name: 1_4_1_idle_timeout
+      include: panos_validations_device_settings
+      include_snippets:
+        - name: capture_admin_idle_timeout
+        - name: max_idle_timeout
+          label: |-
+            1.4.1 Ensure 'Idle timeout' is less than or equal to 10 minutes for device management
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-idle-timeout-is-less-than-or-equal-to-10-minutes-for-device-management
+
+  # 1.4.2 admin failed attempts and lockout
+    - name: 1_4_2_admin_failed_attempts
+      include: panos_validations_device_settings
+      include_snippets:
+        - name: capture_admin_failed_attempts_lockout
+        - name: test_failed_attempts_lockout
+          label: |-
+            1.4.2 Ensure 'Failed Attempts' and 'Lockout Time' for Authentication Profile are properly configured
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-failed-attempts-and-lockout-time-for-authentication-profile-are-properly-configured
+
+  # 1.5.1 use snmpv3 for polling
+    - name: 1_5_1_snmpv3_polling
+      include: panos_validations_device_settings
+      include_snippets:
+        - name: capture_use_snmpv3_polling
+        - name: snmpv3_selected
+          label: |-
+            1.5.1 Ensure 'V3' is selected for SNMP polling
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-v3-is-selected-for-snmp-polling
+
+  # 1.6.1 Ensure 'Verify Update Server Identity' is enabled
+    - name: 1_6_1_verify_update_server_identity
+      include: panos_validations_device_settings
+      include_snippets:
+        - name: capture_verify_update_server_id_enabled
+        - name: verify_update_service_enabled
+          label: |-
+            1.6.1 Ensure 'Verify Update Server Identity' is enabled
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-verify-update-server-identity-is-enabled
+
+  # 1.6.2 Ensure redundant NTP servers are configured appropriately
+    - name: 1_6_2_redundant_ntp_servers
+      include: panos_validations_device_settings
+      include_snippets:
+        - name: capture_redundant_ntp_servers_configured
+        - name: redundant_ntp_servers
+          label: |-
+            1.6.2 Ensure redundant NTP servers are configured appropriately
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-redundant-ntp-servers-are-configured-appropriately
+
+  # 1.6.3 Ensure that the Certificate Securing Remote Access VPNs is Valid
+    - name: 1_6_3_valid_vpn_cert
+      include: panos_validations_device_settings
+      include_snippets:
+        - name: capture_remote_access_vpn_cert
+        - name: vpn_cert_valid
+          label: |-
+            1.6.3 Ensure that the Certificate Securing Remote Access VPNs is Valid
+          meta:
+            - scored: false
+            - level: 1,2
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-that-the-certificate-securing-remote-access-vpns-is-valid
+
+  # 2.1 Ensure that IP addresses are mapped to usernames
+  # This has been reviewed and not implemented for the initial release due to specific deployment requirements
+    - name: 2_1_ip_addr_mapped_to_username
+      include: panos_validations_userid_settings
+      include_snippets:
+        - name: capture_ip_addresses_mapped_to_usernames
+        - name: ip_addr_mapped_to_user
+          label: |-
+            2.1 Ensure that IP addresses are mapped to usernames
+          meta:
+            - scored: false
+            - level: 2
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-that-ip-addresses-are-mapped-to-usernames
+
+  # 2.2 Ensure that WMI probing is disabled
+    - name: 2_2_wmi_probing_disabled
+      include: panos_validations_userid_settings
+      include_snippets:
+        - name: captured_wmi_probing_disabled
+        - name: wmi_probing_disabled
+          label: |-
+            2.2 Ensure that WMI probing is disabled
+          meta:
+            - scored: true
+            - level: 2
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-that-wmi-probing-is-disabled
+
+  # 2.3 Ensure that User-ID is only enabled for internal trusted interfaces
+  # depends on sources variable cis_internal_zones to determine internal zones
+  # otherwise this variable will be empty and all zones used causing a benchmark fail
+    - name: 2_3_userid_for_internal_zones_only
+      include: panos_validations_userid_settings
+      include_variables: cis_internal_zones
+      include_snippets:
+        - name: capture_userid_enabled_zones
+        - name: userid_internal_zones_only
+          label: |-
+            2.3 Ensure that User-ID is only enabled for internal trusted interfaces
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-that-user-id-is-only-enabled-for-internal-trusted-interfaces
+
+  # 2.4 Ensure that 'Include/Exclude Networks' is used if User-ID is enabled
+    - name: 2_4_include_exclude_networks_if_userid_enabled
+      include: panos_validations_userid_settings
+      include_snippets:
+        - name: capture_userid_include_exclude_networks
+        - name: userid_with_include_exclude
+          label: |-
+            2.4 Ensure that 'Include/Exclude Networks' is used if User-ID is enabled
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-that-include-exclude-networks-is-used-if-user-id-is-enabled
+
+  # 2.5 Ensure that the User-ID Agent has minimal permissions if User-ID is enabled
+    - name: 2_5_userid_agent_min_permissions
+      include: panos_validations_userid_settings
+      include_snippets:
+        - name: userid_agent_min_permissions
+          label: |-
+            2.5 Ensure that the User-ID Agent has minimal permissions if User-ID is enabled
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-that-the-user-id-agent-has-minimal-permissions-if-user-id-is-enabled
+
+  # 2.6 Ensure that the User-ID service account does not have interactive logon rights
+    - name: 2_6_userid_svc_account_no_interactive_logon_rights
+      include: panos_validations_userid_settings
+      include_snippets:
+        - name: userid_no_interactive_logon
+          label: |-
+            2.6 Ensure that the User-ID service account does not have interactive logon rights
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-that-the-user-id-service-account-does-not-have-interactive-logon-rights
+
+  # 2.7 Ensure remote access capabilities for the User-ID service account are forbidden
+    - name: 2_7_remote_access_for_userid_svc_account_forbidden
+      include: panos_validations_userid_settings
+      include_snippets:
+        - name: userid_service_account
+          label: |-
+            2.7 Ensure remote access capabilities for the User-ID service account are forbidden
+          meta:
+            - scored: false
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-remote-access-capabilities-for-the-user-id-service-account-are-forbidden
+
+  # 2.8 Ensure that security policies restrict User-ID Agent traffic from crossing into untrusted zones
+    - name: 2_8_restrict_userid_agent_traffic_to_untrusted_zones
+      include: panos_validations_userid_settings
+      include_snippets:
+        - name: capture_userid_security_policies
+        - name: userid_agent_no_untrust_zone
+          label: |-
+            2.8 Ensure that security policies restrict User-ID Agent traffic from crossing into untrusted zones
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-that-security-policies-restrict-user-id-agent-traffic-from-crossing-into-untrusted-zones
+
+  # 3.1 Ensure a fully-synchronized High Availability peer is configured
+    - name: 3_1_fully_sync_ha_peer_configured
+      include: panos_validations_HA_settings
+      include_snippets:
+        - name: capture_ha_peer_configured
+        - name: HA_peer_configured
+          label: |-
+            3.1 Ensure a fully-synchronized High Availability peer is configured
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-a-fully-synchronized-high-availability-peer-is-configured
+
+  # 3.2 Ensure 'High Availability' requires Link Monitoring and/or Path Monitoring
+    - name: 3_2_ha_link_or_path_monitoring
+      include: panos_validations_HA_settings
+      include_snippets:
+        - name: capture_ha_link_path_monitoring
+        - name: HA_link_path_monitoring
+          label: |-
+            3.2 Ensure 'High Availability' requires Link Monitoring and/or Path Monitoring
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-high-availability-requires-link-monitoring-and-or-path-monitoring
+
+  # 3.3 Ensure 'Passive Link State' and 'Preemptive' are configured appropriately
+    - name: 3_3_ha_passive_link_state_and_preemptive
+      include: panos_validations_HA_settings
+      include_snippets:
+        - name: capture_ha_passive_link_and_preemptive
+        - name: HA_passive_link_preemptive
+          label: |-
+            3.3 Ensure 'Passive Link State' and 'Preemptive' are configured appropriately
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-passive-link-state-and-preemptive-are-configured-appropriately
+
+  # 4.1 Ensure 'Antivirus Update Schedule' is set to download and install updates hourly
+    - name: 4_1_av_update_schedule
+      include: panos_validations_profile_objects
+      include_snippets:
+        - name: capture_av_update_schedule
+        - name: AV_update_schedule
+          label: |-
+            4.1 Ensure 'Antivirus Update Schedule' is set to download and install updates hourly
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-antivirus-update-schedule-is-set-to-download-and-install-updates-hourly
+
+  # 4.2 Ensure 'Applications and Threats Update Schedule'
+    - name: 4_2_apps_threats_update_schedule
+      include: panos_validations_profile_objects
+      include_snippets:
+        - name: capture_apps_threats_update_schedule
+        - name: test_apps_threats_updates
+          label: |-
+            4.2 Ensure 'Applications and Threats Update Schedule' is set to download and install updates
+            at daily or shorter intervals
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-applications-and-threats-update-schedule-is-set-to-download-and-install-updates-at-daily
+            -or-shorter-intervals
+
+  # 5.1 Ensure that WildFire file size upload limits are maximized
+    - name: 5_1_WF_upload_limits_maximized
+      include: panos_validations_profile_objects
+      include_snippets:
+        - name: capture_wf_size_testing
+        - name: wf_limit_pe_test
+          label: |-
+            5.1 Ensure that WildFire file size upload limits are maximized
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-that-wildfire-file-size-upload-limits-are-maximized
+
+  # 5.2 Ensure forwarding is enabled for all applications and file types in WildFire file blocking profiles
+  # inspecting the WF analysis profile and not the file blocking profile
+    - name: 5_2_forward_all_types_apps_for_WF_analysis
+      include: panos_validations_profile_objects
+      include_snippets:
+        - name: capture_wildfire_profile_settings
+        - name: WF_all_apps_files
+          label: |-
+            5.2 Ensure forwarding is enabled for all applications and file types in WildFire file blocking profiles
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-forwarding-is-enabled-for-all-applications-and-file-types-in-wildfire-file-blocking-profiles
+
+  # 5.3 Ensure a WildFire Analysis profile is enabled for all security policies
+    - name: 5_3_WF_profile_for_all_security_policies
+      include: panos_validations_profile_objects
+      include_snippets:
+        - name: capture_wildfire_profile_policies
+        - name: WF_profile_in_policies
+          label: |-
+            5.3 Ensure a WildFire Analysis profile is enabled for all security policies
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-a-wildfire-analysis-profile-is-enabled-for-all-security-policies
+
+  # 5.4 Ensure forwarding of decrypted content to WildFire is enabled
+    - name: 5_4_forwarding_decrypted_content_to_WF
+      include: panos_validations_profile_objects
+      include_snippets:
+        - name: capture_wildfire_allow_forwarding_decrypted_content
+        - name: WF_forward_decrypt_content
+          label: |-
+            5.4 Ensure forwarding of decrypted content to WildFire is enabled
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-forwarding-of-decrypted-content-to-wildfire-is-enabled
+
+  # 5.5 Ensure all WildFire session information settings are enabled
+    - name: 5_5_WF_session_settings_enabled
+      include: panos_validations_profile_objects
+      include_snippets:
+        - name: capture_wildfire_session_settings
+        - name: WF_session_info_enabled
+          label: |-
+            5.5 Ensure all WildFire session information settings are enabled
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-all-wildfire-session-information-settings-are-enabled
+
+  # 5.6 Ensure alerts are enabled for malicious files detected by WildFire
+    - name: 5_6_alerts_enabled_for_malicious_files
+      include: panos_validations_profile_objects
+      include_snippets:
+        - name: capture_wildfire_alerts
+        - name: WF_alerts_malicious_files
+          label: |-
+            5.6 Ensure alerts are enabled for malicious files detected by WildFire
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-alerts-are-enabled-for-malicious-files-detected-by-wildfire
+
+  # 5.7 Ensure 'WildFire Update Schedule' is set to download and install updates every minute
+    - name: 5_7_WF_update_schedule_set
+      include: panos_validations_profile_objects
+      include_snippets:
+        - name: capture_wildfire_update_schedule
+        - name: WF_update_schedule
+          label: |-
+            5.7 Ensure 'WildFire Update Schedule' is set to download and install updates every minute
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-wildfire-update-schedule-is-set-to-download-and-install-updates-every-minute
+
+  # 6.1 Ensure that antivirus profiles are set to block on all decoders except 'imap' and 'pop3'
+    - name: 6_1_av_profiles_set_to_block
+      include: panos_validations_profile_objects
+      include_snippets:
+        - name: capture_av_profile_action_settings
+        - name: av_profile_block_all_decoders_test
+          label: |-
+            6.1 Ensure that antivirus profiles are set to block on all decoders except 'imap' and 'pop3'
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-that-antivirus-profiles-are-set-to-block-on-all-decoders-except-imap-and-pop3
+
+  # 6.2 Ensure a secure antivirus profile is applied to all relevant security policies
+    - name: 6_2_av_profile_applied_to_all_security_policies
+      include: panos_validations_profile_objects
+      include_snippets:
+        - name: capture_av_profile_in_policies
+        - name: AV_profile_in_policies
+          label: |-
+            6.2 Ensure a secure antivirus profile is applied to all relevant security policies
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-a-secure-antivirus-profile-is-applied-to-all-relevant-security-policies
+
+  # 6.3 Ensure an anti-spyware profile is configured to block on all spyware severity levels, categories, and threats
+    - name: 6_3_antispyware_profile_to_block_all
+      include: panos_validations_profile_objects
+      include_snippets:
+        - name: capture_anti-spyware_profile_settings
+        - name: spyware_profile_block_all
+          label: |-
+            6.3 Ensure an anti-spyware profile is configured to block on all spyware severity levels, categories, and threats
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-an-anti-spyware-profile-is-configured-to-block-on-all-spyware-severity-levels-categories-and-threats
+
+  # 6.4 Ensure DNS sinkholing is configured on all anti-spyware profiles in use
+  # PAN-OS 9.0 version - does not include the 10.0 DNS categories element
+    - name: 6_4_enable_dns_sinkholing
+      include: panos_validations_profile_objects
+      include_snippets:
+        - name: capture_dns_sinkhole_configuration
+        - name: DNS_sinkhole_configured
+          label: |-
+            6.4 Ensure DNS sinkholing is configured on all anti-spyware profiles in use
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-dns-sinkholing-is-configured-on-all-anti-spyware-profiles-in-use
+
+  # 6.5 Ensure passive DNS monitoring is set to enabled on all anti-spyware profiles in use
+  # this moved to a telemetry configuration option in 9.x
+  # passive DNS and telemetry configuration will change in PAN-OS 10.0
+    - name: 6_5_enable_passive_dns_monitoring
+      include: panos_validations_profile_objects
+      include_snippets:
+        - name: capture_passive_dns_monitoring
+        - name: enable_passive_DNS_monitoring
+          label: |-
+            6.5 Ensure passive DNS monitoring is set to enabled on all anti-spyware profiles in use
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-passive-dns-monitoring-is-set-to-enabled-on-all-anti-spyware-profiles-in-use
+
+  # 6.6 Ensure a secure anti-spyware profile is applied to all security policies permitting traffic to the Internet
+    - name: 6_6_antispyware_profile_applied_security_policies
+      include: panos_validations_profile_objects
+      include_snippets:
+        - name: capture_antispyware_profiles_in_policies
+        - name: spyware_profile_in_policies
+          label: |-
+            6.6 Ensure a secure anti-spyware profile is applied to all security policies permitting traffic to the Internet
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-a-secure-anti-spyware-profile-is-applied-to-all-security-policies-permitting-traffic-to-the-internet
+
+  # 6.7 Ensure a Vulnerability Protection Profile is set to block attacks against critical and high vulnerabilities,
+  # and set to default on medium, low, and informational vulnerabilities
+  #
+  # Not default, allow, alert for critical or high severity
+  # Not allow/alert for medium/low/info severity
+    - name: 6_7_vulnerability_profile_set_to_block
+      include: panos_validations_profile_objects
+      include_snippets:
+        - name: capture_vulnerability_profile_rules
+        - name: vulnerability_profile_blocking
+          label: |-
+            6.7 Ensure a Vulnerability Protection Profile is set to block attacks against critical and high vulnerabilities,
+            and set to default on medium, low, and informational vulnerabilities
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-a-vulnerability-protection-profile-is-set-to-block-attacks-against-critical-and-high-vulnerabilities
+            -and-set-to-default-on-medium-low-and-informational-vulnerabilities
+
+  # 6.8 Ensure a secure Vulnerability Protection Profile is applied to all security rules allowing traffic
+    - name: 6_8_vulnerability_profile_all_security_rules
+      include: panos_validations_profile_objects
+      include_snippets:
+        - name: capture_vulnerability_profile_policies
+        - name: vulnerability_profile_in_policies
+          label: |-
+            6.8 Ensure a secure Vulnerability Protection Profile is applied to all security rules allowing traffic
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-a-secure-vulnerability-protection-profile-is-applied-to-all-security-rules-allowing-traffic
+
+  # 6.9 Ensure that PAN-DB URL Filtering is used
+  # this is an operational command requiring API access to the device
+    - name: 6_9_pandb_url_filtering_used
+      include: panos_validations_profile_objects
+      include_snippets:
+        - name: capture_url_license_info
+        - name: pandb_url_filtering
+          label: |-
+            6.9 Ensure that PAN-DB URL Filtering is used
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-that-pan-db-url-filtering-is-used
+
+  # 6.10 Ensure that URL Filtering uses the action of “block” or “override” on the URL categories
+  # TODO: requires user selection for 'categories of interest'
+    - name: 6_10_url_filtering_block_or_override
+      include: panos_validations_profile_objects
+      include_snippets:
+        - name: capture_url_filtering_block_override
+        - name: url_filtering_block_or_override_test
+          label: |-
+            6.10 Ensure that URL Filtering uses the action of “block” or “override” on the URL categories
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-that-url-filtering-uses-the-action-of-block-or-override-on-the-url-categories
+
+  # 6.11 Ensure that access to every URL is logged
+    - name: 6_11_every_url_logged
+      include: panos_validations_profile_objects
+      include_snippets:
+        - name: capture_predefined_url_categories
+        - name: capture_url_category_actions
+        - name: url_filtering_log_all_categories
+          label: |-
+            6.11 Ensure that access to every URL is logged
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-that-access-to-every-url-is-logged
+
+  # 6.12 Ensure all HTTP Header Logging options are enabled
+    - name: 6_12_http_header_logging_enabled
+      include: panos_validations_profile_objects
+      include_snippets:
+        - name: capture_http_header_logging_options
+        - name: url_filtering_http_header_logging
+          label: |-
+            6.12 Ensure all HTTP Header Logging options are enabled
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-all-http-header-logging-options-are-enabled
+
+  # 6.13 Ensure secure URL filtering is enabled for all security policies allowing traffic to the Internet
+    - name: 6_13_url_filtering_all_security_policies
+      include: panos_validations_profile_objects
+      include_snippets:
+        - name: capture_url_filtering_in_policies
+        - name: urlfiltering_profile_in_policies
+          label: |-
+            6.13 Ensure secure URL filtering is enabled for all security policies allowing traffic to the Internet
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-secure-url-filtering-is-enabled-for-all-security-policies-allowing-traffic-to-the-internet
+
+  # 6.14 Ensure alerting after a threshold of credit card or Social Security numbers is detected is enabled
+  # requires data input for specific pattern types so flagging as action required
+  # provide contextual data of configured data patterns
+    - name: 6_14_data_pattern_alerts
+      include: panos_validations_profile_objects
+      include_snippets:
+        - name: capture_data_pattern_alerting
+        - name: data_filtering_cc_ss_numbers
+          label: |-
+            6.14 Ensure alerting after a threshold of credit card or Social Security numbers is detected is enabled
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-alerting-after-a-threshold-of-credit-card-or-social-security-numbers-is-detected-is-enabled
+
+  # 6.15 Ensure a secure Data Filtering profile is applied to all security policies allowing traffic to or from the Internet
+    - name: 6_15_data_filtering_profile_in_security_policies
+      include: panos_validations_profile_objects
+      include_snippets:
+        - name: capture_data_filtering_profile_in_policies
+        - name: datafiltering_profile_in_policies
+          label: |-
+            6.15 Ensure a secure Data Filtering profile is applied to all security policies allowing traffic to or from the Internet
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-a-secure-data-filtering-profile-is-applied-to-all-security-policies-allowing-
+            traffic-to-or-from-the-internet
+
+  # 6.16 Ensure that a Zone Protection Profile with an enabled SYN Flood Action of SYN Cookies is attached to all untrusted zones
+  # This still requires manual action to determine untrusted zones and volumetric settings for each profile
+    - name: 6_16_zone_protect_syn_flood
+      include: panos_validations_network_security_settings
+      include_snippets:
+        - name: capture_zone_protect_profile_syn_flood
+        - name: zone_protect_syn_flood
+          label: |-
+            6.16 Ensure that a Zone Protection Profile with an enabled SYN Flood Action of SYN Cookies is attached to all untrusted zones
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-that-a-zone-protection-profile-with-an-enabled-syn-flood-action-of-syn-cookies-is-attached-to-
+            all-untrusted-zones
+
+  # 6.17 Ensure that a Zone Protection Profile with tuned Flood Protection settings enabled for all flood types is attached to all untrusted zones
+  # partial implementation without ability to check untrust zone names
+  # users should validate threshold settings for each zone protect profile using flood protections
+    - name: 6_17_zone_protect_flood_protect
+      include: panos_validations_network_security_settings
+      include_snippets:
+        - name: capture_zone_protect_profile_flood_protection
+        - name: zone_protect_flood_protect
+          label: |-
+            6.17 Ensure that a Zone Protection Profile with tuned Flood Protection settings enabled
+            for all flood types is attached to all untrusted zones
+          meta:
+            - scored: true
+            - level: 2
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-that-a-zone-protection-profile-with-tuned-flood-protection-settings-enabled-for-all-flood-types-
+            is-attached-to-all-untrusted-zones
+
+  # 6.18 Ensure that all zones have Zone Protection Profiles with all Reconnaissance Protection settings enabled,
+  # tuned, and set to appropriate actions
+  # checking all reconn types are enabled and applied to zones
+    - name: 6_18_zone_protect_reconn_protect
+      include: panos_validations_network_security_settings
+      include_snippets:
+        - name: capture_zone_protect_reconn
+        - name: zone_protection_reconn_protect
+          label: |-
+            6.18 Ensure that all zones have Zone Protection Profiles with all Reconnaissance Protection settings enabled,
+            tuned, and set to appropriate actions
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-that-all-zones-have-zone-protection-profiles-with-all-reconnaissance-protection-settings-
+            enabled-tuned-and-set-to-appropriate-actions
+
+  # 6.19 Ensure all zones have Zone Protection Profiles that drop specially crafted packets
+  # test checks for all zones having a zone protect profile with recommended settings enabled
+    - name: 6_19_zone_protect_specially_crafted
+      include: panos_validations_network_security_settings
+      include_snippets:
+        - name: capture_zone_protect_profile_crafted_pkts
+        - name: zone_protect_crafted_pkts
+          label: |-
+            6.19 Ensure all zones have Zone Protection Profiles that drop specially crafted packets
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-all-zones-have-zone-protection-profiles-that-drop-specially-crafted-packets
+
+  # 6.20 Ensure that User Credential Submission uses the action of “block” or “continue” on the URL categories
+    - name: 6_20_user_credential_submit_block_or_override
+      include: panos_validations_profile_objects
+      include_snippets:
+        - name: capture_predefined_url_categories
+        - name: capture_url_filtering_user_credential
+        - name: user_cred_block_continue
+          label: |-
+            6.20 Ensure that User Credential Submission uses the action of “block” or “continue” on the URL categories
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-that-user-credential-submission-uses-the-action-of-block-or-continue-on-the-url-categories
+
+  # 7.1 Ensure application security policies exist when allowing traffic from an untrusted zone to a more trusted zone
+    - name: 7_1_app_security_policy_from_trusted_to_more_trusted
+      include: panos_validations_profile_objects
+      include_snippets:
+        - name: capture_app_security_in_policies
+        - name: app_security_more_trusted_zone
+          label: |-
+            7.1 Ensure application security policies exist when allowing traffic from an untrusted zone to a more trusted zone
+          meta:
+            - scored: true
+            - level: 1,2
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-application-security-policies-exist-when-allowing-traffic-from-an-untrusted-zone-to-a-more-trusted-zone
+
+  # 7.2 Ensure 'Service setting of ANY' in a security policy allowing traffic does not exist
+    - name: 7_2_no_service_setting_of_any_in_security_policy
+      include: panos_validations_profile_objects
+      include_snippets:
+        - name: capture_security_policy_any_service
+        - name: service_any_not_allowed_in_policy
+          label: |-
+            7.2 Ensure 'Service setting of ANY' in a security policy allowing traffic does not exist
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-service-setting-of-any-in-a-security-policy-allowing-traffic-does-not-exist
+
+  # 7.3 Ensure 'Security Policy' denying any/all traffic to/from IP addresses on Trusted Threat Intelligence Sources Exists
+    - name: 7_3_security_policy_deny_threat_intel_ip_addresses
+      include: panos_validations_profile_objects
+      include_snippets:
+        - name: capture_license_info
+        - name: capture_security_policy_settings
+        - name: security_policy_deny_threat_ips
+          label: |-
+            7.3 Ensure 'Security Policy' denying any/all traffic to/from IP addresses on Trusted Threat Intelligence Sources Exists
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-security-policy-denying-any-all-traffic-to-from-ip-addresses-on-trusted-threat-intelligence-sources-exists
+
+  # 8.1 Ensure 'SSL Forward Proxy Policy' for traffic destined to the Internet is configured
+  # TODO: need user input of internet zones to check as destination in decrypt policies
+    - name: 8_1_ssl_forward_proxy_for_internet_destined_traffic
+      include: panos_validations_decryption_settings
+      include_snippets:
+        - name: capture_ssl_forward_proxy_policy
+        - name: ssl_forward_proxy_policy
+          label: |-
+            8.1 Ensure 'SSL Forward Proxy Policy' for traffic destined to the Internet is configured
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-ssl-forward-proxy-policy-for-traffic-destined-to-the-internet-is-configured
+
+  # 8.2 Ensure 'SSL Inbound Inspection' is required for all untrusted traffic destined for servers using SSL or TLS
+  # future consideration to get user input and validate accordingly
+    - name: 8_2_ssl_inbound_inspection_to_servers
+      include: panos_validations_decryption_settings
+      include_snippets:
+        - name: capture_ssl_inbound_inspection
+        - name: ssl_inbound_inspection
+          label: |-
+            8.2 Ensure 'SSL Inbound Inspection' is required for all untrusted traffic destined for servers using SSL or TLS
+          meta:
+            - scored: true
+            - level: 1
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-ssl-inbound-inspection-is-required-for-all-untrusted-traffic-destined-for-servers-using-ssl-or-tls
+
+  # 8.3 Ensure that the Certificate used for Decryption is Trusted
+  # cert inspections for future investigation
+   - name: 8_3_ensure_decrypt_cert_trusted
+      include: panos_validations_decryption_settings
+      include_snippets:
+        - name: capture_decryption_certs
+        - name: decrypt_cert_trusted
+          label: |-
+            8.3 Ensure that the Certificate used for Decryption is Trusted
+          meta:
+            - scored: false
+            - level: 1,2
+          documentation_link: |-
+            https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
+            ensure-that-the-certificate-used-for-decryption-is-trusted
