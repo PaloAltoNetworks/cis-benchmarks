@@ -609,6 +609,7 @@ snippets:
 # 4.2 Ensure 'Applications and Threats Update Schedule'
 - name: 4_2_apps_threats_update_schedule
   include: panos_validations_profile_objects
+  include_variables: app_threat_intervals
   include_snippets:
     - name: capture_apps_threats_update_schedule
     - name: test_apps_threats_updates
@@ -627,6 +628,7 @@ snippets:
 # 5.1 Ensure that WildFire file size upload limits are maximized
 - name: 5_1_WF_upload_limits_maximized
   include: panos_validations_profile_objects
+  include_variables: wf_file_size_limits
   include_snippets:
     - name: capture_wf_size_testing
     - name: wf_limit_pe_test
@@ -911,6 +913,7 @@ snippets:
 # 6.11 Ensure that access to every URL is logged
 - name: 6_11_every_url_logged
   include: panos_validations_profile_objects
+  include_variables: url_profile_actions
   include_snippets:
     - name: capture_predefined_url_categories
     - name: capture_url_category_actions
