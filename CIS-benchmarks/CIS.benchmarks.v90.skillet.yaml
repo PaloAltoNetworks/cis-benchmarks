@@ -19,7 +19,7 @@ snippets:
 - name: 1_1_1_1_syslog_logging_configured
   include: panos_validations_device_settings
   include_variables:
-    - log_types
+    - name: log_types
   include_snippets:
     - name: capture_logging_syslog
     - name: system_logging_configured
@@ -36,7 +36,7 @@ snippets:
 - name: 1_1_1_2_snmpv3_traps_configured
   include: panos_validations_device_settings
   include_variables:
-    - log_types
+    - name: log_types
   include_snippets:
     - name: capture_logging_snmp
     - name: system_logging_configured_snmp
@@ -454,7 +454,7 @@ snippets:
 - name: 2_3_userid_for_internal_zones_only
   include: panos_validations_userid_settings
   include_variables:
-    - cis_internal_zones
+    - name: cis_internal_zones
   include_snippets:
     - name: capture_userid_enabled_zones
     - name: userid_internal_zones_only
@@ -613,7 +613,7 @@ snippets:
 - name: 4_2_apps_threats_update_schedule
   include: panos_validations_profile_objects
   include_variables:
-    - app_threat_intervals
+    - name: app_threat_intervals
   include_snippets:
     - name: capture_apps_threats_update_schedule
     - name: test_apps_threats_updates
@@ -633,7 +633,7 @@ snippets:
 - name: 5_1_WF_upload_limits_maximized
   include: panos_validations_profile_objects
   include_variables:
-    - wf_file_size_limits
+    - name: wf_file_size_limits
   include_snippets:
     - name: capture_wf_size_testing
     - name: wf_limit_pe_test
@@ -919,7 +919,7 @@ snippets:
 - name: 6_11_every_url_logged
   include: panos_validations_profile_objects
   include_variables:
-    - url_profile_actions
+    - name: url_profile_actions
   include_snippets:
     - name: capture_predefined_url_categories
     - name: capture_url_category_actions
