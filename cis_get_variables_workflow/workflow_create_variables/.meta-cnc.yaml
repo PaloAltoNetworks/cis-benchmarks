@@ -33,7 +33,7 @@ snippets:
 # content updates to latest version
   - name: cis_create_input_variables
 # run the benchmark
-  - name: CIS_NGFW_benchmark
+  - name: CIS_NGFW_benchmark_v90
 
 
 
