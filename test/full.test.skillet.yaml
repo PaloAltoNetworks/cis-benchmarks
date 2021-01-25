@@ -1,5 +1,5 @@
 name: CIS_NGFW_benchmark_v90_test_full
-label: CIS NGFW benchmarks
+label: CIS NGFW benchmarks testing - full configuration
 
 description: |-
  CIS v9.0 CSC benchmarks
