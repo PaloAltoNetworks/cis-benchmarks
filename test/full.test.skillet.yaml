@@ -26,9 +26,9 @@ snippets:
       label: |-
         1.1.1.1 Syslog logging should be configured
       meta:
-        - scored: true
-        - level: 1
-        - section: 1
+        scored: true
+        level: 1
+        section: 1
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#syslog-logging-should-be-configured
 
@@ -43,9 +43,9 @@ snippets:
       label: |-
         1.1.1.2 SNMPv3 traps should be configured
       meta:
-        - scored: true
-        - level: 2
-        - section: 1
+        scored: true
+        level: 2
+        section: 1
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#snmpv3-traps-should-be-configured
 
@@ -58,9 +58,9 @@ snippets:
       label: |-
         1.1.2 Ensure 'Login Banner' is set
       meta:
-        - scored: true
-        - level: 1
-        - section: 1
+        scored: true
+        level: 1
+        section: 1
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-login-banner-is-set
 
@@ -73,9 +73,9 @@ snippets:
       label: |-
         1.1.3 Ensure 'Enable Log on High DP Load' is enabled
       meta:
-        - scored: true
-        - level: 1
-        - section: 1
+        scored: true
+        level: 1
+        section: 1
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#ensure-enable-log-on-high-dp-load-is-enabled
 
@@ -88,9 +88,9 @@ snippets:
       label: |-
         1.2.1 Ensure 'Permitted IP Addresses' is set to those necessary for device management
       meta:
-        - scored: true
-        - level: 1
-        - section: 1
+        scored: true
+        level: 1
+        section: 1
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-permitted-ip-addresses-is-set-to-those-necessary-for-device-management
@@ -104,9 +104,9 @@ snippets:
       label: |-
         1.2.2 Ensure 'Permitted IP Addresses' is set for all management profiles where SSH, HTTPS, or SNMP is enabled
       meta:
-        - scored: true
-        - level: 1
-        - section: 1
+        scored: true
+        level: 1
+        section: 1
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-permitted-ip-addresses-is-set-for-all-management-profiles-where-ssh-https-or-snmp-is-enabled
@@ -120,9 +120,9 @@ snippets:
       label: |-
         1.2.3 Ensure HTTP and Telnet options are disabled for the management interface
       meta:
-        - scored: true
-        - level: 1
-        - section: 1
+        scored: true
+        level: 1
+        section: 1
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-http-and-telnet-options-are-disabled-for-the-management-interface
@@ -136,9 +136,9 @@ snippets:
       label: |-
         1.2.4 Ensure HTTP and Telnet options are disabled for all management profiles
       meta:
-        - scored: true
-        - level: 1
-        - section: 1
+        scored: true
+        level: 1
+        section: 1
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-http-and-telnet-options-are-disabled-for-all-management-profiles
@@ -152,9 +152,9 @@ snippets:
       label: |-
         1.2.5 Ensure valid certificate is set for browser-based administrator interface
       meta:
-        - scored: false
-        - level: 2
-        - section: 1
+        scored: false
+        level: 2
+        section: 1
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-valid-certificate-is-set-for-browser-based-administrator-interface
@@ -168,9 +168,9 @@ snippets:
       label: |-
         1.3.1 Ensure 'Minimum Password Complexity' is enabled
       meta:
-        - scored: true
-        - level: 1
-        - section: 1
+        scored: true
+        level: 1
+        section: 1
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-minimum-password-complexity-is-enabled
@@ -184,9 +184,9 @@ snippets:
       label: |-
         1.3.2 Ensure 'Minimum Length' is greater than or equal to 12
       meta:
-        - scored: true
-        - level: 1
-        - section: 1
+        scored: true
+        level: 1
+        section: 1
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-minimum-length-is-greater-than-or-equal-to-12
@@ -200,9 +200,9 @@ snippets:
       label: |-
         1.3.3 Ensure 'Minimum Uppercase Letters' is greater than or equal to 1
       meta:
-        - scored: true
-        - level: 1
-        - section: 1
+        scored: true
+        level: 1
+        section: 1
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-minimum-uppercase-letters-is-greater-than-or-equal-to-1
@@ -216,9 +216,9 @@ snippets:
       label: |-
         1.3.4 Ensure 'Minimum Lowercase Letters' is greater than or equal to 1
       meta:
-        - scored: true
-        - level: 1
-        - section: 1
+        scored: true
+        level: 1
+        section: 1
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-minimum-lowercase-letters-is-greater-than-or-equal-to-1
@@ -232,9 +232,9 @@ snippets:
       label: |-
         1.3.5 Ensure 'Minimum Numeric Letters' is greater than or equal to 1
       meta:
-        - scored: true
-        - level: 1
-        - section: 1
+        scored: true
+        level: 1
+        section: 1
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-minimum-numeric-letters-is-greater-than-or-equal-to-1
@@ -248,9 +248,9 @@ snippets:
       label: |-
         1.3.6 Ensure 'Minimum Special Characters' is greater than or equal to 1
       meta:
-        - scored: true
-        - level: 1
-        - section: 1
+        scored: true
+        level: 1
+        section: 1
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-minimum-special-characters-is-greater-than-or-equal-to-1
@@ -264,9 +264,9 @@ snippets:
       label: |-
         1.3.7 Ensure 'Required Password Change Period' is less than or equal to 90 days
       meta:
-        - scored: true
-        - level: 1
-        - section: 1
+        scored: true
+        level: 1
+        section: 1
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-required-password-change-period-is-less-than-or-equal-to-90-days
@@ -280,9 +280,9 @@ snippets:
       label: |-
         1.3.8 Ensure 'New Password Differs By Characters' is greater than or equal to 3
       meta:
-        - scored: true
-        - level: 1
-        - section: 1
+        scored: true
+        level: 1
+        section: 1
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-new-password-differs-by-characters-is-greater-than-or-equal-to-3
@@ -296,9 +296,9 @@ snippets:
       label: |-
         1.3.9 Ensure 'Prevent Password Reuse Limit' is set to 24 or more passwords
       meta:
-        - scored: true
-        - level: 1
-        - section: 1
+        scored: true
+        level: 1
+        section: 1
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-prevent-password-reuse-limit-is-set-to-24-or-more-passwords
@@ -312,9 +312,9 @@ snippets:
       label: |-
         1.3.10 Ensure 'Password Profiles' do not exist
       meta:
-        - scored: true
-        - level: 1
-        - section: 1
+        scored: true
+        level: 1
+        section: 1
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-password-profiles-do-not-exist
@@ -328,9 +328,9 @@ snippets:
       label: |-
         1.4.1 Ensure 'Idle timeout' is less than or equal to 10 minutes for device management
       meta:
-        - scored: true
-        - level: 1
-        - section: 1
+        scored: true
+        level: 1
+        section: 1
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-idle-timeout-is-less-than-or-equal-to-10-minutes-for-device-management
@@ -344,9 +344,9 @@ snippets:
       label: |-
         1.4.2 Ensure 'Failed Attempts' and 'Lockout Time' for Authentication Profile are properly configured
       meta:
-        - scored: true
-        - level: 1
-        - section: 1
+        scored: true
+        level: 1
+        section: 1
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-failed-attempts-and-lockout-time-for-authentication-profile-are-properly-configured
@@ -360,9 +360,9 @@ snippets:
       label: |-
         1.5.1 Ensure 'V3' is selected for SNMP polling
       meta:
-        - scored: true
-        - level: 1
-        - section: 1
+        scored: true
+        level: 1
+        section: 1
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-v3-is-selected-for-snmp-polling
@@ -376,9 +376,9 @@ snippets:
       label: |-
         1.6.1 Ensure 'Verify Update Server Identity' is enabled
       meta:
-        - scored: true
-        - level: 1
-        - section: 1
+        scored: true
+        level: 1
+        section: 1
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-verify-update-server-identity-is-enabled
@@ -392,9 +392,9 @@ snippets:
       label: |-
         1.6.2 Ensure redundant NTP servers are configured appropriately
       meta:
-        - scored: true
-        - level: 1
-        - section: 1
+        scored: true
+        level: 1
+        section: 1
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-redundant-ntp-servers-are-configured-appropriately
@@ -408,9 +408,9 @@ snippets:
       label: |-
         1.6.3 Ensure that the Certificate Securing Remote Access VPNs is Valid
       meta:
-        - scored: false
-        - level: 1,2
-        - section: 1
+        scored: false
+        level: 1,2
+        section: 1
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-that-the-certificate-securing-remote-access-vpns-is-valid
@@ -425,9 +425,9 @@ snippets:
       label: |-
         2.1 Ensure that IP addresses are mapped to usernames
       meta:
-        - scored: false
-        - level: 2
-        - section: 2
+        scored: false
+        level: 2
+        section: 2
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-that-ip-addresses-are-mapped-to-usernames
@@ -441,9 +441,9 @@ snippets:
       label: |-
         2.2 Ensure that WMI probing is disabled
       meta:
-        - scored: true
-        - level: 2
-        - section: 2
+        scored: true
+        level: 2
+        section: 2
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-that-wmi-probing-is-disabled
@@ -461,9 +461,9 @@ snippets:
       label: |-
         2.3 Ensure that User-ID is only enabled for internal trusted interfaces
       meta:
-        - scored: true
-        - level: 1
-        - section: 2
+        scored: true
+        level: 1
+        section: 2
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-that-user-id-is-only-enabled-for-internal-trusted-interfaces
@@ -477,9 +477,9 @@ snippets:
       label: |-
         2.4 Ensure that 'Include/Exclude Networks' is used if User-ID is enabled
       meta:
-        - scored: true
-        - level: 1
-        - section: 2
+        scored: true
+        level: 1
+        section: 2
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-that-include-exclude-networks-is-used-if-user-id-is-enabled
@@ -492,9 +492,9 @@ snippets:
       label: |-
         2.5 Ensure that the User-ID Agent has minimal permissions if User-ID is enabled
       meta:
-        - scored: true
-        - level: 1
-        - section: 2
+        scored: true
+        level: 1
+        section: 2
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-that-the-user-id-agent-has-minimal-permissions-if-user-id-is-enabled
@@ -507,9 +507,9 @@ snippets:
       label: |-
         2.6 Ensure that the User-ID service account does not have interactive logon rights
       meta:
-        - scored: true
-        - level: 1
-        - section: 2
+        scored: true
+        level: 1
+        section: 2
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-that-the-user-id-service-account-does-not-have-interactive-logon-rights
@@ -522,9 +522,9 @@ snippets:
       label: |-
         2.7 Ensure remote access capabilities for the User-ID service account are forbidden
       meta:
-        - scored: false
-        - level: 1
-        - section: 2
+        scored: false
+        level: 1
+        section: 2
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-remote-access-capabilities-for-the-user-id-service-account-are-forbidden
@@ -538,9 +538,9 @@ snippets:
       label: |-
         2.8 Ensure that security policies restrict User-ID Agent traffic from crossing into untrusted zones
       meta:
-        - scored: true
-        - level: 1
-        - section: 2
+        scored: true
+        level: 1
+        section: 2
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-that-security-policies-restrict-user-id-agent-traffic-from-crossing-into-untrusted-zones
@@ -554,9 +554,9 @@ snippets:
       label: |-
         3.1 Ensure a fully-synchronized High Availability peer is configured
       meta:
-        - scored: true
-        - level: 1
-        - section: 3
+        scored: true
+        level: 1
+        section: 3
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-a-fully-synchronized-high-availability-peer-is-configured
@@ -570,9 +570,9 @@ snippets:
       label: |-
         3.2 Ensure 'High Availability' requires Link Monitoring and/or Path Monitoring
       meta:
-        - scored: true
-        - level: 1
-        - section: 3
+        scored: true
+        level: 1
+        section: 3
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-high-availability-requires-link-monitoring-and-or-path-monitoring
@@ -586,9 +586,9 @@ snippets:
       label: |-
         3.3 Ensure 'Passive Link State' and 'Preemptive' are configured appropriately
       meta:
-        - scored: true
-        - level: 1
-        - section: 3
+        scored: true
+        level: 1
+        section: 3
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-passive-link-state-and-preemptive-are-configured-appropriately
@@ -602,9 +602,9 @@ snippets:
       label: |-
         4.1 Ensure 'Antivirus Update Schedule' is set to download and install updates hourly
       meta:
-        - scored: true
-        - level: 1
-        - section: 4
+        scored: true
+        level: 1
+        section: 4
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-antivirus-update-schedule-is-set-to-download-and-install-updates-hourly
@@ -621,9 +621,9 @@ snippets:
         4.2 Ensure 'Applications and Threats Update Schedule' is set to download and install updates
         at daily or shorter intervals
       meta:
-        - scored: true
-        - level: 1
-        - section: 4
+        scored: true
+        level: 1
+        section: 4
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-applications-and-threats-update-schedule-is-set-to-download-and-install-updates-at-daily
@@ -640,9 +640,9 @@ snippets:
       label: |-
         5.1 Ensure that WildFire file size upload limits are maximized
       meta:
-        - scored: true
-        - level: 1
-        - section: 5
+        scored: true
+        level: 1
+        section: 5
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-that-wildfire-file-size-upload-limits-are-maximized
@@ -657,9 +657,9 @@ snippets:
       label: |-
         5.2 Ensure forwarding is enabled for all applications and file types in WildFire file blocking profiles
       meta:
-        - scored: true
-        - level: 1
-        - section: 5
+        scored: true
+        level: 1
+        section: 5
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-forwarding-is-enabled-for-all-applications-and-file-types-in-wildfire-file-blocking-profiles
@@ -673,9 +673,9 @@ snippets:
       label: |-
         5.3 Ensure a WildFire Analysis profile is enabled for all security policies
       meta:
-        - scored: true
-        - level: 1
-        - section: 5
+        scored: true
+        level: 1
+        section: 5
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-a-wildfire-analysis-profile-is-enabled-for-all-security-policies
@@ -689,9 +689,9 @@ snippets:
       label: |-
         5.4 Ensure forwarding of decrypted content to WildFire is enabled
       meta:
-        - scored: true
-        - level: 1
-        - section: 5
+        scored: true
+        level: 1
+        section: 5
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-forwarding-of-decrypted-content-to-wildfire-is-enabled
@@ -705,9 +705,9 @@ snippets:
       label: |-
         5.5 Ensure all WildFire session information settings are enabled
       meta:
-        - scored: true
-        - level: 1
-        - section: 5
+        scored: true
+        level: 1
+        section: 5
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-all-wildfire-session-information-settings-are-enabled
@@ -721,9 +721,9 @@ snippets:
       label: |-
         5.6 Ensure alerts are enabled for malicious files detected by WildFire
       meta:
-        - scored: true
-        - level: 1
-        - section: 5
+        scored: true
+        level: 1
+        section: 5
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-alerts-are-enabled-for-malicious-files-detected-by-wildfire
@@ -737,9 +737,9 @@ snippets:
       label: |-
         5.7 Ensure 'WildFire Update Schedule' is set to download and install updates every minute
       meta:
-        - scored: true
-        - level: 1
-        - section: 5
+        scored: true
+        level: 1
+        section: 5
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-wildfire-update-schedule-is-set-to-download-and-install-updates-every-minute
@@ -753,9 +753,9 @@ snippets:
       label: |-
         6.1 Ensure that antivirus profiles are set to block on all decoders except 'imap' and 'pop3'
       meta:
-        - scored: true
-        - level: 1
-        - section: 6
+        scored: true
+        level: 1
+        section: 6
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-that-antivirus-profiles-are-set-to-block-on-all-decoders-except-imap-and-pop3
@@ -769,9 +769,9 @@ snippets:
       label: |-
         6.2 Ensure a secure antivirus profile is applied to all relevant security policies
       meta:
-        - scored: true
-        - level: 1
-        - section: 6
+        scored: true
+        level: 1
+        section: 6
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-a-secure-antivirus-profile-is-applied-to-all-relevant-security-policies
@@ -785,9 +785,9 @@ snippets:
       label: |-
         6.3 Ensure an anti-spyware profile is configured to block on all spyware severity levels, categories, and threats
       meta:
-        - scored: true
-        - level: 1
-        - section: 6
+        scored: true
+        level: 1
+        section: 6
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-an-anti-spyware-profile-is-configured-to-block-on-all-spyware-severity-levels-categories-and-threats
@@ -802,9 +802,9 @@ snippets:
       label: |-
         6.4 Ensure DNS sinkholing is configured on all anti-spyware profiles in use
       meta:
-        - scored: true
-        - level: 1
-        - section: 6
+        scored: true
+        level: 1
+        section: 6
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-dns-sinkholing-is-configured-on-all-anti-spyware-profiles-in-use
@@ -820,9 +820,9 @@ snippets:
       label: |-
         6.5 Ensure passive DNS monitoring is set to enabled on all anti-spyware profiles in use
       meta:
-        - scored: true
-        - level: 1
-        - section: 6
+        scored: true
+        level: 1
+        section: 6
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-passive-dns-monitoring-is-set-to-enabled-on-all-anti-spyware-profiles-in-use
@@ -836,9 +836,9 @@ snippets:
       label: |-
         6.6 Ensure a secure anti-spyware profile is applied to all security policies permitting traffic to the Internet
       meta:
-        - scored: true
-        - level: 1
-        - section: 6
+        scored: true
+        level: 1
+        section: 6
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-a-secure-anti-spyware-profile-is-applied-to-all-security-policies-permitting-traffic-to-the-internet
@@ -857,9 +857,9 @@ snippets:
         6.7 Ensure a Vulnerability Protection Profile is set to block attacks against critical and high vulnerabilities,
         and set to default on medium, low, and informational vulnerabilities
       meta:
-        - scored: true
-        - level: 1
-        - section: 6
+        scored: true
+        level: 1
+        section: 6
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-a-vulnerability-protection-profile-is-set-to-block-attacks-against-critical-and-high-vulnerabilities
@@ -874,9 +874,9 @@ snippets:
       label: |-
         6.8 Ensure a secure Vulnerability Protection Profile is applied to all security rules allowing traffic
       meta:
-        - scored: true
-        - level: 1
-        - section: 6
+        scored: true
+        level: 1
+        section: 6
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-a-secure-vulnerability-protection-profile-is-applied-to-all-security-rules-allowing-traffic
@@ -891,9 +891,9 @@ snippets:
       label: |-
         6.9 Ensure that PAN-DB URL Filtering is used
       meta:
-        - scored: true
-        - level: 1
-        - section: 6
+        scored: true
+        level: 1
+        section: 6
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-that-pan-db-url-filtering-is-used
@@ -908,9 +908,9 @@ snippets:
       label: |-
         6.10 Ensure that URL Filtering uses the action of “block” or “override” on the URL categories
       meta:
-        - scored: true
-        - level: 1
-        - section: 6
+        scored: true
+        level: 1
+        section: 6
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-that-url-filtering-uses-the-action-of-block-or-override-on-the-url-categories
@@ -927,9 +927,9 @@ snippets:
       label: |-
         6.11 Ensure that access to every URL is logged
       meta:
-        - scored: true
-        - level: 1
-        - section: 6
+        scored: true
+        level: 1
+        section: 6
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-that-access-to-every-url-is-logged
@@ -943,9 +943,9 @@ snippets:
       label: |-
         6.12 Ensure all HTTP Header Logging options are enabled
       meta:
-        - scored: true
-        - level: 1
-        - section: 6
+        scored: true
+        level: 1
+        section: 6
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-all-http-header-logging-options-are-enabled
@@ -959,9 +959,9 @@ snippets:
       label: |-
         6.13 Ensure secure URL filtering is enabled for all security policies allowing traffic to the Internet
       meta:
-        - scored: true
-        - level: 1
-        - section: 6
+        scored: true
+        level: 1
+        section: 6
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-secure-url-filtering-is-enabled-for-all-security-policies-allowing-traffic-to-the-internet
@@ -977,9 +977,9 @@ snippets:
       label: |-
         6.14 Ensure alerting after a threshold of credit card or Social Security numbers is detected is enabled
       meta:
-        - scored: true
-        - level: 1
-        - section: 6
+        scored: true
+        level: 1
+        section: 6
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-alerting-after-a-threshold-of-credit-card-or-social-security-numbers-is-detected-is-enabled
@@ -993,9 +993,9 @@ snippets:
       label: |-
         6.15 Ensure a secure Data Filtering profile is applied to all security policies allowing traffic to or from the Internet
       meta:
-        - scored: true
-        - level: 1
-        - section: 6
+        scored: true
+        level: 1
+        section: 6
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-a-secure-data-filtering-profile-is-applied-to-all-security-policies-allowing-
@@ -1011,9 +1011,9 @@ snippets:
       label: |-
         6.16 Ensure that a Zone Protection Profile with an enabled SYN Flood Action of SYN Cookies is attached to all untrusted zones
       meta:
-        - scored: true
-        - level: 1
-        - section: 6
+        scored: true
+        level: 1
+        section: 6
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-that-a-zone-protection-profile-with-an-enabled-syn-flood-action-of-syn-cookies-is-attached-to-
@@ -1031,9 +1031,9 @@ snippets:
         6.17 Ensure that a Zone Protection Profile with tuned Flood Protection settings enabled
         for all flood types is attached to all untrusted zones
       meta:
-        - scored: true
-        - level: 2
-        - section: 6
+        scored: true
+        level: 2
+        section: 6
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-that-a-zone-protection-profile-with-tuned-flood-protection-settings-enabled-for-all-flood-types-
@@ -1051,9 +1051,9 @@ snippets:
         6.18 Ensure that all zones have Zone Protection Profiles with all Reconnaissance Protection settings enabled,
         tuned, and set to appropriate actions
       meta:
-        - scored: true
-        - level: 1
-        - section: 6
+        scored: true
+        level: 1
+        section: 6
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-that-all-zones-have-zone-protection-profiles-with-all-reconnaissance-protection-settings-
@@ -1069,9 +1069,9 @@ snippets:
       label: |-
         6.19 Ensure all zones have Zone Protection Profiles that drop specially crafted packets
       meta:
-        - scored: true
-        - level: 1
-        - section: 6
+        scored: true
+        level: 1
+        section: 6
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-all-zones-have-zone-protection-profiles-that-drop-specially-crafted-packets
@@ -1086,9 +1086,9 @@ snippets:
       label: |-
         6.20 Ensure that User Credential Submission uses the action of “block” or “continue” on the URL categories
       meta:
-        - scored: true
-        - level: 1
-        - section: 6
+        scored: true
+        level: 1
+        section: 6
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-that-user-credential-submission-uses-the-action-of-block-or-continue-on-the-url-categories
@@ -1102,9 +1102,9 @@ snippets:
       label: |-
         7.1 Ensure application security policies exist when allowing traffic from an untrusted zone to a more trusted zone
       meta:
-        - scored: true
-        - level: 1,2
-        - section: 7
+        scored: true
+        level: 1,2
+        section: 7
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-application-security-policies-exist-when-allowing-traffic-from-an-untrusted-zone-to-a-more-trusted-zone
@@ -1118,9 +1118,9 @@ snippets:
       label: |-
         7.2 Ensure 'Service setting of ANY' in a security policy allowing traffic does not exist
       meta:
-        - scored: true
-        - level: 1
-        - section: 7
+        scored: true
+        level: 1
+        section: 7
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-service-setting-of-any-in-a-security-policy-allowing-traffic-does-not-exist
@@ -1135,9 +1135,9 @@ snippets:
       label: |-
         7.3 Ensure 'Security Policy' denying any/all traffic to/from IP addresses on Trusted Threat Intelligence Sources Exists
       meta:
-        - scored: true
-        - level: 1
-        - section: 7
+        scored: true
+        level: 1
+        section: 7
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-security-policy-denying-any-all-traffic-to-from-ip-addresses-on-trusted-threat-intelligence-sources-exists
@@ -1152,9 +1152,9 @@ snippets:
       label: |-
         8.1 Ensure 'SSL Forward Proxy Policy' for traffic destined to the Internet is configured
       meta:
-        - scored: true
-        - level: 1
-        - section: 8
+        scored: true
+        level: 1
+        section: 8
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-ssl-forward-proxy-policy-for-traffic-destined-to-the-internet-is-configured
@@ -1169,9 +1169,9 @@ snippets:
       label: |-
         8.2 Ensure 'SSL Inbound Inspection' is required for all untrusted traffic destined for servers using SSL or TLS
       meta:
-        - scored: true
-        - level: 1
-        - section: 8
+        scored: true
+        level: 1
+        section: 8
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-ssl-inbound-inspection-is-required-for-all-untrusted-traffic-destined-for-servers-using-ssl-or-tls
@@ -1186,8 +1186,8 @@ snippets:
       label: |-
         8.3 Ensure that the Certificate used for Decryption is Trusted
       meta:
-        - scored: fal
-        - section: 8
+        scored: false
+        section: 8
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
         ensure-that-the-certificate-used-for-decryption-is-trusted
