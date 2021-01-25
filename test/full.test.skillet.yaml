@@ -1186,7 +1186,8 @@ snippets:
       label: |-
         8.3 Ensure that the Certificate used for Decryption is Trusted
       meta:
-        scored: fal
+        scored: false
+        level: 1,2
         section: 8
       documentation_link: |-
         https://iron-skillet.readthedocs.io/en/docs_master/cis.html#
