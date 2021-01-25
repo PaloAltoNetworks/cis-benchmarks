@@ -1,0 +1,59 @@
+name: CIS_NGFW_benchmark_v90
+label: CIS NGFW benchmarks
+
+description: |-
+ CIS v9.0 CSC benchmarks
+
+type: pan_validation
+labels:
+  collection:
+    - CIS
+    - Benchmark
+    - Validation
+
+variables:
+
+snippets:
+
+# 1.1.1.1 Syslog logging should be configured
+- name: 1_1_1_1_syslog_logging_configured
+  include: panos_validations_device_settings
+  include_variables:
+    - name: log_types
+  include_snippets:
+    - name: capture_logging_syslog
+    - name: system_logging_configured
+      label: |-
+        1.1.1.1 Syslog logging should be configured
+      meta:
+        - scored: true
+        - level: 1
+        - section: 1
+      documentation_link: |-
+        https://iron-skillet.readthedocs.io/en/docs_master/cis.html#syslog-logging-should-be-configured
+
+- name: vars_test
+  label: vars test
+  test: false
+  fail_message: |-
+    log type var
+    {{ log_types }}
+  documentation_link: |-
+    https://iron-skillet.readthedocs.io/en/docs_master/cis.html#syslog-logging-should-be-configured
+
+# 1.1.1.2 SNMPv3 traps should be configured
+- name: 1_1_1_2_snmpv3_traps_configured
+  include: panos_validations_device_settings
+  include_variables:
+    - name: log_types
+  include_snippets:
+    - name: capture_logging_snmp
+    - name: system_logging_configured_snmp
+      label: |-
+        1.1.1.2 SNMPv3 traps should be configured
+      meta:
+        - scored: true
+        - level: 2
+        - section: 1
+      documentation_link: |-
+        https://iron-skillet.readthedocs.io/en/docs_master/cis.html#snmpv3-traps-should-be-configured
