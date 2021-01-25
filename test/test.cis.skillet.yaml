@@ -2,7 +2,7 @@ name: CIS_NGFW_benchmark_v90_test
 label: CIS NGFW benchmarks testing - sample tests
 
 description: |-
- CIS v9.0 CSC benchmarks
+  CIS NGFW benchmarks testing - sample tests
 
 type: pan_validation
 labels:
