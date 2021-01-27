@@ -18,8 +18,6 @@ snippets:
 # 1.1.1.1 Syslog logging should be configured
 - name: 1_1_1_1_syslog_logging_configured
   include: panos_validations_device_settings
-  include_variables:
-    - name: log_types
   include_snippets:
     - name: capture_logging_syslog
     - name: system_logging_configured
@@ -35,8 +33,6 @@ snippets:
 # 1.1.1.2 SNMPv3 traps should be configured
 - name: 1_1_1_2_snmpv3_traps_configured
   include: panos_validations_device_settings
-  include_variables:
-    - name: log_types
   include_snippets:
     - name: capture_logging_snmp
     - name: system_logging_configured_snmp
