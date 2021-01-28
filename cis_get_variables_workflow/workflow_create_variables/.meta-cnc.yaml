@@ -1,10 +1,9 @@
 # workflow demo that cleans the config, does a content update, then configures a basic internet gateway
 
 name: cis_capture_values_and_create_variables
-label: Capture values and create input variables for the benchmark
+label: Run CIS benchmark assessment
 description: |
-  this workflow steps through get current configuration information and presenting
-  to the user to generate contextual input variables for the benchmark assessment
+  this workflow captures select values from the NGFW for user input and then plays the CIS benchmark skillet
 
 type: workflow
 
