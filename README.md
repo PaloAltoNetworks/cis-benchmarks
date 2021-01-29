@@ -16,7 +16,7 @@ information to determine alignment with the CIS benchmarks.
 
 To get the full benefit of this assessment, API access to the NGFW is
 required. This allows the solution to query active system information
-such license states and the currently installed list of PAN-DB URL
+such as license states and the currently installed list of PAN-DB URL
 categories.
 
 API access can be direct to the NGFW or accessed through Panorama using the
@@ -24,12 +24,12 @@ NGFW serial number.
 
 ## Quick Start Options
 
-### panHandler
+### panhandler
 
 > panhandler 4.x or later is required to run this assessment and generate the 
 output report
 
-* import this repository into panHandler
+* import this repository into panhandler
 * run the workflow skillet 'Run CIS benchmark assessment'
 * review the output report
 

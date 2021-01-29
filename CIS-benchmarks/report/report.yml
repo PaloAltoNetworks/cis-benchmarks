@@ -41,7 +41,7 @@ report:
       - name: Palo Alto Networks
         url: https://paloaltonetworks.com
       - name: CIS Benchmarks
-        url: https://www.cisecurity.org/cis-benchmarks/
+        url: https://www.cisecurity.org/benchmark/palo_alto_networks/
 
     sections:
 
