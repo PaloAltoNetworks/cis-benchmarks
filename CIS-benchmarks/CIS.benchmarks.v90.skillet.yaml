@@ -902,7 +902,7 @@ snippets:
     - name: capture_url_filtering_block_override
     - name: url_filtering_block_or_override_test
       label: |-
-        6.10 Ensure that URL Filtering uses the action of “block” or “override” on the URL categories
+        6.10 Ensure that URL Filtering uses the action of 'block' or 'override' on the URL categories
       meta:
         scored: true
         level: 1
