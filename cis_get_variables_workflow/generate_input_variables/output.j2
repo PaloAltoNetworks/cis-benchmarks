@@ -1,0 +1,22 @@
+<div>
+<br/>
+<h4>CIS Benchmark Input Variables and Values</h4>
+<br/>
+
+<h5>Internal Zones</h5>
+<table class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>Zone Name</th>
+        </tr>
+    </thead>
+    <tbody>
+    {%- for zone in cis_internal_zones %}
+        <tr>
+            <td>{{ zone }}</td>
+        </tr>
+    {%- endfor %}
+    </tbody>
+</table>
+
+</div>

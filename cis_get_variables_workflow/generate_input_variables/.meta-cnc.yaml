@@ -20,6 +20,6 @@ variables:
 
 snippets:
   - name: create_input_variables
-    file: create_input_variables.txt
+    file: output.j2
 
 
