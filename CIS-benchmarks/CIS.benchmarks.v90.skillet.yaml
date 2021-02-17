@@ -1080,7 +1080,7 @@ snippets:
     - name: capture_url_filtering_user_credential
     - name: user_cred_block_continue
       label: |-
-        6.20 Ensure that User Credential Submission uses the action of “block” or “continue” on the URL categories
+        6.20 Ensure that User Credential Submission uses the action of 'block' or 'continue' on the URL categories
       meta:
         scored: true
         level: 1
