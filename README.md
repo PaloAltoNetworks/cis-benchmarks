@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # CIS Benchmark Report
 
 The [Center for Internet Security (CIS)](https://www.cisecurity.org)
@@ -78,5 +79,3 @@ all projects or work posted in our GitHub repository
 (at https://github.com/PaloAltoNetworks) or sites other than our official
 Downloads page on https://support.paloaltonetworks.com are provided under
 the best effort policy.
-
-
