@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # CIS Benchmark Report
 
 The [Center for Internet Security (CIS)](https://www.cisecurity.org)
