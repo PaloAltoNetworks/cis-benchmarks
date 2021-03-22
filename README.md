@@ -19,19 +19,21 @@ required. This allows the solution to query active system information
 such as license states and the currently installed list of PAN-DB URL
 categories.
 
-API access can be direct to the NGFW or accessed through Panorama using the
-NGFW serial number.
 
 ## Quick Start Options
 
 ### panhandler
 
-> panhandler 4.x or later is required to run this assessment and generate the 
+> panhandler 4.3 or later is required to run this assessment and generate the 
 output report
 
 * import this repository into panhandler
 * run the workflow skillet 'Run CIS benchmark assessment'
 * review the output report
+
+A panhandler quick start guide and video can be found in the
+[Live community quickplay solutions page](https://live.paloaltonetworks.com/t5/quickplay-solutions/ct-p/Quickplay_Solutions)
+
 
 ## Viewing the Assessment Report
 
@@ -54,8 +56,6 @@ The embedded report provides the following information
   select user input that may come in a future release. These are flagged with
    'Action Required' and users should review the manual audit and remediation
     steps for these benchmarks  
-* The current solution can pull NGFW information through a Panorama interface
- but does not currently support query of a Panorama configuration
 * The current solution does not provide automated remediation requiring users
  to review the manual remediation steps found in the benchmark documentation
 * The current solution is specific to PAN-OS 9.x. It can be used with a 10.x
