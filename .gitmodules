@@ -1,3 +1,3 @@
-[submodule "panos-validation-snippets"]
+[submodule "submodules/panos-validation-snippets"]
 	path = submodules/panos-validation-snippets
-	url = https://gitlab.com/panw-gse/as/panos-validation-snippets.git
+	url = https://github.com/pan-community/panos-validation-snippets.git
