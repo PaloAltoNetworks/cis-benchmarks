@@ -1,4 +1,7 @@
-<<<<<<< HEAD
+# Important Please Read
+The CIS Benchmark Skillet is no longer being actively supported or maintained. Users can submit merge requests to the repository for features they would like to add or to update the skillet but beyond that the team is not actively working on this anymore.
+
+
 # CIS Benchmark Report
 
 The [Center for Internet Security (CIS)](https://www.cisecurity.org)
